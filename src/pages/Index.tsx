@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Instagram, Twitter, Linkedin, Mail, Sparkles, Copy, Wand2, Zap } from "lucide-react";
 import { HeroButton } from "@/components/ui/button-variants";
 import { PricingCard } from "@/components/PricingCard";
+import { Header } from "@/components/Header";
 import heroImage from "@/assets/hero-hologram.jpg";
 import postFormats from "@/assets/post-formats.jpg";
 import cloneAi from "@/assets/clone-ai.jpg";
