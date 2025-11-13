@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Instagram, Twitter, Linkedin, Mail, Sparkles, Copy, Wand2, Zap } from "lucide-react";
 import { HeroButton } from "@/components/ui/button-variants";
 import { PricingCard } from "@/components/PricingCard";
@@ -10,6 +11,7 @@ import customServices from "@/assets/custom-services.jpg";
 
 const Index = () => {
   const [lang, setLang] = useState<"pt" | "en" | "es">("pt");
+  const navigate = useNavigate();
 
   const translations = {
     pt: {
@@ -214,8 +216,11 @@ const Index = () => {
           </h1>
           <p className="text-2xl md:text-3xl text-muted-foreground mb-12 max-w-3xl mx-auto">{t.hero.subtitle}</p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <HeroButton variant="primary">{t.hero.cta1}</HeroButton>
-            <HeroButton variant="secondary">{t.hero.cta2}</HeroButton>
+            <HeroButton variant="primary" onClick={() => navigate('/auth')}>{t.hero.cta1}</HeroButton>
+            <HeroButton variant="secondary" onClick={() => {
+              const pricingSection = document.getElementById('pricing');
+              pricingSection?.scrollIntoView({ behavior: 'smooth' });
+            }}>{t.hero.cta2}</HeroButton>
           </div>
         </div>
       </section>
@@ -274,7 +279,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-24 bg-gradient-metallic">
+      <section id="pricing" className="py-24 bg-gradient-metallic">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <Sparkles className="w-12 h-12 text-primary mx-auto mb-4 animate-glow-pulse" />
@@ -299,7 +304,7 @@ const Index = () => {
               <Wand2 className="w-12 h-12 text-primary mb-6 animate-glow-pulse" />
               <h2 className="text-5xl font-bold mb-6 text-foreground">{t.custom.title}</h2>
               <p className="text-xl text-muted-foreground mb-8">{t.custom.subtitle}</p>
-              <HeroButton variant="primary">{t.custom.cta}</HeroButton>
+              <HeroButton variant="primary" onClick={() => window.open('mailto:contato@exemplo.com', '_blank')}>{t.custom.cta}</HeroButton>
             </div>
           </div>
         </div>
