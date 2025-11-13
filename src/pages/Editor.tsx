@@ -32,6 +32,7 @@ export default function Editor() {
   const [fontFamily, setFontFamily] = useState("inter");
   const [fontSize, setFontSize] = useState([20]);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [brandName, setBrandName] = useState("");
   const previewRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -324,16 +325,29 @@ export default function Editor() {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="fontSize">Tamanho da Fonte: {fontSize[0]}px</Label>
-              <Slider
-                value={fontSize}
-                onValueChange={setFontSize}
-                min={12}
-                max={48}
-                step={1}
-                className="mt-2"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="fontSize">Tamanho da Fonte: {fontSize[0]}px</Label>
+                <Slider
+                  value={fontSize}
+                  onValueChange={setFontSize}
+                  min={12}
+                  max={48}
+                  step={1}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="brandName">Nome da Marca</Label>
+                <Input
+                  id="brandName"
+                  value={brandName}
+                  onChange={(e) => setBrandName(e.target.value)}
+                  placeholder="Ex: minhamarca"
+                  className="mt-2"
+                />
+              </div>
             </div>
 
             <div className="border-t border-border pt-6">
@@ -394,27 +408,38 @@ export default function Editor() {
                     backgroundPosition: 'center',
                   }}
                 >
-                  <div className={`relative z-10 ${backgroundImage ? 'bg-black/40 backdrop-blur-sm p-6 rounded-lg' : ''}`}>
-                    <h3 
-                      className={`font-bold mb-4 ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
-                      style={{ fontSize: `${fontSize[0]}px` }}
-                    >
-                      {title || "Título do Post"}
-                    </h3>
-                    <p 
-                      className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
-                      style={{ fontSize: `${fontSize[0] * 0.7}px` }}
-                    >
-                      {content || "Conteúdo do post..."}
-                    </p>
-                    <div className="mt-6 flex gap-2 flex-wrap">
-                      <span className={`text-xs px-3 py-1 rounded-full ${colorPalettes[colorPalette as keyof typeof colorPalettes].accent} bg-white/20 backdrop-blur-sm`}>
-                        {format}
-                      </span>
-                      <span className={`text-xs px-3 py-1 rounded-full ${colorPalettes[colorPalette as keyof typeof colorPalettes].accent} bg-white/20 backdrop-blur-sm`}>
-                        {style}
-                      </span>
+                  <div className="relative z-10 h-full flex flex-col justify-between p-6">
+                    <div>
+                      <h3 
+                        className={`font-bold mb-4 ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
+                        style={{ 
+                          fontSize: `${fontSize[0]}px`,
+                          textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none'
+                        }}
+                      >
+                        {title || "Título do Post"}
+                      </h3>
+                      <p 
+                        className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
+                        style={{ 
+                          fontSize: `${fontSize[0] * 0.7}px`,
+                          textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none'
+                        }}
+                      >
+                        {content || "Conteúdo do post..."}
+                      </p>
                     </div>
+                    
+                    {brandName && (
+                      <div className="self-start">
+                        <span 
+                          className={`text-sm font-semibold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
+                          style={{ textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none' }}
+                        >
+                          @{brandName}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
