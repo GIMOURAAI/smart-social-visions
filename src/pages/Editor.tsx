@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Sparkles, Download, Copy, Image as ImageIcon, Wand2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import html2canvas from "html2canvas";
 
 export default function Editor() {
   const [user, setUser] = useState<any>(null);
@@ -23,8 +25,32 @@ export default function Editor() {
   const [format, setFormat] = useState("1:1");
   const [style, setStyle] = useState("minimal");
   const [loading, setLoading] = useState(false);
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const [backgroundImage, setBackgroundImage] = useState("");
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [colorPalette, setColorPalette] = useState("default");
+  const [fontFamily, setFontFamily] = useState("inter");
+  const [fontSize, setFontSize] = useState([20]);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const colorPalettes = {
+    default: { bg: "bg-card", text: "text-foreground", accent: "text-primary" },
+    ocean: { bg: "bg-gradient-to-br from-blue-500 to-cyan-600", text: "text-white", accent: "text-yellow-300" },
+    sunset: { bg: "bg-gradient-to-br from-orange-500 to-pink-600", text: "text-white", accent: "text-yellow-200" },
+    forest: { bg: "bg-gradient-to-br from-green-600 to-emerald-700", text: "text-white", accent: "text-lime-300" },
+    purple: { bg: "bg-gradient-to-br from-purple-600 to-indigo-700", text: "text-white", accent: "text-pink-300" },
+    dark: { bg: "bg-gradient-to-br from-gray-900 to-gray-800", text: "text-white", accent: "text-cyan-400" },
+  };
+
+  const fonts = {
+    inter: "font-sans",
+    serif: "font-serif",
+    mono: "font-mono",
+    cursive: "font-cursive",
+  };
 
   useEffect(() => {
     checkUser();
@@ -37,6 +63,119 @@ export default function Editor() {
       return;
     }
     setUser(session.user);
+  };
+
+  const generateImage = async () => {
+    if (!imagePrompt.trim()) {
+      toast({
+        title: "Prompt necessário",
+        description: "Digite uma descrição para gerar a imagem de fundo",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingImage(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: { prompt: imagePrompt }
+      });
+
+      if (error) throw error;
+
+      if (data?.imageUrl) {
+        setBackgroundImage(data.imageUrl);
+        toast({
+          title: "Imagem gerada!",
+          description: "Imagem de fundo criada com sucesso",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro ao gerar imagem",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedImage(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setBackgroundImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      toast({
+        title: "Imagem carregada!",
+        description: "Imagem de referência adicionada",
+      });
+    }
+  };
+
+  const downloadPost = async () => {
+    if (!previewRef.current) return;
+
+    try {
+      const canvas = await html2canvas(previewRef.current, {
+        backgroundColor: null,
+        scale: 2,
+      });
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `post-${Date.now()}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast({
+            title: "Download concluído!",
+            description: "Post salvo como imagem",
+          });
+        }
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao baixar",
+        description: "Não foi possível baixar o post",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const copyPost = async () => {
+    if (!previewRef.current) return;
+
+    try {
+      const canvas = await html2canvas(previewRef.current, {
+        backgroundColor: null,
+        scale: 2,
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+          toast({
+            title: "Copiado!",
+            description: "Post copiado para a área de transferência",
+          });
+        }
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o post",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -151,12 +290,96 @@ export default function Editor() {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="colorPalette">Paleta de Cores</Label>
+                <Select value={colorPalette} onValueChange={setColorPalette}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Padrão</SelectItem>
+                    <SelectItem value="ocean">Oceano</SelectItem>
+                    <SelectItem value="sunset">Pôr do Sol</SelectItem>
+                    <SelectItem value="forest">Floresta</SelectItem>
+                    <SelectItem value="purple">Roxo</SelectItem>
+                    <SelectItem value="dark">Escuro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="fontFamily">Fonte</Label>
+                <Select value={fontFamily} onValueChange={setFontFamily}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inter">Inter (Sans)</SelectItem>
+                    <SelectItem value="serif">Serif</SelectItem>
+                    <SelectItem value="mono">Monospace</SelectItem>
+                    <SelectItem value="cursive">Cursiva</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="fontSize">Tamanho da Fonte: {fontSize[0]}px</Label>
+              <Slider
+                value={fontSize}
+                onValueChange={setFontSize}
+                min={12}
+                max={48}
+                step={1}
+                className="mt-2"
+              />
+            </div>
+
+            <div className="border-t border-border pt-6">
+              <Label>Imagem de Fundo com IA</Label>
+              <div className="space-y-4 mt-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={imagePrompt}
+                    onChange={(e) => setImagePrompt(e.target.value)}
+                    placeholder="Descreva a imagem de fundo que deseja..."
+                    className="flex-1"
+                  />
+                  <Button onClick={generateImage} disabled={generatingImage}>
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    {generatingImage ? "Gerando..." : "Gerar"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-muted-foreground">ou</div>
+                  <Label htmlFor="upload-image" className="cursor-pointer">
+                    <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-accent">
+                      <ImageIcon className="w-4 h-4" />
+                      <span>Upload de Imagem</span>
+                    </div>
+                    <Input
+                      id="upload-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </Label>
+                </div>
+              </div>
+            </div>
+
             {/* Preview Area */}
             <div className="border-t border-border pt-6">
-              <Label>Visualização</Label>
+              <Label>Visualização do Post</Label>
               <div className="mt-4 p-8 bg-secondary/20 rounded-lg border border-border">
                 <div
-                  className={`mx-auto bg-card rounded-lg p-6 shadow-lg ${
+                  ref={previewRef}
+                  className={`mx-auto rounded-lg p-8 shadow-lg relative overflow-hidden ${
+                    colorPalettes[colorPalette as keyof typeof colorPalettes].bg
+                  } ${
                     format === "1:1"
                       ? "aspect-square max-w-md"
                       : format === "3:4"
@@ -165,24 +388,50 @@ export default function Editor() {
                       ? "aspect-[9/16] max-w-xs"
                       : "aspect-video max-w-2xl"
                   }`}
+                  style={{
+                    backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
                 >
-                  <h3 className="text-xl font-bold mb-2 text-foreground">{title || "Título do Post"}</h3>
-                  <p className="text-muted-foreground text-sm">{content || "Conteúdo do post..."}</p>
-                  <div className="mt-4 flex gap-2">
-                    <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">{format}</span>
-                    <span className="text-xs px-2 py-1 bg-accent/10 text-accent rounded">{style}</span>
+                  <div className={`relative z-10 ${backgroundImage ? 'bg-black/40 backdrop-blur-sm p-6 rounded-lg' : ''}`}>
+                    <h3 
+                      className={`font-bold mb-4 ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
+                      style={{ fontSize: `${fontSize[0]}px` }}
+                    >
+                      {title || "Título do Post"}
+                    </h3>
+                    <p 
+                      className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
+                      style={{ fontSize: `${fontSize[0] * 0.7}px` }}
+                    >
+                      {content || "Conteúdo do post..."}
+                    </p>
+                    <div className="mt-6 flex gap-2 flex-wrap">
+                      <span className={`text-xs px-3 py-1 rounded-full ${colorPalettes[colorPalette as keyof typeof colorPalettes].accent} bg-white/20 backdrop-blur-sm`}>
+                        {format}
+                      </span>
+                      <span className={`text-xs px-3 py-1 rounded-full ${colorPalettes[colorPalette as keyof typeof colorPalettes].accent} bg-white/20 backdrop-blur-sm`}>
+                        {style}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-4 pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+              <Button onClick={downloadPost} variant="outline" size="lg" className="flex-1">
+                <Download className="w-5 h-5 mr-2" />
+                Baixar Post
+              </Button>
+              <Button onClick={copyPost} variant="outline" size="lg" className="flex-1">
+                <Copy className="w-5 h-5 mr-2" />
+                Copiar Post
+              </Button>
               <Button onClick={handleSave} disabled={loading} className="flex-1" size="lg">
                 <Save className="w-5 h-5 mr-2" />
-                {loading ? "Salvando..." : "Salvar Post"}
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/dashboard")} size="lg">
-                Cancelar
+                {loading ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           </div>
