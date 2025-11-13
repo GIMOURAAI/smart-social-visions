@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { HeroButton } from "@/components/ui/button-variants";
+import { useNavigate } from "react-router-dom";
 
 interface PricingCardProps {
   title: string;
@@ -11,6 +12,8 @@ interface PricingCardProps {
 }
 
 export const PricingCard = ({ title, price, period, features, isPopular }: PricingCardProps) => {
+  const navigate = useNavigate();
+  
   return (
     <Card
       className={cn(
@@ -38,7 +41,7 @@ export const PricingCard = ({ title, price, period, features, isPopular }: Prici
           </li>
         ))}
       </ul>
-      <HeroButton variant={isPopular ? "primary" : "secondary"} className="w-full">
+      <HeroButton variant={isPopular ? "primary" : "secondary"} className="w-full" onClick={() => navigate('/auth')}>
         Começar
       </HeroButton>
     </Card>
