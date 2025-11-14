@@ -26,8 +26,10 @@ export default function Editor() {
   const [style, setStyle] = useState("minimal");
   const [loading, setLoading] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
+  const [generatingWithAI, setGeneratingWithAI] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState("");
   const [imagePrompt, setImagePrompt] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
   const [colorPalette, setColorPalette] = useState("default");
   const [fontFamily, setFontFamily] = useState("inter");
   const [fontSize, setFontSize] = useState([20]);
@@ -68,6 +70,44 @@ export default function Editor() {
       return;
     }
     setUser(session.user);
+  };
+
+  const createWithAI = async () => {
+    if (!aiPrompt.trim()) {
+      toast({
+        title: "Prompt necessário",
+        description: "Digite uma descrição do que deseja criar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingWithAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-post-with-ai', {
+        body: { prompt: aiPrompt }
+      });
+
+      if (error) throw error;
+
+      if (data) {
+        setTitle(data.title);
+        setContent(data.content);
+        setBackgroundImage(data.imageUrl);
+        toast({
+          title: "Post criado!",
+          description: "Conteúdo gerado com IA com sucesso",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro ao criar com IA",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingWithAI(false);
+    }
   };
 
   const generateImage = async () => {
@@ -241,6 +281,39 @@ export default function Editor() {
           <h2 className="text-2xl font-bold mb-6 text-foreground">Criar Novo Post</h2>
 
           <div className="space-y-6">
+            {/* Criação com IA */}
+            <div className="border border-primary/20 rounded-lg p-6 bg-primary/5">
+              <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Criar Post com IA
+              </h3>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="Descreva o que você quer criar... Ex: Post sobre lançamento de produto tech"
+                    className="flex-1"
+                  />
+                  <Button onClick={createWithAI} disabled={generatingWithAI} size="lg">
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    {generatingWithAI ? "Gerando..." : "Criar com IA"}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  A IA vai gerar o título, conteúdo e imagem de fundo automaticamente
+                </p>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">ou edite manualmente</span>
+              </div>
+            </div>
             <div>
               <Label htmlFor="title">Título do Post</Label>
               <Input
