@@ -31,6 +31,9 @@ export default function Editor() {
   const [colorPalette, setColorPalette] = useState("default");
   const [fontFamily, setFontFamily] = useState("inter");
   const [fontSize, setFontSize] = useState([20]);
+  const [contentFontSize, setContentFontSize] = useState([16]);
+  const [titleContentGap, setTitleContentGap] = useState([16]);
+  const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left");
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [brandName, setBrandName] = useState("");
   const previewRef = useRef<HTMLDivElement>(null);
@@ -327,27 +330,67 @@ export default function Editor() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="fontSize">Tamanho da Fonte: {fontSize[0]}px</Label>
+                <Label htmlFor="fontSize">Tamanho do Título: {fontSize[0]}px</Label>
                 <Slider
                   value={fontSize}
                   onValueChange={setFontSize}
                   min={12}
-                  max={48}
+                  max={64}
                   step={1}
                   className="mt-2"
                 />
               </div>
 
               <div>
-                <Label htmlFor="brandName">Nome da Marca</Label>
-                <Input
-                  id="brandName"
-                  value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
-                  placeholder="Ex: minhamarca"
+                <Label htmlFor="contentFontSize">Tamanho do Subtítulo: {contentFontSize[0]}px</Label>
+                <Slider
+                  value={contentFontSize}
+                  onValueChange={setContentFontSize}
+                  min={10}
+                  max={48}
+                  step={1}
                   className="mt-2"
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="titleContentGap">Espaçamento Título-Subtítulo: {titleContentGap[0]}px</Label>
+                <Slider
+                  value={titleContentGap}
+                  onValueChange={setTitleContentGap}
+                  min={0}
+                  max={64}
+                  step={2}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="textAlign">Alinhamento do Texto</Label>
+                <Select value={textAlign} onValueChange={(value: "left" | "center" | "right") => setTextAlign(value)}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="left">Esquerda</SelectItem>
+                    <SelectItem value="center">Centro</SelectItem>
+                    <SelectItem value="right">Direita</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="brandName">Nome da Marca</Label>
+              <Input
+                id="brandName"
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                placeholder="Ex: minhamarca"
+                className="mt-2"
+              />
             </div>
 
             <div className="border-t border-border pt-6">
@@ -409,12 +452,13 @@ export default function Editor() {
                   }}
                 >
                   <div className="relative z-10 h-full flex flex-col justify-between p-6">
-                    <div>
+                    <div style={{ textAlign: textAlign }}>
                       <h3 
-                        className={`font-bold mb-4 ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
+                        className={`font-bold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
                         style={{ 
                           fontSize: `${fontSize[0]}px`,
-                          textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none'
+                          textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none',
+                          marginBottom: `${titleContentGap[0]}px`
                         }}
                       >
                         {title || "Título do Post"}
@@ -422,7 +466,7 @@ export default function Editor() {
                       <p 
                         className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
                         style={{ 
-                          fontSize: `${fontSize[0] * 0.7}px`,
+                          fontSize: `${contentFontSize[0]}px`,
                           textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none'
                         }}
                       >
