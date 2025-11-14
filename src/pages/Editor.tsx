@@ -33,6 +33,7 @@ export default function Editor() {
   const [fontSize, setFontSize] = useState([20]);
   const [contentFontSize, setContentFontSize] = useState([16]);
   const [titleContentGap, setTitleContentGap] = useState([16]);
+  const [lineHeight, setLineHeight] = useState([1.5]);
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left");
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [brandName, setBrandName] = useState("");
@@ -382,15 +383,29 @@ export default function Editor() {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="brandName">Nome da Marca</Label>
-              <Input
-                id="brandName"
-                value={brandName}
-                onChange={(e) => setBrandName(e.target.value)}
-                placeholder="Ex: minhamarca"
-                className="mt-2"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="lineHeight">Espaçamento entre Linhas: {lineHeight[0].toFixed(1)}</Label>
+                <Slider
+                  value={lineHeight}
+                  onValueChange={setLineHeight}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="brandName">Nome da Marca</Label>
+                <Input
+                  id="brandName"
+                  value={brandName}
+                  onChange={(e) => setBrandName(e.target.value)}
+                  placeholder="Ex: minhamarca"
+                  className="mt-2"
+                />
+              </div>
             </div>
 
             <div className="border-t border-border pt-6">
@@ -467,6 +482,7 @@ export default function Editor() {
                         className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]}`}
                         style={{ 
                           fontSize: `${contentFontSize[0]}px`,
+                          lineHeight: lineHeight[0],
                           textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none'
                         }}
                       >
