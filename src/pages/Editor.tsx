@@ -39,6 +39,8 @@ export default function Editor() {
   const [contentAlign, setContentAlign] = useState<"left" | "center" | "right">("center");
   const [paddingX, setPaddingX] = useState([40]);
   const [paddingY, setPaddingY] = useState([40]);
+  const [titleColor, setTitleColor] = useState("#ffffff");
+  const [contentColor, setContentColor] = useState("#ffffff");
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [brandName, setBrandName] = useState("");
   const [titlePosition, setTitlePosition] = useState({ x: 50, y: 20 });
@@ -480,6 +482,29 @@ export default function Editor() {
                 />
               </div>
 
+              {/* Cores */}
+              <div className="space-y-2">
+                <Label htmlFor="title-color">Cor do Título</Label>
+                <Input
+                  id="title-color"
+                  type="color"
+                  value={titleColor}
+                  onChange={(e) => setTitleColor(e.target.value)}
+                  className="h-10 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="content-color">Cor do Conteúdo</Label>
+                <Input
+                  id="content-color"
+                  type="color"
+                  value={contentColor}
+                  onChange={(e) => setContentColor(e.target.value)}
+                  className="h-10 cursor-pointer"
+                />
+              </div>
+
               {/* Fonte */}
               <div>
                 <Label>Fonte</Label>
@@ -641,13 +666,16 @@ export default function Editor() {
                     onBlur={() => setEditingElement(null)}
                     autoFocus
                     rows={4}
-                    className="bg-transparent border-2 border-dashed border-white/50 resize-none"
+                    className="bg-transparent border-2 border-dashed border-white/50 resize-none whitespace-pre-wrap"
                     style={{
                       fontSize: `${contentFontSize[0]}px`,
                       fontFamily: fonts[fontFamily as keyof typeof fonts],
                       lineHeight: lineHeight[0],
                       textAlign: contentAlign,
+                      color: contentColor,
+                      width: '100%',
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                 ) : (
                   <p
@@ -656,6 +684,7 @@ export default function Editor() {
                       fontSize: `${contentFontSize[0]}px`,
                       lineHeight: lineHeight[0],
                       textAlign: contentAlign,
+                      color: contentColor,
                     }}
                     onMouseDown={(e) => handleMouseDown('content', e)}
                     onDoubleClick={() => setEditingElement('content')}
