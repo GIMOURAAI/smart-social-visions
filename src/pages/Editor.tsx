@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Sparkles, Download, Copy, Image as ImageIcon, Wand2, Move } from "lucide-react";
+import { ArrowLeft, Save, Sparkles, Download, Copy, Image as ImageIcon, Wand2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -32,11 +32,13 @@ export default function Editor() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [colorPalette, setColorPalette] = useState("default");
   const [fontFamily, setFontFamily] = useState("inter");
-  const [fontSize, setFontSize] = useState([20]);
-  const [contentFontSize, setContentFontSize] = useState([16]);
-  const [titleContentGap, setTitleContentGap] = useState([16]);
+  const [fontSize, setFontSize] = useState([32]);
+  const [contentFontSize, setContentFontSize] = useState([18]);
   const [lineHeight, setLineHeight] = useState([1.5]);
-  const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left");
+  const [titleAlign, setTitleAlign] = useState<"left" | "center" | "right">("center");
+  const [contentAlign, setContentAlign] = useState<"left" | "center" | "right">("center");
+  const [paddingX, setPaddingX] = useState([40]);
+  const [paddingY, setPaddingY] = useState([40]);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [brandName, setBrandName] = useState("");
   const [titlePosition, setTitlePosition] = useState({ x: 50, y: 20 });
@@ -62,6 +64,13 @@ export default function Editor() {
     serif: "font-serif",
     mono: "font-mono",
     cursive: "font-cursive",
+  };
+
+  const aspectRatios = {
+    "1:1": "aspect-square max-w-md",
+    "3:4": "aspect-[3/4] max-w-sm",
+    "9:16": "aspect-[9/16] max-w-xs",
+    "16:9": "aspect-video max-w-2xl",
   };
 
   useEffect(() => {
@@ -98,16 +107,19 @@ export default function Editor() {
       if (data) {
         setTitle(data.title);
         setContent(data.content);
-        setBackgroundImage(data.imageUrl);
+        if (data.imageUrl) {
+          setBackgroundImage(data.imageUrl);
+        }
         toast({
           title: "Post criado!",
-          description: "Conteúdo gerado com IA com sucesso",
+          description: "O conteúdo foi gerado com IA. Ajuste conforme necessário.",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Erro ao criar com IA:', error);
       toast({
-        title: "Erro ao criar com IA",
-        description: error.message,
+        title: "Erro",
+        description: "Não foi possível gerar o conteúdo. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -118,8 +130,8 @@ export default function Editor() {
   const generateImage = async () => {
     if (!imagePrompt.trim()) {
       toast({
-        title: "Prompt necessário",
-        description: "Digite uma descrição para gerar a imagem de fundo",
+        title: "Descrição necessária",
+        description: "Digite uma descrição para a imagem",
         variant: "destructive",
       });
       return;
@@ -137,13 +149,14 @@ export default function Editor() {
         setBackgroundImage(data.imageUrl);
         toast({
           title: "Imagem gerada!",
-          description: "Imagem de fundo criada com sucesso",
+          description: "A imagem de fundo foi criada com sucesso.",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Erro ao gerar imagem:', error);
       toast({
-        title: "Erro ao gerar imagem",
-        description: error.message,
+        title: "Erro",
+        description: "Não foi possível gerar a imagem. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -160,114 +173,11 @@ export default function Editor() {
         setBackgroundImage(event.target?.result as string);
       };
       reader.readAsDataURL(file);
-      toast({
-        title: "Imagem carregada!",
-        description: "Imagem de referência adicionada",
-      });
-    }
-  };
-
-  const downloadPost = async () => {
-    if (!previewRef.current) return;
-
-    try {
-      const canvas = await html2canvas(previewRef.current, {
-        backgroundColor: null,
-        scale: 2,
-      });
-
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `post-${Date.now()}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-          toast({
-            title: "Download concluído!",
-            description: "Post salvo como imagem",
-          });
-        }
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao baixar",
-        description: "Não foi possível baixar o post",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const copyPost = async () => {
-    if (!previewRef.current) return;
-
-    try {
-      const canvas = await html2canvas(previewRef.current, {
-        backgroundColor: null,
-        scale: 2,
-      });
-
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          await navigator.clipboard.write([
-            new ClipboardItem({ 'image/png': blob })
-          ]);
-          toast({
-            title: "Copiado!",
-            description: "Post copiado para a área de transferência",
-          });
-        }
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o post",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSave = async () => {
-    if (!title.trim() || !content.trim()) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Preencha o título e o conteúdo",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.from("posts").insert({
-        user_id: user.id,
-        title,
-        content,
-        format,
-        style,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Post salvo!",
-        description: "Seu post foi salvo com sucesso.",
-      });
-      navigate("/dashboard");
-    } catch (error: any) {
-      toast({
-        title: "Erro ao salvar",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleMouseDown = (element: string, e: React.MouseEvent) => {
-    e.preventDefault();
+    e.stopPropagation();
     setDraggingElement(element);
   };
 
@@ -291,8 +201,108 @@ export default function Editor() {
     setDraggingElement(null);
   };
 
+  const savePost = async () => {
+    if (!title.trim()) {
+      toast({
+        title: "Título necessário",
+        description: "Por favor, adicione um título ao seu post",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("posts").insert({
+        user_id: user.id,
+        title,
+        content,
+        format,
+        style,
+        image_url: backgroundImage || null,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Post salvo!",
+        description: "Seu post foi salvo com sucesso",
+      });
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Houve um erro ao salvar seu post. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadImage = async () => {
+    if (!previewRef.current) return;
+
+    try {
+      const canvas = await html2canvas(previewRef.current, {
+        backgroundColor: null,
+        scale: 2,
+      });
+
+      const link = document.createElement("a");
+      link.download = `post-${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+
+      toast({
+        title: "Download concluído!",
+        description: "Sua imagem foi baixada com sucesso",
+      });
+    } catch (error) {
+      console.error("Erro ao baixar:", error);
+      toast({
+        title: "Erro ao baixar",
+        description: "Houve um erro ao baixar sua imagem. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const copyToClipboard = async () => {
+    if (!previewRef.current) return;
+
+    try {
+      const canvas = await html2canvas(previewRef.current, {
+        backgroundColor: null,
+        scale: 2,
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob }),
+          ]);
+
+          toast({
+            title: "Copiado!",
+            description: "A imagem foi copiada para a área de transferência",
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Erro ao copiar:", error);
+      toast({
+        title: "Erro ao copiar",
+        description: "Houve um erro ao copiar sua imagem. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
+    <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -308,7 +318,7 @@ export default function Editor() {
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Controles à esquerda */}
+          {/* Controles */}
           <Card className="p-8 h-fit">
             <h2 className="text-2xl font-bold mb-6 text-foreground">Criar Novo Post</h2>
 
@@ -344,7 +354,7 @@ export default function Editor() {
                 </div>
               </div>
 
-              {/* Configurações de formato e paleta */}
+              {/* Formato e Paleta */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Formato</Label>
@@ -379,249 +389,316 @@ export default function Editor() {
                 </div>
               </div>
 
-              {/* Tamanho das fontes */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Título: {fontSize[0]}px</Label>
-                  <Slider
-                    value={fontSize}
-                    onValueChange={setFontSize}
-                    min={12}
-                    max={64}
-                    className="mt-2"
-                  />
-                </div>
+              {/* Tamanho das Fontes */}
+              <div className="space-y-2">
+                <Label>Tamanho do Título: {fontSize[0]}px</Label>
+                <Slider
+                  value={fontSize}
+                  onValueChange={setFontSize}
+                  min={16}
+                  max={72}
+                  step={2}
+                  className="w-full"
+                />
+              </div>
 
-                <div>
-                  <Label>Subtítulo: {contentFontSize[0]}px</Label>
-                  <Slider
-                    value={contentFontSize}
-                    onValueChange={setContentFontSize}
-                    min={10}
-                    max={48}
-                    className="mt-2"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label>Tamanho do Conteúdo: {contentFontSize[0]}px</Label>
+                <Slider
+                  value={contentFontSize}
+                  onValueChange={setContentFontSize}
+                  min={12}
+                  max={48}
+                  step={2}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Alinhamentos */}
+              <div className="space-y-2">
+                <Label>Alinhamento do Título</Label>
+                <Select value={titleAlign} onValueChange={(value: "left" | "center" | "right") => setTitleAlign(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="left">Esquerda</SelectItem>
+                    <SelectItem value="center">Centro</SelectItem>
+                    <SelectItem value="right">Direita</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Alinhamento do Conteúdo</Label>
+                <Select value={contentAlign} onValueChange={(value: "left" | "center" | "right") => setContentAlign(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="left">Esquerda</SelectItem>
+                    <SelectItem value="center">Centro</SelectItem>
+                    <SelectItem value="right">Direita</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Espaçamento */}
-              <div>
-                <Label>Espaçamento Linhas: {lineHeight[0].toFixed(1)}</Label>
+              <div className="space-y-2">
+                <Label>Espaçamento entre Linhas: {lineHeight[0].toFixed(1)}</Label>
                 <Slider
                   value={lineHeight}
                   onValueChange={setLineHeight}
                   min={1}
                   max={3}
                   step={0.1}
-                  className="mt-2"
+                  className="w-full"
                 />
               </div>
 
-              {/* Marca */}
+              <div className="space-y-2">
+                <Label>Margem Horizontal: {paddingX[0]}px</Label>
+                <Slider
+                  value={paddingX}
+                  onValueChange={setPaddingX}
+                  min={0}
+                  max={100}
+                  step={5}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Margem Vertical: {paddingY[0]}px</Label>
+                <Slider
+                  value={paddingY}
+                  onValueChange={setPaddingY}
+                  min={0}
+                  max={100}
+                  step={5}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Fonte */}
+              <div>
+                <Label>Fonte</Label>
+                <Select value={fontFamily} onValueChange={setFontFamily}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inter">Inter</SelectItem>
+                    <SelectItem value="serif">Serif</SelectItem>
+                    <SelectItem value="mono">Mono</SelectItem>
+                    <SelectItem value="cursive">Cursive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Nome da Marca */}
               <div>
                 <Label>Nome da Marca</Label>
                 <Input
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
-                  placeholder="Ex: minhamarca"
+                  placeholder="Digite o nome da marca"
                   className="mt-2"
                 />
               </div>
 
-              {/* Imagem de fundo */}
-              <div className="border-t border-border pt-6">
-                <Label>Imagem de Fundo</Label>
-                <div className="space-y-4 mt-4">
+              {/* Geração de Imagem com IA */}
+              <div className="border border-primary/20 rounded-lg p-6 bg-primary/5">
+                <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-primary" />
+                  Gerar Imagem de Fundo com IA
+                </h3>
+                <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input
                       value={imagePrompt}
                       onChange={(e) => setImagePrompt(e.target.value)}
-                      placeholder="Descreva a imagem..."
+                      placeholder="Descreva a imagem que deseja..."
                       className="flex-1"
                     />
                     <Button onClick={generateImage} disabled={generatingImage}>
                       <Wand2 className="w-4 h-4 mr-2" />
-                      {generatingImage ? "..." : "Gerar"}
+                      {generatingImage ? "Gerando..." : "Gerar"}
                     </Button>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm text-muted-foreground">ou</div>
-                    <Label htmlFor="upload-image" className="cursor-pointer">
-                      <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-accent">
-                        <ImageIcon className="w-4 h-4" />
-                        <span>Upload</span>
-                      </div>
-                      <Input
-                        id="upload-image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </Label>
                   </div>
                 </div>
               </div>
 
-              {/* Botões de ação */}
-              <div className="flex flex-col gap-3 pt-6 border-t border-border">
-                <Button onClick={downloadPost} variant="outline">
+              {/* Upload de Imagem */}
+              <div>
+                <Label htmlFor="image-upload">Ou envie uma imagem</Label>
+                <Input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="mt-2"
+                />
+              </div>
+
+              {/* Botões de Ação */}
+              <div className="flex gap-2 pt-4">
+                <Button onClick={savePost} disabled={loading} className="flex-1">
+                  <Save className="w-4 h-4 mr-2" />
+                  {loading ? "Salvando..." : "Salvar"}
+                </Button>
+                <Button onClick={downloadImage} variant="outline">
                   <Download className="w-4 h-4 mr-2" />
                   Baixar
                 </Button>
-                <Button onClick={copyPost} variant="outline">
+                <Button onClick={copyToClipboard} variant="outline">
                   <Copy className="w-4 h-4 mr-2" />
                   Copiar
-                </Button>
-                <Button onClick={handleSave} disabled={loading}>
-                  <Save className="w-4 h-4 mr-2" />
-                  {loading ? "Salvando..." : "Salvar"}
                 </Button>
               </div>
             </div>
           </Card>
 
-          {/* Preview à direita */}
-          <div className="lg:sticky lg:top-24 h-fit">
-            <Label className="flex items-center gap-2 mb-4">
-              <Move className="w-4 h-4" />
-              Visualização (Arraste e clique duplo para editar)
-            </Label>
-            <div className="p-8 bg-secondary/20 rounded-lg border border-border">
-              <div
-                ref={previewRef}
-                className={`mx-auto rounded-lg shadow-lg relative overflow-hidden cursor-move select-none ${
-                  colorPalettes[colorPalette as keyof typeof colorPalettes].bg
-                } ${
-                  format === "1:1"
-                    ? "aspect-square max-w-md"
-                    : format === "3:4"
-                    ? "aspect-[3/4] max-w-sm"
-                    : format === "9:16"
-                    ? "aspect-[9/16] max-w-xs"
-                    : "aspect-video max-w-2xl"
-                }`}
-                style={{
-                  backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-              >
-                {/* Título */}
-                <div
-                  className="absolute cursor-move"
-                  style={{
-                    left: `${titlePosition.x}%`,
-                    top: `${titlePosition.y}%`,
-                    transform: 'translate(-50%, -50%)',
-                    maxWidth: '90%',
-                  }}
-                  onMouseDown={(e) => handleMouseDown('title', e)}
-                  onDoubleClick={() => setEditingElement('title')}
-                >
-                  {editingElement === 'title' ? (
-                    <Input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      onBlur={() => setEditingElement(null)}
-                      autoFocus
-                      className={`font-bold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} bg-transparent border-2 border-primary`}
-                      style={{ 
-                        fontSize: `${fontSize[0]}px`,
-                        textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none',
-                      }}
-                    />
-                  ) : (
-                    <h3 
-                      className={`font-bold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} hover:opacity-80 transition-opacity`}
-                      style={{ 
-                        fontSize: `${fontSize[0]}px`,
-                        textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none',
-                      }}
-                    >
-                      {title || "Título"}
-                    </h3>
-                  )}
-                </div>
+          {/* Preview */}
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
+              💡 Arraste elementos para reposicionar, clique duplo para editar texto
+            </div>
+            
+            <div
+              ref={previewRef}
+              className={`relative ${aspectRatios[format as keyof typeof aspectRatios]} mx-auto overflow-hidden rounded-lg shadow-lg cursor-move`}
+              style={{
+                backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                padding: `${paddingY[0]}px ${paddingX[0]}px`,
+              }}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            >
+              <div 
+                className={`absolute inset-0 ${colorPalettes[colorPalette as keyof typeof colorPalettes].bg} ${backgroundImage ? 'opacity-80' : 'opacity-100'}`}
+                style={{ margin: `-${paddingY[0]}px -${paddingX[0]}px` }}
+              />
 
-                {/* Conteúdo */}
+              {/* Título */}
+              <div
+                className="absolute cursor-move z-10"
+                style={{
+                  left: `${titlePosition.x}%`,
+                  top: `${titlePosition.y}%`,
+                  transform: 'translate(-50%, -50%)',
+                  maxWidth: '90%',
+                }}
+              >
+                {editingElement === 'title' ? (
+                  <Textarea
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    onBlur={() => setEditingElement(null)}
+                    autoFocus
+                    rows={3}
+                    className="bg-transparent border-2 border-dashed border-white/50 resize-none"
+                    style={{
+                      fontSize: `${fontSize[0]}px`,
+                      fontFamily: fonts[fontFamily as keyof typeof fonts],
+                      textAlign: titleAlign,
+                      lineHeight: lineHeight[0],
+                    }}
+                  />
+                ) : (
+                  <h3
+                    className={`font-bold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} cursor-move whitespace-pre-wrap`}
+                    style={{ 
+                      fontSize: `${fontSize[0]}px`,
+                      textAlign: titleAlign,
+                      lineHeight: lineHeight[0],
+                    }}
+                    onMouseDown={(e) => handleMouseDown('title', e)}
+                    onDoubleClick={() => setEditingElement('title')}
+                  >
+                    {title || "Seu título aqui"}
+                  </h3>
+                )}
+              </div>
+
+              {/* Conteúdo */}
+              <div
+                className="absolute cursor-move z-10"
+                style={{
+                  left: `${contentPosition.x}%`,
+                  top: `${contentPosition.y}%`,
+                  transform: 'translate(-50%, -50%)',
+                  maxWidth: '90%',
+                }}
+              >
+                {editingElement === 'content' ? (
+                  <Textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    onBlur={() => setEditingElement(null)}
+                    autoFocus
+                    rows={4}
+                    className="bg-transparent border-2 border-dashed border-white/50 resize-none"
+                    style={{
+                      fontSize: `${contentFontSize[0]}px`,
+                      fontFamily: fonts[fontFamily as keyof typeof fonts],
+                      lineHeight: lineHeight[0],
+                      textAlign: contentAlign,
+                    }}
+                  />
+                ) : (
+                  <p
+                    className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} cursor-move whitespace-pre-wrap`}
+                    style={{ 
+                      fontSize: `${contentFontSize[0]}px`,
+                      lineHeight: lineHeight[0],
+                      textAlign: contentAlign,
+                    }}
+                    onMouseDown={(e) => handleMouseDown('content', e)}
+                    onDoubleClick={() => setEditingElement('content')}
+                  >
+                    {content || "Seu conteúdo aqui"}
+                  </p>
+                )}
+              </div>
+
+              {/* Marca */}
+              {brandName && (
                 <div
-                  className="absolute cursor-move"
+                  className="absolute cursor-move z-10"
                   style={{
-                    left: `${contentPosition.x}%`,
-                    top: `${contentPosition.y}%`,
+                    left: `${brandPosition.x}%`,
+                    top: `${brandPosition.y}%`,
                     transform: 'translate(-50%, -50%)',
                     maxWidth: '90%',
                   }}
-                  onMouseDown={(e) => handleMouseDown('content', e)}
-                  onDoubleClick={() => setEditingElement('content')}
                 >
-                  {editingElement === 'content' ? (
-                    <Textarea
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
+                  {editingElement === 'brand' ? (
+                    <Input
+                      value={brandName}
+                      onChange={(e) => setBrandName(e.target.value)}
                       onBlur={() => setEditingElement(null)}
                       autoFocus
-                      className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} bg-transparent border-2 border-primary`}
-                      style={{ 
-                        fontSize: `${contentFontSize[0]}px`,
-                        lineHeight: lineHeight[0],
-                        textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none',
+                      className="bg-transparent border-2 border-dashed border-white/50"
+                      style={{
+                        fontSize: '14px',
+                        fontFamily: fonts[fontFamily as keyof typeof fonts],
                       }}
                     />
                   ) : (
-                    <p 
-                      className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} hover:opacity-80 transition-opacity`}
-                      style={{ 
-                        fontSize: `${contentFontSize[0]}px`,
-                        lineHeight: lineHeight[0],
-                        textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none',
-                      }}
+                    <p
+                      className={`text-sm ${colorPalettes[colorPalette as keyof typeof colorPalettes].accent} ${fonts[fontFamily as keyof typeof fonts]} cursor-move`}
+                      onMouseDown={(e) => handleMouseDown('brand', e)}
+                      onDoubleClick={() => setEditingElement('brand')}
                     >
-                      {content || "Conteúdo"}
+                      {brandName}
                     </p>
                   )}
                 </div>
-
-                {/* Marca */}
-                {brandName && (
-                  <div
-                    className="absolute cursor-move"
-                    style={{
-                      left: `${brandPosition.x}%`,
-                      top: `${brandPosition.y}%`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    onMouseDown={(e) => handleMouseDown('brand', e)}
-                    onDoubleClick={() => setEditingElement('brand')}
-                  >
-                    {editingElement === 'brand' ? (
-                      <Input
-                        value={brandName}
-                        onChange={(e) => setBrandName(e.target.value)}
-                        onBlur={() => setEditingElement(null)}
-                        autoFocus
-                        className={`text-sm font-semibold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} bg-transparent border-2 border-primary`}
-                        style={{ textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none' }}
-                      />
-                    ) : (
-                      <span 
-                        className={`text-sm font-semibold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} hover:opacity-80 transition-opacity`}
-                        style={{ textShadow: backgroundImage ? '0 2px 8px rgba(0,0,0,0.5)' : 'none' }}
-                      >
-                        @{brandName}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground mt-4 text-center">
-                💡 Arraste elementos, clique duplo para editar texto
-              </p>
+              )}
             </div>
           </div>
         </div>
