@@ -51,6 +51,9 @@ export default function Editor() {
   const [brandPosition, setBrandPosition] = useState({ x: 50, y: 85 });
   const [draggingElement, setDraggingElement] = useState<string | null>(null);
   const [editingElement, setEditingElement] = useState<string | null>(null);
+  const [colorTransferIntensity, setColorTransferIntensity] = useState([100]);
+  const [showTitle, setShowTitle] = useState(true);
+  const [showContent, setShowContent] = useState(true);
   const previewRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -189,35 +192,31 @@ export default function Editor() {
   };
 
   const applyColorTransfer = async () => {
-    if (!uploadedImage || !colorTransferImage) {
-      toast({
-        title: "Imagens necessárias",
-        description: "Envie uma imagem de fundo e uma imagem de referência de cor.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setProcessingImage(true);
+    if (!backgroundImage || !colorTransferImage) return;
+    
     try {
-      const targetImg = await loadImage(uploadedImage);
-      const sourceImg = await loadImage(colorTransferImage);
+      setProcessingImage(true);
+      toast({
+        title: "Processando",
+        description: "Aplicando transferência de cores...",
+      });
+
+      const bgImage = await loadImage(backgroundImage);
+      const refImage = await loadImage(colorTransferImage);
       
-      const resultBlob = await transferImageColors(sourceImg, targetImg);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setBackgroundImage(event.target?.result as string);
-        toast({
-          title: "Cores transferidas!",
-          description: "As cores foram aplicadas com sucesso.",
-        });
-      };
-      reader.readAsDataURL(resultBlob);
+      const resultBlob = await transferImageColors(refImage, bgImage, colorTransferIntensity[0] / 100);
+      const resultUrl = URL.createObjectURL(resultBlob);
+      
+      setBackgroundImage(resultUrl);
+      toast({
+        title: "Sucesso",
+        description: "Cores transferidas com sucesso!",
+      });
     } catch (error) {
-      console.error('Erro ao transferir cores:', error);
+      console.error("Erro ao transferir cores:", error);
       toast({
         title: "Erro",
-        description: "Não foi possível transferir as cores.",
+        description: "Falha ao transferir cores da imagem.",
         variant: "destructive",
       });
     } finally {
@@ -651,19 +650,28 @@ export default function Editor() {
                 </div>
 
                 {/* Transferência de Cor */}
-                <div className="border-t pt-4">
+                <div className="border-t pt-4 space-y-3">
                   <Label htmlFor="color-transfer">Transferir Cor de Referência</Label>
                   <Input
                     id="color-transfer"
                     type="file"
                     accept="image/*"
                     onChange={handleColorTransferUpload}
-                    className="mt-2"
                   />
+                  <div className="space-y-2">
+                    <Label className="text-xs">Intensidade: {colorTransferIntensity[0]}%</Label>
+                    <Slider
+                      value={colorTransferIntensity}
+                      onValueChange={setColorTransferIntensity}
+                      min={0}
+                      max={100}
+                      step={5}
+                    />
+                  </div>
                   <Button 
                     onClick={applyColorTransfer} 
-                    disabled={!uploadedImage || !colorTransferImage || processingImage}
-                    className="mt-2 w-full"
+                    disabled={!backgroundImage || !colorTransferImage || processingImage}
+                    className="w-full"
                     variant="outline"
                   >
                     <Palette className="w-4 h-4 mr-2" />
@@ -672,9 +680,9 @@ export default function Editor() {
                 </div>
 
                 {/* Upscaling */}
-                <div className="border-t pt-4">
+                <div className="border-t pt-4 space-y-3">
                   <Label>Melhorar Qualidade da Imagem</Label>
-                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                  <p className="text-xs text-muted-foreground">
                     Aumenta resolução e melhora detalhes sem alterar aparência
                   </p>
                   <Button 
@@ -686,6 +694,31 @@ export default function Editor() {
                     <Maximize2 className="w-4 h-4 mr-2" />
                     {processingImage ? "Processando..." : "Upscale (2x)"}
                   </Button>
+                </div>
+
+                {/* Controles de Visibilidade */}
+                <div className="border-t pt-4 space-y-3">
+                  <Label>Visibilidade</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="show-title" className="text-sm font-normal">Mostrar Título</Label>
+                    <input
+                      id="show-title"
+                      type="checkbox"
+                      checked={showTitle}
+                      onChange={(e) => setShowTitle(e.target.checked)}
+                      className="h-4 w-4 rounded border-input"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="show-content" className="text-sm font-normal">Mostrar Conteúdo</Label>
+                    <input
+                      id="show-content"
+                      type="checkbox"
+                      checked={showContent}
+                      onChange={(e) => setShowContent(e.target.checked)}
+                      className="h-4 w-4 rounded border-input"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -732,90 +765,94 @@ export default function Editor() {
               />
 
               {/* Título */}
-              <div
-                className="absolute cursor-move z-10"
-                style={{
-                  left: `${titlePosition.x}%`,
-                  top: `${titlePosition.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                  maxWidth: '90%',
-                }}
-              >
-                {editingElement === 'title' ? (
-                  <Textarea
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    onBlur={() => setEditingElement(null)}
-                    autoFocus
-                    rows={3}
-                    className="bg-transparent border-2 border-dashed border-white/50 resize-none"
-                    style={{
-                      fontSize: `${fontSize[0]}px`,
-                      fontFamily: fonts[fontFamily as keyof typeof fonts],
-                      textAlign: titleAlign,
-                      lineHeight: lineHeight[0],
-                    }}
-                  />
-                ) : (
-                  <h3
-                    className={`font-bold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} cursor-move whitespace-pre-wrap`}
-                    style={{ 
-                      fontSize: `${fontSize[0]}px`,
-                      textAlign: titleAlign,
-                      lineHeight: lineHeight[0],
-                    }}
-                    onMouseDown={(e) => handleMouseDown('title', e)}
-                    onDoubleClick={() => setEditingElement('title')}
-                  >
-                    {title || "Seu título aqui"}
-                  </h3>
-                )}
-              </div>
+              {showTitle && (
+                <div
+                  className="absolute cursor-move z-10"
+                  style={{
+                    left: `${titlePosition.x}%`,
+                    top: `${titlePosition.y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    maxWidth: '90%',
+                  }}
+                >
+                  {editingElement === 'title' ? (
+                    <Textarea
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      onBlur={() => setEditingElement(null)}
+                      autoFocus
+                      rows={3}
+                      className="bg-transparent border-2 border-dashed border-white/50 resize-none"
+                      style={{
+                        fontSize: `${fontSize[0]}px`,
+                        fontFamily: fonts[fontFamily as keyof typeof fonts],
+                        textAlign: titleAlign,
+                        lineHeight: lineHeight[0],
+                      }}
+                    />
+                  ) : (
+                    <h3
+                      className={`font-bold ${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} cursor-move whitespace-pre-wrap`}
+                      style={{ 
+                        fontSize: `${fontSize[0]}px`,
+                        textAlign: titleAlign,
+                        lineHeight: lineHeight[0],
+                      }}
+                      onMouseDown={(e) => handleMouseDown('title', e)}
+                      onDoubleClick={() => setEditingElement('title')}
+                    >
+                      {title || "Seu título aqui"}
+                    </h3>
+                  )}
+                </div>
+              )}
 
               {/* Conteúdo */}
-              <div
-                className="absolute cursor-move z-10"
-                style={{
-                  left: `${contentPosition.x}%`,
-                  top: `${contentPosition.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                  maxWidth: '90%',
-                }}
-              >
-                {editingElement === 'content' ? (
-                  <Textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    onBlur={() => setEditingElement(null)}
-                    autoFocus
-                    rows={4}
-                    className="bg-transparent border-2 border-dashed border-white/50 resize-none whitespace-pre-wrap"
-                    style={{
-                      fontSize: `${contentFontSize[0]}px`,
-                      fontFamily: fonts[fontFamily as keyof typeof fonts],
-                      lineHeight: lineHeight[0],
-                      textAlign: contentAlign,
-                      color: contentColor,
-                      width: '100%',
-                    }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <p
-                    className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} cursor-move whitespace-pre-wrap`}
-                    style={{ 
-                      fontSize: `${contentFontSize[0]}px`,
-                      lineHeight: lineHeight[0],
-                      textAlign: contentAlign,
-                      color: contentColor,
-                    }}
-                    onMouseDown={(e) => handleMouseDown('content', e)}
-                    onDoubleClick={() => setEditingElement('content')}
-                  >
-                    {content || "Seu conteúdo aqui"}
-                  </p>
-                )}
-              </div>
+              {showContent && (
+                <div
+                  className="absolute cursor-move z-10"
+                  style={{
+                    left: `${contentPosition.x}%`,
+                    top: `${contentPosition.y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    maxWidth: '90%',
+                  }}
+                >
+                  {editingElement === 'content' ? (
+                    <Textarea
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      onBlur={() => setEditingElement(null)}
+                      autoFocus
+                      rows={4}
+                      className="bg-transparent border-2 border-dashed border-white/50 resize-none whitespace-pre-wrap"
+                      style={{
+                        fontSize: `${contentFontSize[0]}px`,
+                        fontFamily: fonts[fontFamily as keyof typeof fonts],
+                        lineHeight: lineHeight[0],
+                        textAlign: contentAlign,
+                        color: contentColor,
+                        width: '100%',
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <p
+                      className={`${colorPalettes[colorPalette as keyof typeof colorPalettes].text} ${fonts[fontFamily as keyof typeof fonts]} cursor-move whitespace-pre-wrap`}
+                      style={{ 
+                        fontSize: `${contentFontSize[0]}px`,
+                        lineHeight: lineHeight[0],
+                        textAlign: contentAlign,
+                        color: contentColor,
+                      }}
+                      onMouseDown={(e) => handleMouseDown('content', e)}
+                      onDoubleClick={() => setEditingElement('content')}
+                    >
+                      {content || "Seu conteúdo aqui"}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Marca */}
               {brandName && (

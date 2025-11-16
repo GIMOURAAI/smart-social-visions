@@ -5,7 +5,8 @@ env.useBrowserCache = true;
 
 export const transferImageColors = async (
   sourceImage: HTMLImageElement,
-  targetImage: HTMLImageElement
+  targetImage: HTMLImageElement,
+  intensity: number = 1.0
 ): Promise<Blob> => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -40,14 +41,23 @@ export const transferImageColors = async (
   g = Math.round(g / pixels);
   b = Math.round(b / pixels);
 
-  // Apply color transfer
+  // Apply color transfer with intensity control
   for (let i = 0; i < targetData.data.length; i += 4) {
     const gray = (targetData.data[i] + targetData.data[i + 1] + targetData.data[i + 2]) / 3;
     const factor = gray / 128;
     
-    targetData.data[i] = Math.min(255, Math.round(r * factor));
-    targetData.data[i + 1] = Math.min(255, Math.round(g * factor));
-    targetData.data[i + 2] = Math.min(255, Math.round(b * factor));
+    const originalR = targetData.data[i];
+    const originalG = targetData.data[i + 1];
+    const originalB = targetData.data[i + 2];
+    
+    const newR = Math.min(255, Math.round(r * factor));
+    const newG = Math.min(255, Math.round(g * factor));
+    const newB = Math.min(255, Math.round(b * factor));
+    
+    // Blend between original and new colors based on intensity
+    targetData.data[i] = Math.round(originalR * (1 - intensity) + newR * intensity);
+    targetData.data[i + 1] = Math.round(originalG * (1 - intensity) + newG * intensity);
+    targetData.data[i + 2] = Math.round(originalB * (1 - intensity) + newB * intensity);
   }
 
   ctx.putImageData(targetData, 0, 0);
