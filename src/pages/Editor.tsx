@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Sparkles, Download, Copy, Image as ImageIcon, Wand2 } from "lucide-react";
+import { ArrowLeft, Save, Sparkles, Download, Copy, Image as ImageIcon, Wand2, Palette, Maximize2 } from "lucide-react";
+import { transferImageColors, upscaleImage, loadImage } from "@/lib/imageProcessing";
 import {
   Select,
   SelectContent,
@@ -42,6 +43,8 @@ export default function Editor() {
   const [titleColor, setTitleColor] = useState("#ffffff");
   const [contentColor, setContentColor] = useState("#ffffff");
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [colorTransferImage, setColorTransferImage] = useState<File | null>(null);
+  const [processingImage, setProcessingImage] = useState(false);
   const [brandName, setBrandName] = useState("");
   const [titlePosition, setTitlePosition] = useState({ x: 50, y: 20 });
   const [contentPosition, setContentPosition] = useState({ x: 50, y: 50 });
@@ -175,6 +178,86 @@ export default function Editor() {
         setBackgroundImage(event.target?.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleColorTransferUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setColorTransferImage(file);
+    }
+  };
+
+  const applyColorTransfer = async () => {
+    if (!uploadedImage || !colorTransferImage) {
+      toast({
+        title: "Imagens necessárias",
+        description: "Envie uma imagem de fundo e uma imagem de referência de cor.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setProcessingImage(true);
+    try {
+      const targetImg = await loadImage(uploadedImage);
+      const sourceImg = await loadImage(colorTransferImage);
+      
+      const resultBlob = await transferImageColors(sourceImg, targetImg);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setBackgroundImage(event.target?.result as string);
+        toast({
+          title: "Cores transferidas!",
+          description: "As cores foram aplicadas com sucesso.",
+        });
+      };
+      reader.readAsDataURL(resultBlob);
+    } catch (error) {
+      console.error('Erro ao transferir cores:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível transferir as cores.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingImage(false);
+    }
+  };
+
+  const applyUpscale = async () => {
+    if (!backgroundImage) {
+      toast({
+        title: "Imagem necessária",
+        description: "Envie ou gere uma imagem primeiro.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setProcessingImage(true);
+    try {
+      const img = await loadImage(backgroundImage);
+      const resultBlob = await upscaleImage(img);
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setBackgroundImage(event.target?.result as string);
+        toast({
+          title: "Upscaling aplicado!",
+          description: "A imagem foi melhorada com sucesso.",
+        });
+      };
+      reader.readAsDataURL(resultBlob);
+    } catch (error) {
+      console.error('Erro ao fazer upscale:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível fazer upscale da imagem.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingImage(false);
     }
   };
 
@@ -555,15 +638,55 @@ export default function Editor() {
               </div>
 
               {/* Upload de Imagem */}
-              <div>
-                <Label htmlFor="image-upload">Ou envie uma imagem</Label>
-                <Input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="mt-2"
-                />
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="image-upload">Ou envie uma imagem</Label>
+                  <Input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="mt-2"
+                  />
+                </div>
+
+                {/* Transferência de Cor */}
+                <div className="border-t pt-4">
+                  <Label htmlFor="color-transfer">Transferir Cor de Referência</Label>
+                  <Input
+                    id="color-transfer"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleColorTransferUpload}
+                    className="mt-2"
+                  />
+                  <Button 
+                    onClick={applyColorTransfer} 
+                    disabled={!uploadedImage || !colorTransferImage || processingImage}
+                    className="mt-2 w-full"
+                    variant="outline"
+                  >
+                    <Palette className="w-4 h-4 mr-2" />
+                    {processingImage ? "Processando..." : "Aplicar Cores"}
+                  </Button>
+                </div>
+
+                {/* Upscaling */}
+                <div className="border-t pt-4">
+                  <Label>Melhorar Qualidade da Imagem</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                    Aumenta resolução e melhora detalhes sem alterar aparência
+                  </p>
+                  <Button 
+                    onClick={applyUpscale} 
+                    disabled={!backgroundImage || processingImage}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Maximize2 className="w-4 h-4 mr-2" />
+                    {processingImage ? "Processando..." : "Upscale (2x)"}
+                  </Button>
+                </div>
               </div>
 
               {/* Botões de Ação */}
