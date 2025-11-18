@@ -54,6 +54,8 @@ export default function Editor() {
   const [colorTransferIntensity, setColorTransferIntensity] = useState([100]);
   const [showTitle, setShowTitle] = useState(true);
   const [showContent, setShowContent] = useState(true);
+  const [upscaleLevel, setUpscaleLevel] = useState([2]);
+  const [upscaleInputImage, setUpscaleInputImage] = useState<File | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -224,11 +226,20 @@ export default function Editor() {
     }
   };
 
+  const handleUpscaleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUpscaleInputImage(file);
+    }
+  };
+
   const applyUpscale = async () => {
-    if (!backgroundImage) {
+    const imageSource = upscaleInputImage || backgroundImage;
+    
+    if (!imageSource) {
       toast({
         title: "Imagem necessária",
-        description: "Envie ou gere uma imagem primeiro.",
+        description: "Envie uma imagem ou use a imagem de fundo atual.",
         variant: "destructive",
       });
       return;
@@ -236,15 +247,15 @@ export default function Editor() {
 
     setProcessingImage(true);
     try {
-      const img = await loadImage(backgroundImage);
-      const resultBlob = await upscaleImage(img);
+      const img = await loadImage(imageSource);
+      const resultBlob = await upscaleImage(img, upscaleLevel[0]);
       
       const reader = new FileReader();
       reader.onload = (event) => {
         setBackgroundImage(event.target?.result as string);
         toast({
           title: "Upscaling aplicado!",
-          description: "A imagem foi melhorada com sucesso.",
+          description: `Imagem melhorada ${upscaleLevel[0]}x até resolução 4K.`,
         });
       };
       reader.readAsDataURL(resultBlob);
@@ -681,18 +692,34 @@ export default function Editor() {
 
                 {/* Upscaling */}
                 <div className="border-t pt-4 space-y-3">
-                  <Label>Melhorar Qualidade da Imagem</Label>
+                  <Label>Melhorar Qualidade da Imagem (até 4K)</Label>
                   <p className="text-xs text-muted-foreground">
-                    Aumenta resolução e melhora detalhes sem alterar aparência
+                    Aumenta resolução e melhora detalhes. Envie uma imagem ou use a imagem atual.
                   </p>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Nível de Upscale: {upscaleLevel[0]}x</Label>
+                    <Slider
+                      value={upscaleLevel}
+                      onValueChange={setUpscaleLevel}
+                      min={2}
+                      max={4}
+                      step={1}
+                    />
+                  </div>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUpscaleImageUpload}
+                    className="text-xs"
+                  />
                   <Button 
                     onClick={applyUpscale} 
-                    disabled={!backgroundImage || processingImage}
+                    disabled={(!backgroundImage && !upscaleInputImage) || processingImage}
                     className="w-full"
                     variant="outline"
                   >
                     <Maximize2 className="w-4 h-4 mr-2" />
-                    {processingImage ? "Processando..." : "Upscale (2x)"}
+                    {processingImage ? "Processando..." : `Upscale ${upscaleLevel[0]}x para 4K`}
                   </Button>
                 </div>
 
