@@ -56,6 +56,9 @@ export default function Editor() {
   const [showContent, setShowContent] = useState(true);
   const [upscaleLevel, setUpscaleLevel] = useState([2]);
   const [upscaleInputImage, setUpscaleInputImage] = useState<File | null>(null);
+  const [enhancementType, setEnhancementType] = useState<string>("all");
+  const [enhanceInputImage, setEnhanceInputImage] = useState<File | null>(null);
+  const [enhancingImage, setEnhancingImage] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -306,6 +309,82 @@ export default function Editor() {
       });
     } finally {
       setProcessingImage(false);
+    }
+  };
+
+  const handleEnhanceImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEnhanceInputImage(file);
+    }
+  };
+
+  const enhanceImage = async () => {
+    const imageSource = enhanceInputImage || backgroundImage;
+    
+    if (!imageSource) {
+      toast({
+        title: "Imagem necessária",
+        description: "Envie uma imagem ou use a imagem de fundo atual.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setEnhancingImage(true);
+    try {
+      // Convert image to base64
+      let imageUrl: string;
+      if (typeof imageSource === 'string') {
+        imageUrl = imageSource;
+      } else {
+        imageUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.readAsDataURL(imageSource);
+        });
+      }
+
+      const { data, error } = await supabase.functions.invoke('enhance-image', {
+        body: { imageUrl, enhancementType }
+      });
+
+      if (error) {
+        if (error.message.includes("Rate limit")) {
+          toast({
+            title: "Limite atingido",
+            description: "Muitas requisições. Aguarde um momento.",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (error.message.includes("Payment required")) {
+          toast({
+            title: "Créditos necessários",
+            description: "Adicione créditos ao seu workspace.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
+
+      if (data?.imageUrl) {
+        setBackgroundImage(data.imageUrl);
+        toast({
+          title: "Imagem melhorada!",
+          description: "Sua imagem foi processada com IA.",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao melhorar imagem:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível melhorar a imagem.",
+        variant: "destructive",
+      });
+    } finally {
+      setEnhancingImage(false);
     }
   };
 
@@ -781,6 +860,42 @@ export default function Editor() {
                     </Button>
                   </div>
                 </div>
+
+                {/* Melhoramento com IA - Estilo Magnific */}
+                <div className="border-t pt-4 space-y-3">
+                  <Label>Melhorar com IA (Estilo Magnific)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Usa IA para remover ruídos, melhorar detalhes e textura.
+                  </p>
+                  <Select value={enhancementType} onValueChange={setEnhancementType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tudo (HD + Detalhes + Pele)</SelectItem>
+                      <SelectItem value="denoise">Remover Ruídos</SelectItem>
+                      <SelectItem value="skin">Textura de Pele Realista</SelectItem>
+                      <SelectItem value="details">Aumentar Detalhes</SelectItem>
+                      <SelectItem value="hd">Upscale HD 4K</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEnhanceImageUpload}
+                    className="text-xs"
+                  />
+                  <Button 
+                    onClick={enhanceImage} 
+                    disabled={(!backgroundImage && !enhanceInputImage) || enhancingImage}
+                    className="w-full"
+                    variant="default"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {enhancingImage ? "Processando com IA..." : "Melhorar com IA"}
+                  </Button>
+                </div>
+
 
                 {/* Controles de Visibilidade */}
                 <div className="border-t pt-4 space-y-3">
