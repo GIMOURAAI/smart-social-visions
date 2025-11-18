@@ -73,9 +73,15 @@ export const transferImageColors = async (
   });
 };
 
-export const upscaleImage = async (image: HTMLImageElement): Promise<Blob> => {
-  // Create a higher resolution canvas
-  const scale = 2;
+export const upscaleImage = async (
+  image: HTMLImageElement,
+  targetScale?: number
+): Promise<Blob> => {
+  // Calculate scale to reach approximately 4K (3840x2160) if not specified
+  const maxDimension = Math.max(image.naturalWidth, image.naturalHeight);
+  const targetMaxDimension = 3840; // 4K width
+  const calculatedScale = Math.min(Math.ceil(targetMaxDimension / maxDimension), 4);
+  const scale = targetScale || calculatedScale;
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Could not get canvas context');
