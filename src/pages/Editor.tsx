@@ -271,6 +271,44 @@ export default function Editor() {
     }
   };
 
+  const upscaleAndDownload = async () => {
+    if (!upscaleInputImage) {
+      toast({
+        title: "Imagem necessária",
+        description: "Envie uma imagem para fazer upscale e baixar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setProcessingImage(true);
+    try {
+      const img = await loadImage(upscaleInputImage);
+      const resultBlob = await upscaleImage(img, upscaleLevel[0]);
+      
+      const url = URL.createObjectURL(resultBlob);
+      const link = document.createElement("a");
+      link.download = `upscale-${upscaleLevel[0]}x-${Date.now()}.png`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download concluído!",
+        description: `Imagem melhorada ${upscaleLevel[0]}x e baixada com sucesso.`,
+      });
+    } catch (error) {
+      console.error('Erro ao fazer upscale:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível fazer upscale da imagem.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingImage(false);
+    }
+  };
+
   const handleMouseDown = (element: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setDraggingElement(element);
@@ -342,19 +380,29 @@ export default function Editor() {
 
     try {
       const canvas = await html2canvas(previewRef.current, {
+        useCORS: true,
+        allowTaint: true,
         backgroundColor: null,
-        scale: 2,
+        scale: 3,
+        logging: false,
+        imageTimeout: 0,
       });
 
-      const link = document.createElement("a");
-      link.download = `post-${Date.now()}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.download = `post-${Date.now()}.png`;
+          link.href = url;
+          link.click();
+          URL.revokeObjectURL(url);
 
-      toast({
-        title: "Download concluído!",
-        description: "Sua imagem foi baixada com sucesso",
-      });
+          toast({
+            title: "Download concluído!",
+            description: "Sua imagem foi baixada com sucesso",
+          });
+        }
+      }, 'image/png', 1.0);
     } catch (error) {
       console.error("Erro ao baixar:", error);
       toast({
@@ -694,7 +742,7 @@ export default function Editor() {
                 <div className="border-t pt-4 space-y-3">
                   <Label>Melhorar Qualidade da Imagem (até 4K)</Label>
                   <p className="text-xs text-muted-foreground">
-                    Aumenta resolução e melhora detalhes. Envie uma imagem ou use a imagem atual.
+                    Envie uma imagem para upscale direto ou editar.
                   </p>
                   <div className="space-y-2">
                     <Label className="text-xs">Nível de Upscale: {upscaleLevel[0]}x</Label>
@@ -712,15 +760,26 @@ export default function Editor() {
                     onChange={handleUpscaleImageUpload}
                     className="text-xs"
                   />
-                  <Button 
-                    onClick={applyUpscale} 
-                    disabled={(!backgroundImage && !upscaleInputImage) || processingImage}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Maximize2 className="w-4 h-4 mr-2" />
-                    {processingImage ? "Processando..." : `Upscale ${upscaleLevel[0]}x para 4K`}
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      onClick={upscaleAndDownload} 
+                      disabled={!upscaleInputImage || processingImage}
+                      className="w-full"
+                      variant="default"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      {processingImage ? "..." : "Baixar"}
+                    </Button>
+                    <Button 
+                      onClick={applyUpscale} 
+                      disabled={(!backgroundImage && !upscaleInputImage) || processingImage}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      <Maximize2 className="w-4 h-4 mr-2" />
+                      {processingImage ? "..." : "Editar"}
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Controles de Visibilidade */}
