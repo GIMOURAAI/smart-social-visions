@@ -649,15 +649,9 @@ export default function Editor() {
                   />
                 </div>
 
-                {/* Transferência de Cor */}
+                {/* Transparência */}
                 <div className="border-t pt-4 space-y-3">
-                  <Label htmlFor="color-transfer">Transferir Cor de Referência</Label>
-                  <Input
-                    id="color-transfer"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleColorTransferUpload}
-                  />
+                  <Label htmlFor="color-transfer">Transparência</Label>
                   <div className="space-y-2">
                     <Label className="text-xs">Intensidade: {colorTransferIntensity[0]}%</Label>
                     <Slider
@@ -668,6 +662,12 @@ export default function Editor() {
                       step={5}
                     />
                   </div>
+                  <Input
+                    id="color-transfer"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleColorTransferUpload}
+                  />
                   <Button 
                     onClick={applyColorTransfer} 
                     disabled={!backgroundImage || !colorTransferImage || processingImage}
