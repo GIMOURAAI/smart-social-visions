@@ -1,5 +1,7 @@
 import { WizardData } from "@/pages/Create";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -70,6 +72,51 @@ export function StepStyle({ data, updateData }: StepStyleProps) {
         </Select>
       </div>
       
+      {/* Manual Text Section */}
+      <div className="space-y-4 p-6 rounded-xl border border-border bg-card/50">
+        <Label className="text-lg font-semibold block text-foreground">
+          Texto Manual (opcional)
+        </Label>
+        <p className="text-sm text-muted-foreground mb-4">
+          Adicione seus próprios títulos e subtítulos, ou deixe em branco para a IA sugerir
+        </p>
+        
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="manualTitle" className="text-sm font-medium text-foreground">Título</Label>
+            <Input
+              id="manualTitle"
+              placeholder="Digite o título do seu post..."
+              value={data.manualTitle || ""}
+              onChange={(e) => updateData({ manualTitle: e.target.value })}
+              className="mt-1"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="manualSubtitle" className="text-sm font-medium text-foreground">Subtítulo</Label>
+            <Input
+              id="manualSubtitle"
+              placeholder="Digite o subtítulo..."
+              value={data.manualSubtitle || ""}
+              onChange={(e) => updateData({ manualSubtitle: e.target.value })}
+              className="mt-1"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="manualCaption" className="text-sm font-medium text-foreground">Legenda</Label>
+            <Textarea
+              id="manualCaption"
+              placeholder="Digite a legenda do post..."
+              value={data.manualCaption || ""}
+              onChange={(e) => updateData({ manualCaption: e.target.value })}
+              className="mt-1 min-h-[80px]"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="border-t border-border pt-6">
         <button
           onClick={() => updateData({ cloneMode: !data.cloneMode })}
