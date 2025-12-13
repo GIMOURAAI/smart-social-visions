@@ -1,5 +1,7 @@
 import { WizardData } from "@/pages/Create";
 import { Sparkles, PenLine } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface StepAIProps {
   data: WizardData;
@@ -10,7 +12,7 @@ export function StepAI({ data, updateData }: StepAIProps) {
   return (
     <div className="flex flex-col gap-6 max-w-lg mx-auto">
       <p className="text-muted-foreground text-center">
-        A IA pode sugerir títulos, subtítulos e legendas baseados no seu tema
+        Escolha como você quer criar o conteúdo dos seus posts
       </p>
       
       <div className="grid grid-cols-2 gap-4">
@@ -28,7 +30,7 @@ export function StepAI({ data, updateData }: StepAIProps) {
               Usar IA
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Sugestões automáticas de conteúdo
+              Escreva um prompt e deixe a IA criar
             </p>
           </div>
         </button>
@@ -47,11 +49,37 @@ export function StepAI({ data, updateData }: StepAIProps) {
               Escrever Manual
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Criar tudo do zero
+              Você edita tudo na etapa final
             </p>
           </div>
         </button>
       </div>
+
+      {data.useAI && (
+        <div className="mt-4 space-y-3 animate-fade-in">
+          <Label htmlFor="ai-prompt" className="text-foreground font-medium">
+            O que você quer que a IA crie?
+          </Label>
+          <Textarea
+            id="ai-prompt"
+            placeholder="Ex: Crie posts sobre dicas de skincare para pele oleosa, com títulos chamativos e linguagem jovem..."
+            value={data.aiPrompt}
+            onChange={(e) => updateData({ aiPrompt: e.target.value })}
+            className="min-h-[120px] bg-card border-border text-foreground placeholder:text-muted-foreground resize-none"
+          />
+          <p className="text-xs text-muted-foreground">
+            Descreva o tipo de conteúdo, tom de voz, e qualquer detalhe importante para seus posts
+          </p>
+        </div>
+      )}
+
+      {!data.useAI && (
+        <div className="mt-4 p-4 rounded-lg bg-muted/50 border border-border animate-fade-in">
+          <p className="text-sm text-muted-foreground text-center">
+            Você poderá adicionar e editar todo o texto diretamente na etapa de edição final
+          </p>
+        </div>
+      )}
     </div>
   );
 }
