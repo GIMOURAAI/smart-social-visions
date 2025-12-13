@@ -1,1 +1,16 @@
 project_id = "bwzvydfpoilmzhsaxpfa"
+
+[functions.create-post-with-ai]
+verify_jwt = true
+
+[functions.enhance-image]
+verify_jwt = true
+
+[functions.generate-image]
+verify_jwt = true
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.check-subscription]
+verify_jwt = true

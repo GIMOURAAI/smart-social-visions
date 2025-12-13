@@ -286,9 +286,9 @@ const Index = () => {
             <h2 className="text-5xl font-bold mb-4 text-foreground">{t.pricing.title}</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <PricingCard {...t.pricing.free} />
-            <PricingCard {...t.pricing.premium} isPopular />
-            <PricingCard {...t.pricing.pro} />
+            <PricingCard {...t.pricing.free} planType="free" />
+            <PricingCard {...t.pricing.premium} isPopular planType="premium" />
+            <PricingCard {...t.pricing.pro} planType="pro" />
           </div>
         </div>
       </section>
