@@ -16,14 +16,15 @@ import {
   Plus,
   Minus,
   Palette,
+  AtSign,
+  Heading1,
+  Heading2,
 } from "lucide-react";
 import { removeBackground } from "@/lib/imageProcessing";
 import { toast } from "sonner";
 
 interface CanvasEditorProps {
   initialImage?: string;
-  initialTitle?: string;
-  initialContent?: string;
   format: string;
   onSave?: (dataUrl: string) => void;
 }
@@ -43,8 +44,6 @@ const COLOR_PRESETS = [
 
 export function CanvasEditor({
   initialImage,
-  initialTitle,
-  initialContent,
   format,
   onSave,
 }: CanvasEditorProps) {
@@ -132,40 +131,6 @@ export function CanvasEditor({
       });
     }
 
-    // Add initial texts
-    if (initialTitle) {
-      const title = new Textbox(initialTitle, {
-        left: dimensions.width / 2,
-        top: dimensions.height / 3,
-        width: dimensions.width - 40,
-        fontSize: 36,
-        fontFamily: "Inter",
-        fontWeight: "bold",
-        fill: "#ffffff",
-        textAlign: "center",
-        originX: "center",
-        originY: "center",
-        shadow: new Shadow({ color: "rgba(0,0,0,0.5)", blur: 4, offsetX: 2, offsetY: 2 }),
-      });
-      canvas.add(title);
-    }
-
-    if (initialContent) {
-      const content = new Textbox(initialContent, {
-        left: dimensions.width / 2,
-        top: dimensions.height / 2,
-        width: dimensions.width - 40,
-        fontSize: 20,
-        fontFamily: "Inter",
-        fill: "#ffffff",
-        textAlign: "center",
-        originX: "center",
-        originY: "center",
-        shadow: new Shadow({ color: "rgba(0,0,0,0.5)", blur: 3, offsetX: 1, offsetY: 1 }),
-      });
-      canvas.add(content);
-    }
-
     canvas.renderAll();
 
     return () => {
@@ -173,11 +138,78 @@ export function CanvasEditor({
     };
   }, [format]);
 
-  // Add text element
+  // Add title text
+  const addTitle = useCallback(() => {
+    if (!fabricCanvas) return;
+
+    const title = new Textbox("TÍTULO", {
+      left: dimensions.width / 2,
+      top: dimensions.height / 3,
+      width: dimensions.width - padding[0] * 2,
+      fontSize: 42,
+      fontFamily: "Inter",
+      fontWeight: "bold",
+      fill: "#ffffff",
+      textAlign: "center",
+      originX: "center",
+      originY: "center",
+      shadow: new Shadow({ color: "rgba(0,0,0,0.5)", blur: 4, offsetX: 2, offsetY: 2 }),
+    });
+
+    fabricCanvas.add(title);
+    fabricCanvas.setActiveObject(title);
+    fabricCanvas.renderAll();
+  }, [fabricCanvas, dimensions, padding]);
+
+  // Add subtitle text
+  const addSubtitle = useCallback(() => {
+    if (!fabricCanvas) return;
+
+    const subtitle = new Textbox("Subtítulo aqui", {
+      left: dimensions.width / 2,
+      top: dimensions.height / 2,
+      width: dimensions.width - padding[0] * 2,
+      fontSize: 24,
+      fontFamily: "Inter",
+      fill: "#ffffff",
+      textAlign: "center",
+      originX: "center",
+      originY: "center",
+      shadow: new Shadow({ color: "rgba(0,0,0,0.5)", blur: 3, offsetX: 1, offsetY: 1 }),
+    });
+
+    fabricCanvas.add(subtitle);
+    fabricCanvas.setActiveObject(subtitle);
+    fabricCanvas.renderAll();
+  }, [fabricCanvas, dimensions, padding]);
+
+  // Add brand handle (@marca)
+  const addBrandHandle = useCallback(() => {
+    if (!fabricCanvas) return;
+
+    const brand = new Textbox("@suamarca", {
+      left: dimensions.width / 2,
+      top: dimensions.height - 40,
+      width: dimensions.width - 40,
+      fontSize: 18,
+      fontFamily: "Inter",
+      fill: "#ffffff",
+      textAlign: "center",
+      originX: "center",
+      originY: "center",
+      shadow: new Shadow({ color: "rgba(0,0,0,0.5)", blur: 2, offsetX: 1, offsetY: 1 }),
+    });
+
+    fabricCanvas.add(brand);
+    fabricCanvas.setActiveObject(brand);
+    fabricCanvas.renderAll();
+  }, [fabricCanvas, dimensions]);
+
+  // Add generic text element
   const addText = useCallback(() => {
     if (!fabricCanvas) return;
 
-    const text = new Textbox("Clique para editar", {
+    const text = new Textbox("Texto", {
       left: dimensions.width / 2,
       top: dimensions.height / 2,
       width: dimensions.width - padding[0] * 2,
@@ -421,12 +453,45 @@ export function CanvasEditor({
 
         {/* Add Elements */}
         <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">Adicionar</Label>
+          <Label className="text-sm text-muted-foreground">Adicionar Texto</Label>
           <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" size="sm" onClick={addTitle} className="gap-2">
+              <Heading1 className="w-4 h-4" />
+              Título
+            </Button>
+            <Button variant="outline" size="sm" onClick={addSubtitle} className="gap-2">
+              <Heading2 className="w-4 h-4" />
+              Subtítulo
+            </Button>
+            <Button variant="outline" size="sm" onClick={addBrandHandle} className="gap-2">
+              <AtSign className="w-4 h-4" />
+              @Marca
+            </Button>
             <Button variant="outline" size="sm" onClick={addText} className="gap-2">
               <Type className="w-4 h-4" />
               Texto
             </Button>
+          </div>
+        </div>
+        
+        {/* Add Images */}
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground">Adicionar Imagem</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={addBackgroundImage}
+                className="hidden"
+              />
+              <Button variant="outline" size="sm" asChild className="w-full gap-2">
+                <span>
+                  <ImagePlus className="w-4 h-4" />
+                  Fundo
+                </span>
+              </Button>
+            </label>
             <label>
               <input
                 type="file"
@@ -442,20 +507,6 @@ export function CanvasEditor({
               </Button>
             </label>
           </div>
-          <label className="block">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={addBackgroundImage}
-              className="hidden"
-            />
-            <Button variant="outline" size="sm" asChild className="w-full gap-2">
-              <span>
-                <ImagePlus className="w-4 h-4" />
-                Imagem de Fundo
-              </span>
-            </Button>
-          </label>
         </div>
 
         {/* Text Controls */}

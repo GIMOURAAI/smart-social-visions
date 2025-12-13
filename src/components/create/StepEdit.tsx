@@ -155,12 +155,10 @@ export function StepEdit({ data, updateData, user }: StepEditProps) {
         </div>
       </div>
 
-      {/* Canvas Editor */}
+      {/* Canvas Editor - sem texto inicial, usuário adiciona manualmente */}
       <CanvasEditor
         key={data.currentPostIndex}
         initialImage={currentPost.imageUrl}
-        initialTitle={currentPost.title}
-        initialContent={currentPost.content}
         format={currentPost.format}
         onSave={handleCanvasSave}
       />
