@@ -96,19 +96,29 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2 text-foreground">Meus Posts</h2>
-          <p className="text-muted-foreground">Gerencie seus posts criados</p>
+        {/* Greeting Section */}
+        <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5 border border-primary/20">
+          <h2 className="text-3xl font-bold mb-2 text-foreground">
+            Olá{user?.email ? `, ${user.email.split('@')[0]}` : ''}! 👋
+          </h2>
+          <p className="text-muted-foreground">
+            Bem-vindo ao SmartSocialMedia. Pronto para criar conteúdo incrível?
+          </p>
         </div>
 
-        <Button 
-          onClick={() => navigate("/create")} 
-          className="mb-8"
-          size="lg"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Criar Novo Post
-        </Button>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-foreground">Últimos Projetos</h3>
+            <p className="text-muted-foreground">Seus posts mais recentes</p>
+          </div>
+          <Button 
+            onClick={() => navigate("/create")} 
+            size="lg"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Criar Novo Post
+          </Button>
+        </div>
 
         {/* Posts Grid */}
         {posts.length === 0 ? (
