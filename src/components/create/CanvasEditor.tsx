@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Canvas as FabricCanvas, FabricText, FabricImage, Shadow } from "fabric";
+import { Canvas as FabricCanvas, FabricText, FabricImage, Shadow, Textbox } from "fabric";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ImagePlus,
   Type,
@@ -56,6 +57,7 @@ export function CanvasEditor({
   const [padding, setPadding] = useState([20]);
   const [removingBg, setRemovingBg] = useState(false);
   const [textColor, setTextColor] = useState("#ffffff");
+  const [textValue, setTextValue] = useState("");
   const [opacity, setOpacity] = useState([100]);
 
   const dimensions = FORMAT_DIMENSIONS[format] || FORMAT_DIMENSIONS["1:1"];
@@ -72,15 +74,44 @@ export function CanvasEditor({
     });
 
     canvas.on("selection:created", (e) => {
-      setSelectedObject(e.selected?.[0] || null);
+      const obj = e.selected?.[0] || null;
+      setSelectedObject(obj);
+      if (obj && (obj.type === "text" || obj.type === "textbox")) {
+        const textObj = obj as any;
+        setFontSize([textObj.fontSize || 32]);
+        setTextAlign(textObj.textAlign || "center");
+        const fillColor = typeof textObj.fill === "string" ? textObj.fill : "#ffffff";
+        setTextColor(fillColor);
+        setTextValue(textObj.text || "");
+      }
+      if (obj) {
+        const anyObj = obj as any;
+        const opacityValue = typeof anyObj.opacity === "number" ? anyObj.opacity : 1;
+        setOpacity([Math.round(opacityValue * 100)]);
+      }
     });
 
     canvas.on("selection:updated", (e) => {
-      setSelectedObject(e.selected?.[0] || null);
+      const obj = e.selected?.[0] || null;
+      setSelectedObject(obj);
+      if (obj && (obj.type === "text" || obj.type === "textbox")) {
+        const textObj = obj as any;
+        setFontSize([textObj.fontSize || 32]);
+        setTextAlign(textObj.textAlign || "center");
+        const fillColor = typeof textObj.fill === "string" ? textObj.fill : "#ffffff";
+        setTextColor(fillColor);
+        setTextValue(textObj.text || "");
+      }
+      if (obj) {
+        const anyObj = obj as any;
+        const opacityValue = typeof anyObj.opacity === "number" ? anyObj.opacity : 1;
+        setOpacity([Math.round(opacityValue * 100)]);
+      }
     });
 
     canvas.on("selection:cleared", () => {
       setSelectedObject(null);
+      setTextValue("");
     });
 
     setFabricCanvas(canvas);
@@ -103,9 +134,10 @@ export function CanvasEditor({
 
     // Add initial texts
     if (initialTitle) {
-      const title = new FabricText(initialTitle, {
+      const title = new Textbox(initialTitle, {
         left: dimensions.width / 2,
         top: dimensions.height / 3,
+        width: dimensions.width - 40,
         fontSize: 36,
         fontFamily: "Inter",
         fontWeight: "bold",
@@ -119,9 +151,10 @@ export function CanvasEditor({
     }
 
     if (initialContent) {
-      const content = new FabricText(initialContent, {
+      const content = new Textbox(initialContent, {
         left: dimensions.width / 2,
         top: dimensions.height / 2,
+        width: dimensions.width - 40,
         fontSize: 20,
         fontFamily: "Inter",
         fill: "#ffffff",
@@ -144,9 +177,10 @@ export function CanvasEditor({
   const addText = useCallback(() => {
     if (!fabricCanvas) return;
 
-    const text = new FabricText("Clique para editar", {
+    const text = new Textbox("Clique para editar", {
       left: dimensions.width / 2,
       top: dimensions.height / 2,
+      width: dimensions.width - padding[0] * 2,
       fontSize: fontSize[0],
       fontFamily: "Inter",
       fill: "#ffffff",
@@ -159,7 +193,7 @@ export function CanvasEditor({
     fabricCanvas.add(text);
     fabricCanvas.setActiveObject(text);
     fabricCanvas.renderAll();
-  }, [fabricCanvas, fontSize, textAlign, dimensions]);
+  }, [fabricCanvas, fontSize, textAlign, dimensions.width, padding]);
 
   // Add background image
   const addBackgroundImage = useCallback(
@@ -266,7 +300,7 @@ export function CanvasEditor({
   const updateTextAlign = useCallback(
     (align: "left" | "center" | "right") => {
       setTextAlign(align);
-      if (selectedObject && selectedObject.type === "text") {
+      if (selectedObject && (selectedObject.type === "text" || selectedObject.type === "textbox")) {
         selectedObject.set("textAlign", align);
         fabricCanvas?.renderAll();
       }
@@ -277,7 +311,7 @@ export function CanvasEditor({
   const updateFontSize = useCallback(
     (value: number[]) => {
       setFontSize(value);
-      if (selectedObject && selectedObject.type === "text") {
+      if (selectedObject && (selectedObject.type === "text" || selectedObject.type === "textbox")) {
         selectedObject.set("fontSize", value[0]);
         fabricCanvas?.renderAll();
       }
@@ -289,7 +323,7 @@ export function CanvasEditor({
   const updateTextColor = useCallback(
     (color: string) => {
       setTextColor(color);
-      if (selectedObject && selectedObject.type === "text") {
+      if (selectedObject && (selectedObject.type === "text" || selectedObject.type === "textbox")) {
         selectedObject.set("fill", color);
         fabricCanvas?.renderAll();
       }
@@ -309,6 +343,18 @@ export function CanvasEditor({
     [fabricCanvas, selectedObject]
   );
 
+  // Update text content
+  const updateTextValue = useCallback(
+    (value: string) => {
+      setTextValue(value);
+      if (selectedObject && (selectedObject.type === "text" || selectedObject.type === "textbox")) {
+        selectedObject.set("text", value);
+        fabricCanvas?.renderAll();
+      }
+    },
+    [fabricCanvas, selectedObject]
+  );
+
   // Scale selected object
   const scaleSelected = useCallback(
     (delta: number) => {
@@ -322,6 +368,27 @@ export function CanvasEditor({
       fabricCanvas.renderAll();
     },
     [fabricCanvas, selectedObject]
+  );
+
+  // Update padding / safe margins for text
+  const updatePadding = useCallback(
+    (value: number[]) => {
+      setPadding(value);
+      if (!fabricCanvas) return;
+      const pad = value[0];
+      const newWidth = Math.max(50, dimensions.width - pad * 2);
+      fabricCanvas.getObjects().forEach((obj) => {
+        if (obj.type === "text" || obj.type === "textbox") {
+          obj.set({
+            width: newWidth,
+            left: dimensions.width / 2,
+            originX: "center",
+          });
+        }
+      });
+      fabricCanvas.renderAll();
+    },
+    [fabricCanvas, dimensions.width]
   );
 
   // Export canvas
@@ -392,9 +459,20 @@ export function CanvasEditor({
         </div>
 
         {/* Text Controls */}
-        {selectedObject?.type === "text" && (
+        {selectedObject && (selectedObject.type === "text" || selectedObject.type === "textbox") && (
           <div className="space-y-3 border-t border-border pt-4">
             <Label className="text-sm text-muted-foreground">Texto</Label>
+
+            <div className="space-y-1">
+              <Label className="text-xs">Conteúdo</Label>
+              <Textarea
+                value={textValue}
+                onChange={(e) => updateTextValue(e.target.value)}
+                rows={3}
+                className="resize-none text-sm"
+              />
+            </div>
+
             <div>
               <Label className="text-xs">Tamanho: {fontSize[0]}px</Label>
               <Slider
@@ -512,7 +590,7 @@ export function CanvasEditor({
           </Label>
           <Slider
             value={padding}
-            onValueChange={setPadding}
+            onValueChange={updatePadding}
             min={0}
             max={60}
             step={5}
