@@ -3,6 +3,90 @@ import { pipeline, env } from '@huggingface/transformers';
 env.allowLocalModels = false;
 env.useBrowserCache = true;
 
+const MAX_IMAGE_DIMENSION = 1024;
+
+function resizeImageIfNeeded(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, image: HTMLImageElement) {
+  let width = image.naturalWidth;
+  let height = image.naturalHeight;
+
+  if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+    if (width > height) {
+      height = Math.round((height * MAX_IMAGE_DIMENSION) / width);
+      width = MAX_IMAGE_DIMENSION;
+    } else {
+      width = Math.round((width * MAX_IMAGE_DIMENSION) / height);
+      height = MAX_IMAGE_DIMENSION;
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(image, 0, 0, width, height);
+    return true;
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(image, 0, 0);
+  return false;
+}
+
+export const removeBackground = async (imageElement: HTMLImageElement): Promise<Blob> => {
+  try {
+    console.log('Starting background removal process...');
+    const segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
+      device: 'webgpu',
+    });
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) throw new Error('Could not get canvas context');
+    
+    resizeImageIfNeeded(canvas, ctx, imageElement);
+    
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+    console.log('Processing with segmentation model...');
+    const result = await segmenter(imageData);
+    
+    if (!result || !Array.isArray(result) || result.length === 0 || !result[0].mask) {
+      throw new Error('Invalid segmentation result');
+    }
+    
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = canvas.width;
+    outputCanvas.height = canvas.height;
+    const outputCtx = outputCanvas.getContext('2d');
+    
+    if (!outputCtx) throw new Error('Could not get output canvas context');
+    
+    outputCtx.drawImage(canvas, 0, 0);
+    
+    const outputImageData = outputCtx.getImageData(0, 0, outputCanvas.width, outputCanvas.height);
+    const data = outputImageData.data;
+    
+    for (let i = 0; i < result[0].mask.data.length; i++) {
+      const alpha = Math.round((1 - result[0].mask.data[i]) * 255);
+      data[i * 4 + 3] = alpha;
+    }
+    
+    outputCtx.putImageData(outputImageData, 0, 0);
+    
+    return new Promise((resolve, reject) => {
+      outputCanvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('Failed to create blob'));
+        },
+        'image/png',
+        1.0
+      );
+    });
+  } catch (error) {
+    console.error('Error removing background:', error);
+    throw error;
+  }
+};
+
 export const transferImageColors = async (
   sourceImage: HTMLImageElement,
   targetImage: HTMLImageElement,
@@ -15,11 +99,9 @@ export const transferImageColors = async (
   canvas.width = targetImage.naturalWidth;
   canvas.height = targetImage.naturalHeight;
 
-  // Draw target image
   ctx.drawImage(targetImage, 0, 0);
   const targetData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-  // Get source colors
   const sourceCanvas = document.createElement('canvas');
   const sourceCtx = sourceCanvas.getContext('2d');
   if (!sourceCtx) throw new Error('Could not get source canvas context');
@@ -29,7 +111,6 @@ export const transferImageColors = async (
   sourceCtx.drawImage(sourceImage, 0, 0);
   const sourceData = sourceCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
 
-  // Calculate average color from source
   let r = 0, g = 0, b = 0;
   const pixels = sourceData.data.length / 4;
   for (let i = 0; i < sourceData.data.length; i += 4) {
@@ -41,7 +122,6 @@ export const transferImageColors = async (
   g = Math.round(g / pixels);
   b = Math.round(b / pixels);
 
-  // Apply color transfer with intensity control
   for (let i = 0; i < targetData.data.length; i += 4) {
     const gray = (targetData.data[i] + targetData.data[i + 1] + targetData.data[i + 2]) / 3;
     const factor = gray / 128;
@@ -54,7 +134,6 @@ export const transferImageColors = async (
     const newG = Math.min(255, Math.round(g * factor));
     const newB = Math.min(255, Math.round(b * factor));
     
-    // Blend between original and new colors based on intensity
     targetData.data[i] = Math.round(originalR * (1 - intensity) + newR * intensity);
     targetData.data[i + 1] = Math.round(originalG * (1 - intensity) + newG * intensity);
     targetData.data[i + 2] = Math.round(originalB * (1 - intensity) + newB * intensity);
@@ -77,9 +156,8 @@ export const upscaleImage = async (
   image: HTMLImageElement,
   targetScale?: number
 ): Promise<Blob> => {
-  // Calculate scale to reach approximately 4K (3840x2160) if not specified
   const maxDimension = Math.max(image.naturalWidth, image.naturalHeight);
-  const targetMaxDimension = 3840; // 4K width
+  const targetMaxDimension = 3840;
   const calculatedScale = Math.min(Math.ceil(targetMaxDimension / maxDimension), 4);
   const scale = targetScale || calculatedScale;
   const canvas = document.createElement('canvas');
@@ -89,20 +167,16 @@ export const upscaleImage = async (
   canvas.width = image.naturalWidth * scale;
   canvas.height = image.naturalHeight * scale;
 
-  // Enable image smoothing for better quality
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
-  // Draw scaled image
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-  // Apply sharpening filter
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
   const width = canvas.width;
   const height = canvas.height;
 
-  // Sharpening kernel
   const sharpenKernel = [
     0, -1, 0,
     -1, 5, -1,
