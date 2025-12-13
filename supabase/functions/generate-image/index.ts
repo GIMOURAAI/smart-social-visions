@@ -19,10 +19,12 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Simplificar o prompt para gerar apenas uma imagem visual (sem texto)
-    const imagePrompt = `Create a professional, visually stunning image for social media. Theme: ${prompt}. Style: modern, vibrant colors, high quality, clean design. IMPORTANT: Do NOT include any text, letters, words or typography in the image. Only visual elements.`;
+    const rawPrompt = typeof prompt === 'string' ? prompt : '';
 
-    console.log('Generating image with simplified prompt:', imagePrompt);
+    // Deixe a IA seguir exatamente o prompt do usuário, só reforçando que não deve ter texto na imagem
+    const imagePrompt = `${rawPrompt}. Imagem para redes sociais, sem texto escrito, sem letras ou palavras, apenas elementos visuais.`;
+
+    console.log('Generating image with user prompt:', imagePrompt);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -35,10 +37,10 @@ serve(async (req) => {
         messages: [
           {
             role: 'user',
-            content: imagePrompt
-          }
+            content: imagePrompt,
+          },
         ],
-        modalities: ['image', 'text']
+        modalities: ['image', 'text'],
       }),
     });
 
