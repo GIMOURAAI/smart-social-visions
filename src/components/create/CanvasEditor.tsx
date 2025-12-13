@@ -3,6 +3,7 @@ import { Canvas as FabricCanvas, FabricText, FabricImage, Shadow } from "fabric"
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import {
   ImagePlus,
   Type,
@@ -13,6 +14,7 @@ import {
   Eraser,
   Plus,
   Minus,
+  Palette,
 } from "lucide-react";
 import { removeBackground } from "@/lib/imageProcessing";
 import { toast } from "sonner";
@@ -33,6 +35,11 @@ const FORMAT_DIMENSIONS: Record<string, { width: number; height: number }> = {
   "3:4": { width: 450, height: 600 },
 };
 
+const COLOR_PRESETS = [
+  "#ffffff", "#000000", "#ff6b6b", "#feca57", "#48dbfb", 
+  "#1dd1a1", "#5f27cd", "#ff9ff3", "#54a0ff", "#00d2d3"
+];
+
 export function CanvasEditor({
   initialImage,
   initialTitle,
@@ -48,6 +55,8 @@ export function CanvasEditor({
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("center");
   const [padding, setPadding] = useState([20]);
   const [removingBg, setRemovingBg] = useState(false);
+  const [textColor, setTextColor] = useState("#ffffff");
+  const [opacity, setOpacity] = useState([100]);
 
   const dimensions = FORMAT_DIMENSIONS[format] || FORMAT_DIMENSIONS["1:1"];
 
@@ -276,6 +285,30 @@ export function CanvasEditor({
     [fabricCanvas, selectedObject]
   );
 
+  // Update text color
+  const updateTextColor = useCallback(
+    (color: string) => {
+      setTextColor(color);
+      if (selectedObject && selectedObject.type === "text") {
+        selectedObject.set("fill", color);
+        fabricCanvas?.renderAll();
+      }
+    },
+    [fabricCanvas, selectedObject]
+  );
+
+  // Update opacity
+  const updateOpacity = useCallback(
+    (value: number[]) => {
+      setOpacity(value);
+      if (selectedObject) {
+        selectedObject.set("opacity", value[0] / 100);
+        fabricCanvas?.renderAll();
+      }
+    },
+    [fabricCanvas, selectedObject]
+  );
+
   // Scale selected object
   const scaleSelected = useCallback(
     (delta: number) => {
@@ -373,6 +406,34 @@ export function CanvasEditor({
                 className="mt-1"
               />
             </div>
+            
+            {/* Color Picker */}
+            <div>
+              <Label className="text-xs flex items-center gap-1">
+                <Palette className="w-3 h-3" /> Cor do Texto
+              </Label>
+              <div className="flex items-center gap-2 mt-1">
+                <Input
+                  type="color"
+                  value={textColor}
+                  onChange={(e) => updateTextColor(e.target.value)}
+                  className="w-10 h-8 p-0 border-0 cursor-pointer"
+                />
+                <div className="flex gap-1 flex-wrap">
+                  {COLOR_PRESETS.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => updateTextColor(color)}
+                      className={`w-5 h-5 rounded-full border-2 transition-all ${
+                        textColor === color ? "border-primary scale-110" : "border-transparent"
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="flex gap-1">
               <Button
                 variant={textAlign === "left" ? "default" : "outline"}
@@ -403,6 +464,20 @@ export function CanvasEditor({
         {selectedObject && (
           <div className="space-y-3 border-t border-border pt-4">
             <Label className="text-sm text-muted-foreground">Selecionado</Label>
+            
+            {/* Opacity Control */}
+            <div>
+              <Label className="text-xs">Opacidade: {opacity[0]}%</Label>
+              <Slider
+                value={opacity}
+                onValueChange={updateOpacity}
+                min={10}
+                max={100}
+                step={5}
+                className="mt-1"
+              />
+            </div>
+
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => scaleSelected(0.1)}>
                 <Plus className="w-4 h-4" />
