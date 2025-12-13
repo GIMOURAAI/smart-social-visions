@@ -23,6 +23,10 @@ export interface PostData {
 
 export interface WizardData {
   objective: "instagram" | "stories" | "reels" | "youtube" | null;
+  selectedFormat: "1:1" | "4:5" | "9:16" | "16:9";
+  manualTitle: string;
+  manualSubtitle: string;
+  manualCaption: string;
   quantity: number;
   theme: string;
   customTheme: string;
@@ -44,6 +48,10 @@ export default function Create() {
   const [loading, setLoading] = useState(false);
   const [wizardData, setWizardData] = useState<WizardData>({
     objective: null,
+    selectedFormat: "1:1",
+    manualTitle: "",
+    manualSubtitle: "",
+    manualCaption: "",
     quantity: 1,
     theme: "",
     customTheme: "",
