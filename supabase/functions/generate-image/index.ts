@@ -19,7 +19,10 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Generating image with prompt:', prompt);
+    // Simplificar o prompt para gerar apenas uma imagem visual (sem texto)
+    const imagePrompt = `Create a professional, visually stunning image for social media. Theme: ${prompt}. Style: modern, vibrant colors, high quality, clean design. IMPORTANT: Do NOT include any text, letters, words or typography in the image. Only visual elements.`;
+
+    console.log('Generating image with simplified prompt:', imagePrompt);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -32,12 +35,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'user',
-            content: prompt
+            content: imagePrompt
           }
         ],
         modalities: ['image', 'text']
       }),
     });
+
+    console.log('API Response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -57,13 +62,16 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    console.log('API Response data structure:', JSON.stringify(data, null, 2).substring(0, 500));
+    
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!imageUrl) {
-      throw new Error('No image generated');
+      console.error('No image in response. Full response:', JSON.stringify(data));
+      throw new Error('No image generated - API returned empty image');
     }
 
-    console.log('Image generated successfully');
+    console.log('Image generated successfully, URL length:', imageUrl.length);
 
     return new Response(JSON.stringify({ imageUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
