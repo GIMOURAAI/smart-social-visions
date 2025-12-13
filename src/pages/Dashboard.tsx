@@ -80,7 +80,7 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+            <h1 className="text-xl font-bold text-foreground">SmartSocialMedia</h1>
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/")} size="sm">
@@ -102,7 +102,7 @@ export default function Dashboard() {
         </div>
 
         <Button 
-          onClick={() => navigate("/editor")} 
+          onClick={() => navigate("/create")} 
           className="mb-8"
           size="lg"
         >
@@ -118,7 +118,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground mb-6">
               Comece criando seu primeiro post incrível!
             </p>
-            <Button onClick={() => navigate("/editor")}>
+            <Button onClick={() => navigate("/create")}>
               Criar Primeiro Post
             </Button>
           </Card>
