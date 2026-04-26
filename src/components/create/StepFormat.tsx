@@ -53,22 +53,34 @@ export function StepFormat({ data, updateData }: Props) {
               onClick={() =>
                 updateData({ format: f.id as any, formatRatio: f.ratio as any })
               }
-              className={`p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3 ${
+              className={`group relative p-6 rounded-3xl transition-all duration-300 flex flex-col items-center gap-3 overflow-hidden ${
                 active
-                  ? "border-primary bg-accent shadow-md"
-                  : "border-border hover:border-primary/50 bg-card"
+                  ? "bg-gradient-card text-white shadow-glow scale-[1.02]"
+                  : "bg-white border border-border hover:border-primary/40 hover:shadow-soft hover:-translate-y-0.5"
               }`}
             >
-              <Icon
-                className={`w-8 h-8 ${active ? "text-primary" : "text-muted-foreground"}`}
-              />
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                  active
+                    ? "bg-white/20 backdrop-blur-sm"
+                    : "bg-accent group-hover:bg-primary/10"
+                }`}
+              >
+                <Icon
+                  className={`w-7 h-7 ${active ? "text-white" : "text-primary"}`}
+                />
+              </div>
               <div className="text-center">
                 <p
-                  className={`font-semibold ${active ? "text-primary" : "text-foreground"}`}
+                  className={`font-bold ${active ? "text-white" : "text-foreground"}`}
                 >
                   {f.title}
                 </p>
-                <p className="text-xs text-muted-foreground">{f.desc}</p>
+                <p
+                  className={`text-xs ${active ? "text-white/80" : "text-muted-foreground"}`}
+                >
+                  {f.desc}
+                </p>
               </div>
             </button>
           );
