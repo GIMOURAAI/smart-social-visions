@@ -47,22 +47,37 @@ export function StepIntent({ data, updateData }: Props) {
             <button
               key={it.id}
               onClick={() => updateData({ intent: it.id as any })}
-              className={`p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3 text-center ${
+              className={`group relative p-6 rounded-3xl transition-all duration-300 flex flex-col items-center gap-3 text-center overflow-hidden ${
                 active
-                  ? "border-primary bg-accent shadow-md"
-                  : "border-border hover:border-primary/50 bg-card"
+                  ? "bg-gradient-card text-white shadow-glow scale-[1.02]"
+                  : "bg-white border border-border hover:border-primary/40 hover:shadow-soft hover:-translate-y-0.5"
               }`}
             >
-              <Icon
-                className={`w-8 h-8 ${active ? "text-primary" : "text-muted-foreground"}`}
-              />
-              <div>
+              {active && (
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+              )}
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                  active
+                    ? "bg-white/20 backdrop-blur-sm"
+                    : "bg-accent group-hover:bg-primary/10"
+                }`}
+              >
+                <Icon
+                  className={`w-7 h-7 ${active ? "text-white" : "text-primary"}`}
+                />
+              </div>
+              <div className="relative">
                 <p
-                  className={`font-semibold ${active ? "text-primary" : "text-foreground"}`}
+                  className={`font-bold text-base ${active ? "text-white" : "text-foreground"}`}
                 >
                   {it.title}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">{it.desc}</p>
+                <p
+                  className={`text-xs mt-1 ${active ? "text-white/80" : "text-muted-foreground"}`}
+                >
+                  {it.desc}
+                </p>
               </div>
             </button>
           );
