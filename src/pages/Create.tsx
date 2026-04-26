@@ -161,12 +161,18 @@ export default function Create() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-soft relative overflow-hidden">
+      {/* Glows decorativos de fundo */}
+      <div className="pointer-events-none absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/2 -left-40 w-96 h-96 rounded-full bg-secondary/20 blur-3xl" />
+
+      <header className="relative z-10 glass border-b border-white/40 sticky top-0">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Smart Social Media
             </h1>
           </div>
@@ -174,6 +180,7 @@ export default function Create() {
             variant="ghost"
             onClick={() => navigate("/dashboard")}
             size="sm"
+            className="rounded-full"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Dashboard
@@ -181,42 +188,47 @@ export default function Create() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
-        <WizardProgress currentStep={step} totalSteps={TOTAL_STEPS} />
+      <main className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
+        <div className="glass rounded-3xl p-6 md:p-10 shadow-card">
+          <WizardProgress currentStep={step} totalSteps={TOTAL_STEPS} />
 
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold text-center mb-8 text-foreground">
-            {titles[step - 1]}
-          </h2>
+          <div className="mt-8">
+            <h2 className="text-3xl font-bold text-center mb-2 text-foreground tracking-tight">
+              {titles[step - 1]}
+            </h2>
+            <div className="w-16 h-1 bg-gradient-primary mx-auto rounded-full mb-8" />
 
-          <div className="min-h-[400px] flex flex-col">{renderStep()}</div>
+            <div className="min-h-[400px] flex flex-col">{renderStep()}</div>
 
-          <div className="flex justify-between mt-8 pt-6 border-t border-border">
-            <Button
-              variant="outline"
-              onClick={() => setStep((s) => Math.max(1, s - 1))}
-              disabled={step === 1}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Anterior
-            </Button>
-
-            {step < TOTAL_STEPS ? (
+            <div className="flex justify-between mt-8 pt-6 border-t border-border">
               <Button
-                onClick={() => setStep((s) => Math.min(TOTAL_STEPS, s + 1))}
-                disabled={!canProceed() || loading}
+                variant="outline"
+                onClick={() => setStep((s) => Math.max(1, s - 1))}
+                disabled={step === 1}
+                className="rounded-full"
               >
-                {loading ? "Gerando..." : "Próximo"}
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Anterior
               </Button>
-            ) : (
-              <Button
-                onClick={() => navigate("/dashboard")}
-                className="bg-primary"
-              >
-                Concluir
-              </Button>
-            )}
+
+              {step < TOTAL_STEPS ? (
+                <Button
+                  onClick={() => setStep((s) => Math.min(TOTAL_STEPS, s + 1))}
+                  disabled={!canProceed() || loading}
+                  className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
+                >
+                  {loading ? "Gerando..." : "Próximo"}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate("/dashboard")}
+                  className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
+                >
+                  Concluir
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </main>
