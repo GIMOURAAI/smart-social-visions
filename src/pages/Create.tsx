@@ -1,39 +1,44 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WizardProgress } from "@/components/create/WizardProgress";
-import { StepObjective } from "@/components/create/StepObjective";
-import { StepQuantity } from "@/components/create/StepQuantity";
-import { StepTheme } from "@/components/create/StepTheme";
-import { StepAI } from "@/components/create/StepAI";
-import { StepStyle } from "@/components/create/StepStyle";
-import { StepClone } from "@/components/create/StepClone";
-import { StepPreview } from "@/components/create/StepPreview";
+import { StepIntent } from "@/components/create/StepIntent";
+import { StepFormat } from "@/components/create/StepFormat";
+import { StepBusiness } from "@/components/create/StepBusiness";
+import { StepFrequency } from "@/components/create/StepFrequency";
+import { StepStyleNew } from "@/components/create/StepStyleNew";
+import { StepPreviewNew } from "@/components/create/StepPreviewNew";
+import { StepCaption } from "@/components/create/StepCaption";
 import { StepEdit } from "@/components/create/StepEdit";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 
 export interface PostData {
-  title: string;
-  content: string;
+  gancho: string;
+  titulo: string;
+  subtitulo: string;
+  legenda: string;
   imageUrl: string;
   format: string;
+  // legados (mantidos pra compat com StepEdit/CanvasEditor)
+  title?: string;
+  content?: string;
 }
 
 export interface WizardData {
-  objective: "instagram" | "stories" | "reels" | "youtube" | null;
-  selectedFormat: "1:1" | "4:5" | "9:16" | "16:9";
+  intent: "venda" | "autoridade" | "viral" | "engajamento" | null;
+  format: "post" | "reels" | "story" | "youtube" | null;
+  formatRatio: "5:4" | "9:16" | "16:9" | "1:1";
+  business: string;
+  handle: string;
   quantity: number;
-  theme: string;
-  customTheme: string;
-  useAI: boolean;
-  aiPrompt: string;
-  aiSuggestions: { title: string; subtitle: string; caption: string }[];
-  colorPreference: string;
-  fontPreference: string;
-  cloneMode: boolean;
-  cloneImage: File | null;
+  days: number;
+  palette: string;
+  customPalette: string[];
+  logoDataUrl: string;
+  borderPadding: number;
+  elementPadding: number;
   posts: PostData[];
   currentPostIndex: number;
 }
@@ -45,18 +50,18 @@ export default function Create() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [wizardData, setWizardData] = useState<WizardData>({
-    objective: null,
-    selectedFormat: "1:1",
-    quantity: 1,
-    theme: "",
-    customTheme: "",
-    useAI: true,
-    aiPrompt: "",
-    aiSuggestions: [],
-    colorPreference: "auto",
-    fontPreference: "inter",
-    cloneMode: false,
-    cloneImage: null,
+    intent: null,
+    format: null,
+    formatRatio: "5:4",
+    business: "",
+    handle: "@",
+    quantity: 3,
+    days: 7,
+    palette: "purple",
+    customPalette: ["#7C3AED", "#A78BFA", "#F5F3FF"],
+    logoDataUrl: "",
+    borderPadding: 8,
+    elementPadding: 6,
     posts: [],
     currentPostIndex: 0,
   });
@@ -64,90 +69,92 @@ export default function Create() {
   const { toast } = useToast();
 
   useEffect(() => {
-    checkUser();
-  }, []);
+    (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      setUser(session.user);
+    })();
+  }, [navigate]);
 
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
-    setUser(session.user);
-  };
-
-  const updateWizardData = (data: Partial<WizardData>) => {
-    setWizardData(prev => ({ ...prev, ...data }));
-  };
+  const updateWizardData = (d: Partial<WizardData>) =>
+    setWizardData((prev) => ({ ...prev, ...d }));
 
   const canProceed = (): boolean => {
     switch (step) {
-      case 1: return wizardData.objective !== null;
-      case 2: return wizardData.quantity >= 1 && wizardData.quantity <= 9;
-      case 3: return wizardData.theme !== "" || wizardData.customTheme !== "";
-      case 4: return true;
-      case 5: return true;
-      case 6: return true;
-      case 7: return wizardData.posts.length > 0;
-      case 8: return true;
-      default: return false;
+      case 1:
+        return wizardData.intent !== null;
+      case 2:
+        return wizardData.format !== null;
+      case 3:
+        return (
+          wizardData.business.trim().length >= 5 &&
+          wizardData.handle.replace("@", "").trim().length >= 1
+        );
+      case 4:
+        return wizardData.quantity > 0 && wizardData.days > 0;
+      case 5:
+        return wizardData.customPalette.length > 0;
+      case 6:
+        return wizardData.posts.length > 0;
+      case 7:
+        return true;
+      case 8:
+        return true;
+      default:
+        return false;
     }
   };
 
-  const nextStep = () => {
-    if (step < TOTAL_STEPS && canProceed()) {
-      // Skip clone step if not in clone mode
-      if (step === 5 && !wizardData.cloneMode) {
-        setStep(7);
-      } else {
-        setStep(step + 1);
-      }
-    }
-  };
-
-  const prevStep = () => {
-    if (step > 1) {
-      // Skip clone step if not in clone mode
-      if (step === 7 && !wizardData.cloneMode) {
-        setStep(5);
-      } else {
-        setStep(step - 1);
-      }
-    }
-  };
-
-  const getStepTitle = (): string => {
-    switch (step) {
-      case 1: return "O que você quer criar?";
-      case 2: return "Quantos posts?";
-      case 3: return "Qual o tema?";
-      case 4: return "Usar IA para sugestões?";
-      case 5: return "Preferências de estilo";
-      case 6: return "Clonar um modelo";
-      case 7: return "Preview dos posts";
-      case 8: return "Editar e finalizar";
-      default: return "";
-    }
-  };
+  const titles = [
+    "Qual a intenção do post?",
+    "Qual o formato?",
+    "Sobre a empresa",
+    "Quantos posts e por quanto tempo?",
+    "Estilo, paleta e logo",
+    "Preview dos posts",
+    "Legendas com SEO",
+    "Editar arte final",
+  ];
 
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <StepObjective data={wizardData} updateData={updateWizardData} />;
+        return <StepIntent data={wizardData} updateData={updateWizardData} />;
       case 2:
-        return <StepQuantity data={wizardData} updateData={updateWizardData} />;
+        return <StepFormat data={wizardData} updateData={updateWizardData} />;
       case 3:
-        return <StepTheme data={wizardData} updateData={updateWizardData} />;
+        return <StepBusiness data={wizardData} updateData={updateWizardData} />;
       case 4:
-        return <StepAI data={wizardData} updateData={updateWizardData} />;
+        return (
+          <StepFrequency data={wizardData} updateData={updateWizardData} />
+        );
       case 5:
-        return <StepStyle data={wizardData} updateData={updateWizardData} />;
+        return (
+          <StepStyleNew data={wizardData} updateData={updateWizardData} />
+        );
       case 6:
-        return <StepClone data={wizardData} updateData={updateWizardData} />;
+        return (
+          <StepPreviewNew
+            data={wizardData}
+            updateData={updateWizardData}
+            setLoading={setLoading}
+          />
+        );
       case 7:
-        return <StepPreview data={wizardData} updateData={updateWizardData} setLoading={setLoading} />;
+        return <StepCaption data={wizardData} updateData={updateWizardData} />;
       case 8:
-        return <StepEdit data={wizardData} updateData={updateWizardData} user={user} />;
+        return (
+          <StepEdit
+            data={wizardData}
+            updateData={updateWizardData}
+            user={user}
+          />
+        );
       default:
         return null;
     }
@@ -159,9 +166,15 @@ export default function Create() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">Smart Social Media</h1>
+            <h1 className="text-xl font-bold text-foreground">
+              Smart Social Media
+            </h1>
           </div>
-          <Button variant="ghost" onClick={() => navigate("/dashboard")} size="sm">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/dashboard")}
+            size="sm"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Dashboard
           </Button>
@@ -170,29 +183,27 @@ export default function Create() {
 
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         <WizardProgress currentStep={step} totalSteps={TOTAL_STEPS} />
-        
+
         <div className="mt-8">
           <h2 className="text-2xl font-bold text-center mb-8 text-foreground">
-            {getStepTitle()}
+            {titles[step - 1]}
           </h2>
-          
-          <div className="min-h-[400px] flex flex-col">
-            {renderStep()}
-          </div>
+
+          <div className="min-h-[400px] flex flex-col">{renderStep()}</div>
 
           <div className="flex justify-between mt-8 pt-6 border-t border-border">
             <Button
               variant="outline"
-              onClick={prevStep}
+              onClick={() => setStep((s) => Math.max(1, s - 1))}
               disabled={step === 1}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Anterior
             </Button>
-            
+
             {step < TOTAL_STEPS ? (
               <Button
-                onClick={nextStep}
+                onClick={() => setStep((s) => Math.min(TOTAL_STEPS, s + 1))}
                 disabled={!canProceed() || loading}
               >
                 {loading ? "Gerando..." : "Próximo"}
