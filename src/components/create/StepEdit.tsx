@@ -49,10 +49,10 @@ export function StepEdit({ data, updateData, user }: StepEditProps) {
     try {
       const { error } = await supabase.from("posts").insert({
         user_id: user.id,
-        title: currentPost.title,
-        content: currentPost.content,
+        title: currentPost.titulo || currentPost.title || "",
+        content: currentPost.legenda || currentPost.content || "",
         format: currentPost.format,
-        style: data.colorPreference,
+        style: data.palette,
         image_url: currentPost.imageUrl || null,
       });
 
@@ -79,10 +79,10 @@ export function StepEdit({ data, updateData, user }: StepEditProps) {
     try {
       const posts = data.posts.map((post) => ({
         user_id: user.id,
-        title: post.title,
-        content: post.content,
+        title: post.titulo || post.title || "",
+        content: post.legenda || post.content || "",
         format: post.format,
-        style: data.colorPreference,
+        style: data.palette,
         image_url: post.imageUrl || null,
       }));
 
