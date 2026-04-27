@@ -291,26 +291,26 @@ const Index = () => {
       </section>
 
       {/* Clone Section */}
-      <section className="py-24">
+      <section className="py-24" style={{ background: "hsl(265 70% 28%)" }}>
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div className="order-2 md:order-1">
-              <Copy className="w-12 h-12 text-primary mb-6 animate-glow-pulse" />
-              <h2 className="text-5xl font-bold mb-6 text-foreground">{t.clone.title}</h2>
-              <p className="text-xl text-muted-foreground mb-8">{t.clone.subtitle}</p>
+              <Copy className="w-12 h-12 text-primary-glow mb-6" />
+              <h2 className="text-5xl font-bold mb-6 text-white">{t.clone.title}</h2>
+              <p className="text-xl text-white/75 mb-8">{t.clone.subtitle}</p>
               <ul className="space-y-4">
                 {[t.clone.feature1, t.clone.feature2, t.clone.feature3].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Zap className="w-4 h-4 text-primary" />
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-card">
+                      <Zap className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-lg text-muted-foreground">{feature}</span>
+                    <span className="text-lg text-white/85">{feature}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div className="order-1 md:order-2">
-              <img src={cloneAi} alt="AI Cloning" className="w-full rounded-2xl shadow-2xl shadow-glow-lime animate-float" />
+              <img src={cloneAi} alt="AI Cloning" className="w-full rounded-2xl shadow-2xl shadow-glow" />
             </div>
           </div>
         </div>
