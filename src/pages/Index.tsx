@@ -332,16 +332,16 @@ const Index = () => {
       </section>
 
       {/* Custom Services Section */}
-      <section className="py-24">
+      <section className="py-24" style={{ background: "hsl(258 65% 18%)" }}>
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div>
-              <img src={customServices} alt="Custom Services" className="w-full rounded-2xl shadow-2xl shadow-glow-blue" />
+              <img src={customServices} alt="Custom Services" className="w-full rounded-2xl shadow-2xl shadow-glow" />
             </div>
             <div>
-              <Wand2 className="w-12 h-12 text-primary mb-6 animate-glow-pulse" />
-              <h2 className="text-5xl font-bold mb-6 text-foreground">{t.custom.title}</h2>
-              <p className="text-xl text-muted-foreground mb-8">{t.custom.subtitle}</p>
+              <Wand2 className="w-12 h-12 text-primary-glow mb-6" />
+              <h2 className="text-5xl font-bold mb-6 text-white">{t.custom.title}</h2>
+              <p className="text-xl text-white/75 mb-8">{t.custom.subtitle}</p>
               <HeroButton variant="primary" onClick={() => window.open('mailto:contato@exemplo.com', '_blank')}>{t.custom.cta}</HeroButton>
             </div>
           </div>
