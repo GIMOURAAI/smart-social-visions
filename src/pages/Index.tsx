@@ -178,8 +178,8 @@ const Index = () => {
   const t = translations[lang];
 
   return (
-    <div className="min-h-screen" style={{ background: "hsl(258 65% 18%)" }}>
-      {/* Hero Section — estilo card roxo com imagem nítida e CTA flutuante */}
+    <div className="min-h-screen bg-gradient-soft">
+      {/* Hero Section — card roxo com imagem nítida e CTA flutuante */}
       <section className="relative min-h-screen p-3 md:p-6">
         <div className="relative w-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] rounded-[2.5rem] overflow-hidden shadow-2xl">
           {/* Imagem de fundo nítida */}
