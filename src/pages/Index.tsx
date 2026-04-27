@@ -4,7 +4,7 @@ import { Instagram, Twitter, Linkedin, Mail, Sparkles, Copy, Wand2, Zap } from "
 import { HeroButton } from "@/components/ui/button-variants";
 import { PricingCard } from "@/components/PricingCard";
 import { Header } from "@/components/Header";
-import heroImage from "@/assets/hero-hologram.jpg";
+import heroImage from "@/assets/hero-creator.jpg";
 import postFormats from "@/assets/post-formats.jpg";
 import cloneAi from "@/assets/clone-ai.jpg";
 import customServices from "@/assets/custom-services.jpg";
@@ -179,48 +179,85 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Language Selector */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2">
-        {(["pt", "en", "es"] as const).map((l) => (
-          <button
-            key={l}
-            onClick={() => setLang(l)}
-            className={cn(
-              "px-3 py-1 rounded-lg text-sm font-medium transition-all duration-300",
-              lang === l ? "bg-primary text-primary-foreground shadow-glow-lime" : "bg-card text-muted-foreground hover:bg-muted"
-            )}
-          >
-            {l.toUpperCase()}
-          </button>
-        ))}
-      </div>
+      {/* Hero Section — estilo card roxo com imagem nítida e CTA flutuante */}
+      <section className="relative min-h-screen p-3 md:p-6 bg-background">
+        <div className="relative w-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] rounded-[2.5rem] overflow-hidden shadow-2xl">
+          {/* Imagem de fundo nítida */}
+          <img
+            src={heroImage}
+            alt="Criadora de conteúdo trabalhando no celular e laptop"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* Overlay roxo (multiply) que dá o tom da referência */}
+          <div
+            className="absolute inset-0 mix-blend-multiply"
+            style={{ background: "hsl(258 75% 45% / 0.85)" }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, hsl(258 70% 35% / 0.35) 0%, hsl(270 75% 40% / 0.15) 40%, hsl(258 70% 25% / 0.55) 100%)",
+            }}
+          />
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero" />
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "blur(8px)",
-          }}
-        />
-        <div className="relative z-10 container mx-auto px-6 text-center">
-          <div className="animate-float">
-            <Sparkles className="w-16 h-16 text-primary mx-auto mb-6 animate-glow-pulse" />
+          {/* Top bar: menu + language selector */}
+          <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-5 md:p-8">
+            <button
+              aria-label="Menu"
+              className="w-11 h-11 flex flex-col items-start justify-center gap-1.5 text-white"
+            >
+              <span className="block h-0.5 w-7 bg-white rounded-full" />
+              <span className="block h-0.5 w-5 bg-white rounded-full" />
+              <span className="block h-0.5 w-7 bg-white rounded-full" />
+            </button>
+            <div className="flex gap-2">
+              {(["pt", "en", "es"] as const).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className={cn(
+                    "px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all duration-300",
+                    lang === l
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "bg-white/95 text-foreground hover:bg-white"
+                  )}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-secondary bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
-            {t.hero.title}
-          </h1>
-          <p className="text-2xl md:text-3xl text-muted-foreground mb-12 max-w-3xl mx-auto">{t.hero.subtitle}</p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <HeroButton variant="primary" onClick={() => navigate('/auth')}>{t.hero.cta1}</HeroButton>
-            <HeroButton variant="secondary" onClick={() => {
-              const pricingSection = document.getElementById('pricing');
-              pricingSection?.scrollIntoView({ behavior: 'smooth' });
-            }}>{t.hero.cta2}</HeroButton>
+
+          {/* Título grande à esquerda */}
+          <div className="relative z-10 h-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] flex flex-col justify-end px-7 md:px-14 pb-44 md:pb-52">
+            <h1 className="text-white font-extrabold leading-[0.95] tracking-tight text-5xl sm:text-6xl md:text-8xl max-w-4xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
+              {t.hero.title}
+            </h1>
+            <p className="mt-5 md:mt-7 text-white/85 text-lg md:text-2xl max-w-xl">
+              {t.hero.subtitle}
+            </p>
+          </div>
+
+          {/* Card branco flutuante com CTA */}
+          <div className="absolute bottom-5 left-5 right-5 md:bottom-8 md:left-8 md:right-8 z-20">
+            <div className="bg-card rounded-3xl p-5 md:p-6 shadow-2xl flex flex-col sm:flex-row gap-3 items-stretch">
+              <button
+                onClick={() => navigate('/auth')}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-widest text-base md:text-lg py-5 rounded-2xl transition-all duration-300 hover:shadow-glow active:scale-[0.98]"
+              >
+                {t.hero.cta1.toUpperCase()}
+              </button>
+              <button
+                onClick={() => {
+                  const pricingSection = document.getElementById('pricing');
+                  pricingSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="flex-1 sm:flex-none sm:px-8 border-2 border-primary text-primary hover:bg-primary/5 font-bold tracking-wide text-base md:text-lg py-5 rounded-2xl transition-all duration-300"
+              >
+                {t.hero.cta2}
+              </button>
+            </div>
           </div>
         </div>
       </section>
