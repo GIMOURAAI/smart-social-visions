@@ -178,8 +178,8 @@ const Index = () => {
   const t = translations[lang];
 
   return (
-    <div className="min-h-screen" style={{ background: "hsl(258 65% 18%)" }}>
-      {/* Hero Section — estilo card roxo com imagem nítida e CTA flutuante */}
+    <div className="min-h-screen bg-gradient-soft">
+      {/* Hero Section — card roxo com imagem nítida e CTA flutuante */}
       <section className="relative min-h-screen p-3 md:p-6">
         <div className="relative w-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] rounded-[2.5rem] overflow-hidden shadow-2xl">
           {/* Imagem de fundo nítida */}
@@ -262,66 +262,69 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Post Formats Section */}
-      <section className="py-24" style={{ background: "linear-gradient(180deg, hsl(258 65% 18%) 0%, hsl(265 70% 28%) 100%)" }}>
+      {/* Post Formats Section — fundo claro */}
+      <section className="py-24 bg-gradient-soft">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <Wand2 className="w-12 h-12 text-primary-glow mx-auto mb-4" />
-            <h2 className="text-5xl font-bold mb-4 text-white">{t.formats.title}</h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto">{t.formats.subtitle}</p>
+            <Wand2 className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h2 className="text-5xl font-bold mb-4 text-foreground">{t.formats.title}</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.formats.subtitle}</p>
           </div>
           <div className="mb-12">
-            <img src={postFormats} alt="Post formats" className="w-full max-w-5xl mx-auto rounded-2xl shadow-2xl shadow-glow" />
+            <img src={postFormats} alt="Post formats" className="w-full max-w-5xl mx-auto rounded-3xl shadow-card" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[t.formats.format1, t.formats.format2, t.formats.format3, t.formats.format4].map((format, i) => (
               <div
                 key={i}
-                className="p-6 rounded-2xl border border-white/10 hover:border-white/30 transition-all duration-300 hover:shadow-glow text-center"
-                style={{ background: "hsl(258 60% 25% / 0.6)", backdropFilter: "blur(10px)" }}
+                className="p-6 rounded-2xl bg-card border border-border hover:border-primary/40 transition-all duration-300 hover:shadow-glow text-center"
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 bg-gradient-card">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
-                <p className="font-semibold text-white">{format}</p>
+                <p className="font-semibold text-foreground">{format}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Clone Section */}
-      <section className="py-24" style={{ background: "hsl(265 70% 28%)" }}>
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-            <div className="order-2 md:order-1">
-              <Copy className="w-12 h-12 text-primary-glow mb-6" />
-              <h2 className="text-5xl font-bold mb-6 text-white">{t.clone.title}</h2>
-              <p className="text-xl text-white/75 mb-8">{t.clone.subtitle}</p>
-              <ul className="space-y-4">
-                {[t.clone.feature1, t.clone.feature2, t.clone.feature3].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-card">
-                      <Zap className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-lg text-white/85">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="order-1 md:order-2">
-              <img src={cloneAi} alt="AI Cloning" className="w-full rounded-2xl shadow-2xl shadow-glow" />
+      {/* Clone Section — card roxo grande dentro de fundo claro */}
+      <section className="py-16 bg-gradient-soft">
+        <div className="container mx-auto px-3 md:px-6">
+          <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-hero p-8 md:p-16 shadow-2xl">
+            <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-pink-glow/30 blur-3xl" />
+            <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-primary-glow/30 blur-3xl" />
+            <div className="relative grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+              <div className="order-2 md:order-1">
+                <Copy className="w-12 h-12 text-white mb-6" />
+                <h2 className="text-5xl font-bold mb-6 text-white">{t.clone.title}</h2>
+                <p className="text-xl text-white/80 mb-8">{t.clone.subtitle}</p>
+                <ul className="space-y-4">
+                  {[t.clone.feature1, t.clone.feature2, t.clone.feature3].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-white/15 backdrop-blur-sm border border-white/20">
+                        <Zap className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-lg text-white/90">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="order-1 md:order-2">
+                <img src={cloneAi} alt="AI Cloning" className="w-full rounded-3xl shadow-2xl" />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-24" style={{ background: "linear-gradient(180deg, hsl(265 70% 28%) 0%, hsl(258 65% 18%) 100%)" }}>
+      {/* Pricing Section — fundo claro */}
+      <section id="pricing" className="py-24 bg-gradient-soft">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <Sparkles className="w-12 h-12 text-primary-glow mx-auto mb-4" />
-            <h2 className="text-5xl font-bold mb-4 text-white">{t.pricing.title}</h2>
+            <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h2 className="text-5xl font-bold mb-4 text-foreground">{t.pricing.title}</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <PricingCard {...t.pricing.free} planType="free" />
@@ -331,18 +334,21 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Custom Services Section */}
-      <section className="py-24" style={{ background: "hsl(258 65% 18%)" }}>
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-            <div>
-              <img src={customServices} alt="Custom Services" className="w-full rounded-2xl shadow-2xl shadow-glow" />
-            </div>
-            <div>
-              <Wand2 className="w-12 h-12 text-primary-glow mb-6" />
-              <h2 className="text-5xl font-bold mb-6 text-white">{t.custom.title}</h2>
-              <p className="text-xl text-white/75 mb-8">{t.custom.subtitle}</p>
-              <HeroButton variant="primary" onClick={() => window.open('mailto:contato@exemplo.com', '_blank')}>{t.custom.cta}</HeroButton>
+      {/* Custom Services — card roxo grande */}
+      <section className="py-16 bg-gradient-soft">
+        <div className="container mx-auto px-3 md:px-6">
+          <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-hero p-8 md:p-16 shadow-2xl">
+            <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary-glow/30 blur-3xl" />
+            <div className="relative grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+              <div>
+                <img src={customServices} alt="Custom Services" className="w-full rounded-3xl shadow-2xl" />
+              </div>
+              <div>
+                <Wand2 className="w-12 h-12 text-white mb-6" />
+                <h2 className="text-5xl font-bold mb-6 text-white">{t.custom.title}</h2>
+                <p className="text-xl text-white/80 mb-8">{t.custom.subtitle}</p>
+                <HeroButton variant="primary" onClick={() => window.open('mailto:contato@exemplo.com', '_blank')}>{t.custom.cta}</HeroButton>
+              </div>
             </div>
           </div>
         </div>
