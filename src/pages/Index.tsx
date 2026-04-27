@@ -349,7 +349,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-metallic py-12 border-t border-border">
+      <footer className="py-12 border-t border-white/10" style={{ background: "hsl(258 70% 12%)" }}>
         <div className="container mx-auto px-6">
           <div className="flex flex-col items-center gap-8">
             <div className="flex gap-6">
