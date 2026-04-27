@@ -362,7 +362,8 @@ const Index = () => {
                 <a
                   key={i}
                   href={social.href}
-                  className="w-12 h-12 bg-card rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:shadow-glow-lime hover:scale-110"
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white hover:bg-primary transition-all duration-300 hover:shadow-glow hover:scale-110"
+                  style={{ background: "hsl(258 60% 25%)" }}
                 >
                   <social.icon className="w-5 h-5" />
                 </a>
