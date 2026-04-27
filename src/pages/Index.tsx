@@ -370,8 +370,8 @@ const Index = () => {
               ))}
             </div>
             <div className="text-center">
-              <p className="text-lg text-muted-foreground mb-2">{t.footer.tagline}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-lg text-white/80 mb-2">{t.footer.tagline}</p>
+              <p className="text-sm text-white/50">
                 © 2025 Smart Social Media. {t.footer.rights}
               </p>
             </div>
