@@ -263,26 +263,27 @@ const Index = () => {
       </section>
 
       {/* Post Formats Section */}
-      <section className="py-24 bg-gradient-metallic">
+      <section className="py-24" style={{ background: "linear-gradient(180deg, hsl(258 65% 18%) 0%, hsl(265 70% 28%) 100%)" }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <Wand2 className="w-12 h-12 text-primary mx-auto mb-4 animate-glow-pulse" />
-            <h2 className="text-5xl font-bold mb-4 text-foreground">{t.formats.title}</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.formats.subtitle}</p>
+            <Wand2 className="w-12 h-12 text-primary-glow mx-auto mb-4" />
+            <h2 className="text-5xl font-bold mb-4 text-white">{t.formats.title}</h2>
+            <p className="text-xl text-white/70 max-w-2xl mx-auto">{t.formats.subtitle}</p>
           </div>
           <div className="mb-12">
-            <img src={postFormats} alt="Post formats" className="w-full max-w-5xl mx-auto rounded-2xl shadow-2xl shadow-glow-blue" />
+            <img src={postFormats} alt="Post formats" className="w-full max-w-5xl mx-auto rounded-2xl shadow-2xl shadow-glow" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[t.formats.format1, t.formats.format2, t.formats.format3, t.formats.format4].map((format, i) => (
               <div
                 key={i}
-                className="bg-card p-6 rounded-xl border border-border hover:border-lime transition-all duration-300 hover:shadow-glow-lime text-center"
+                className="p-6 rounded-2xl border border-white/10 hover:border-white/30 transition-all duration-300 hover:shadow-glow text-center"
+                style={{ background: "hsl(258 60% 25% / 0.6)", backdropFilter: "blur(10px)" }}
               >
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 bg-gradient-card">
+                  <Sparkles className="w-6 h-6 text-white" />
                 </div>
-                <p className="font-semibold text-foreground">{format}</p>
+                <p className="font-semibold text-white">{format}</p>
               </div>
             ))}
           </div>
