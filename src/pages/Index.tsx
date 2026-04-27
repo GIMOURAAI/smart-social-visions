@@ -317,11 +317,11 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 bg-gradient-metallic">
+      <section id="pricing" className="py-24" style={{ background: "linear-gradient(180deg, hsl(265 70% 28%) 0%, hsl(258 65% 18%) 100%)" }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <Sparkles className="w-12 h-12 text-primary mx-auto mb-4 animate-glow-pulse" />
-            <h2 className="text-5xl font-bold mb-4 text-foreground">{t.pricing.title}</h2>
+            <Sparkles className="w-12 h-12 text-primary-glow mx-auto mb-4" />
+            <h2 className="text-5xl font-bold mb-4 text-white">{t.pricing.title}</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <PricingCard {...t.pricing.free} planType="free" />
