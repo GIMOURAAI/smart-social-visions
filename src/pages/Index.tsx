@@ -178,9 +178,9 @@ const Index = () => {
   const t = translations[lang];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: "hsl(258 65% 18%)" }}>
       {/* Hero Section — estilo card roxo com imagem nítida e CTA flutuante */}
-      <section className="relative min-h-screen p-3 md:p-6 bg-background">
+      <section className="relative min-h-screen p-3 md:p-6">
         <div className="relative w-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] rounded-[2.5rem] overflow-hidden shadow-2xl">
           {/* Imagem de fundo nítida */}
           <img
@@ -263,26 +263,27 @@ const Index = () => {
       </section>
 
       {/* Post Formats Section */}
-      <section className="py-24 bg-gradient-metallic">
+      <section className="py-24" style={{ background: "linear-gradient(180deg, hsl(258 65% 18%) 0%, hsl(265 70% 28%) 100%)" }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <Wand2 className="w-12 h-12 text-primary mx-auto mb-4 animate-glow-pulse" />
-            <h2 className="text-5xl font-bold mb-4 text-foreground">{t.formats.title}</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.formats.subtitle}</p>
+            <Wand2 className="w-12 h-12 text-primary-glow mx-auto mb-4" />
+            <h2 className="text-5xl font-bold mb-4 text-white">{t.formats.title}</h2>
+            <p className="text-xl text-white/70 max-w-2xl mx-auto">{t.formats.subtitle}</p>
           </div>
           <div className="mb-12">
-            <img src={postFormats} alt="Post formats" className="w-full max-w-5xl mx-auto rounded-2xl shadow-2xl shadow-glow-blue" />
+            <img src={postFormats} alt="Post formats" className="w-full max-w-5xl mx-auto rounded-2xl shadow-2xl shadow-glow" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[t.formats.format1, t.formats.format2, t.formats.format3, t.formats.format4].map((format, i) => (
               <div
                 key={i}
-                className="bg-card p-6 rounded-xl border border-border hover:border-lime transition-all duration-300 hover:shadow-glow-lime text-center"
+                className="p-6 rounded-2xl border border-white/10 hover:border-white/30 transition-all duration-300 hover:shadow-glow text-center"
+                style={{ background: "hsl(258 60% 25% / 0.6)", backdropFilter: "blur(10px)" }}
               >
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 bg-gradient-card">
+                  <Sparkles className="w-6 h-6 text-white" />
                 </div>
-                <p className="font-semibold text-foreground">{format}</p>
+                <p className="font-semibold text-white">{format}</p>
               </div>
             ))}
           </div>
@@ -290,37 +291,37 @@ const Index = () => {
       </section>
 
       {/* Clone Section */}
-      <section className="py-24">
+      <section className="py-24" style={{ background: "hsl(265 70% 28%)" }}>
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div className="order-2 md:order-1">
-              <Copy className="w-12 h-12 text-primary mb-6 animate-glow-pulse" />
-              <h2 className="text-5xl font-bold mb-6 text-foreground">{t.clone.title}</h2>
-              <p className="text-xl text-muted-foreground mb-8">{t.clone.subtitle}</p>
+              <Copy className="w-12 h-12 text-primary-glow mb-6" />
+              <h2 className="text-5xl font-bold mb-6 text-white">{t.clone.title}</h2>
+              <p className="text-xl text-white/75 mb-8">{t.clone.subtitle}</p>
               <ul className="space-y-4">
                 {[t.clone.feature1, t.clone.feature2, t.clone.feature3].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Zap className="w-4 h-4 text-primary" />
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-card">
+                      <Zap className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-lg text-muted-foreground">{feature}</span>
+                    <span className="text-lg text-white/85">{feature}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div className="order-1 md:order-2">
-              <img src={cloneAi} alt="AI Cloning" className="w-full rounded-2xl shadow-2xl shadow-glow-lime animate-float" />
+              <img src={cloneAi} alt="AI Cloning" className="w-full rounded-2xl shadow-2xl shadow-glow" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 bg-gradient-metallic">
+      <section id="pricing" className="py-24" style={{ background: "linear-gradient(180deg, hsl(265 70% 28%) 0%, hsl(258 65% 18%) 100%)" }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <Sparkles className="w-12 h-12 text-primary mx-auto mb-4 animate-glow-pulse" />
-            <h2 className="text-5xl font-bold mb-4 text-foreground">{t.pricing.title}</h2>
+            <Sparkles className="w-12 h-12 text-primary-glow mx-auto mb-4" />
+            <h2 className="text-5xl font-bold mb-4 text-white">{t.pricing.title}</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <PricingCard {...t.pricing.free} planType="free" />
@@ -331,16 +332,16 @@ const Index = () => {
       </section>
 
       {/* Custom Services Section */}
-      <section className="py-24">
+      <section className="py-24" style={{ background: "hsl(258 65% 18%)" }}>
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div>
-              <img src={customServices} alt="Custom Services" className="w-full rounded-2xl shadow-2xl shadow-glow-blue" />
+              <img src={customServices} alt="Custom Services" className="w-full rounded-2xl shadow-2xl shadow-glow" />
             </div>
             <div>
-              <Wand2 className="w-12 h-12 text-primary mb-6 animate-glow-pulse" />
-              <h2 className="text-5xl font-bold mb-6 text-foreground">{t.custom.title}</h2>
-              <p className="text-xl text-muted-foreground mb-8">{t.custom.subtitle}</p>
+              <Wand2 className="w-12 h-12 text-primary-glow mb-6" />
+              <h2 className="text-5xl font-bold mb-6 text-white">{t.custom.title}</h2>
+              <p className="text-xl text-white/75 mb-8">{t.custom.subtitle}</p>
               <HeroButton variant="primary" onClick={() => window.open('mailto:contato@exemplo.com', '_blank')}>{t.custom.cta}</HeroButton>
             </div>
           </div>
@@ -348,7 +349,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-metallic py-12 border-t border-border">
+      <footer className="py-12 border-t border-white/10" style={{ background: "hsl(258 70% 12%)" }}>
         <div className="container mx-auto px-6">
           <div className="flex flex-col items-center gap-8">
             <div className="flex gap-6">
@@ -361,15 +362,16 @@ const Index = () => {
                 <a
                   key={i}
                   href={social.href}
-                  className="w-12 h-12 bg-card rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:shadow-glow-lime hover:scale-110"
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white hover:bg-primary transition-all duration-300 hover:shadow-glow hover:scale-110"
+                  style={{ background: "hsl(258 60% 25%)" }}
                 >
                   <social.icon className="w-5 h-5" />
                 </a>
               ))}
             </div>
             <div className="text-center">
-              <p className="text-lg text-muted-foreground mb-2">{t.footer.tagline}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-lg text-white/80 mb-2">{t.footer.tagline}</p>
+              <p className="text-sm text-white/50">
                 © 2025 Smart Social Media. {t.footer.rights}
               </p>
             </div>
