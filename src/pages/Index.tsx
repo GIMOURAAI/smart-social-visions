@@ -290,11 +290,23 @@ const Index = () => {
       </section>
 
       {/* Clone Section — card roxo grande dentro de fundo claro */}
-      <section className="py-16 bg-gradient-soft">
+      <section
+        className="py-16"
+        style={{
+          background:
+            "linear-gradient(180deg, hsl(270 70% 92%) 0%, hsl(280 75% 88%) 100%)",
+        }}
+      >
         <div className="container mx-auto px-3 md:px-6">
-          <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-hero p-8 md:p-16 shadow-2xl">
-            <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-pink-glow/30 blur-3xl" />
-            <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-primary-glow/30 blur-3xl" />
+          <div
+            className="relative rounded-[2.5rem] overflow-hidden p-8 md:p-16 shadow-2xl"
+            style={{
+              background:
+                "linear-gradient(160deg, hsl(265 80% 60%) 0%, hsl(280 85% 68%) 50%, hsl(295 85% 75%) 100%)",
+            }}
+          >
+            <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-pink-glow/40 blur-3xl" />
+            <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-white/20 blur-3xl" />
             <div className="relative grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
               <div className="order-2 md:order-1">
                 <Copy className="w-12 h-12 text-white mb-6" />
