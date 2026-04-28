@@ -277,12 +277,24 @@ const Index = () => {
             {[t.formats.format1, t.formats.format2, t.formats.format3, t.formats.format4].map((format, i) => (
               <div
                 key={i}
-                className="p-6 rounded-2xl bg-card border border-border hover:border-primary/40 transition-all duration-300 hover:shadow-glow text-center"
+                className="p-6 rounded-2xl border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-glow text-center"
+                style={{
+                  background:
+                    "linear-gradient(160deg, hsl(265 80% 55%) 0%, hsl(280 85% 65%) 100%)",
+                  boxShadow: "0 10px 30px -10px hsl(258 70% 35% / 0.4)",
+                }}
               >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 bg-gradient-card">
-                  <Sparkles className="w-6 h-6 text-white" />
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, hsl(75 95% 60%) 0%, hsl(85 90% 55%) 100%)",
+                    boxShadow: "0 8px 20px -4px hsl(75 95% 50% / 0.6)",
+                  }}
+                >
+                  <Sparkles className="w-7 h-7 text-[hsl(258_70%_20%)]" strokeWidth={2.5} />
                 </div>
-                <p className="font-semibold text-foreground">{format}</p>
+                <p className="font-bold text-white text-lg">{format}</p>
               </div>
             ))}
           </div>
