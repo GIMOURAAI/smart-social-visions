@@ -288,11 +288,11 @@ const Index = () => {
                   className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg"
                   style={{
                     background:
-                      "linear-gradient(135deg, hsl(75 95% 60%) 0%, hsl(85 90% 55%) 100%)",
-                    boxShadow: "0 8px 20px -4px hsl(75 95% 50% / 0.6)",
+                      "linear-gradient(135deg, hsl(325 95% 72%) 0%, hsl(310 90% 78%) 100%)",
+                    boxShadow: "0 8px 20px -4px hsl(320 90% 60% / 0.6)",
                   }}
                 >
-                  <Sparkles className="w-7 h-7 text-[hsl(258_70%_20%)]" strokeWidth={2.5} />
+                  <Sparkles className="w-7 h-7 text-white" strokeWidth={2.5} />
                 </div>
                 <p className="font-bold text-white text-lg">{format}</p>
               </div>
