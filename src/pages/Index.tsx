@@ -279,8 +279,7 @@ const Index = () => {
                 key={i}
                 className="p-6 rounded-2xl border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-glow text-center"
                 style={{
-                  background:
-                    "linear-gradient(160deg, hsl(265 80% 55%) 0%, hsl(280 85% 65%) 100%)",
+                  background: "hsl(258 90% 66%)",
                   boxShadow: "0 10px 30px -10px hsl(258 70% 35% / 0.4)",
                 }}
               >
@@ -288,8 +287,8 @@ const Index = () => {
                   className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg"
                   style={{
                     background:
-                      "linear-gradient(135deg, hsl(325 95% 72%) 0%, hsl(310 90% 78%) 100%)",
-                    boxShadow: "0 8px 20px -4px hsl(320 90% 60% / 0.6)",
+                      "linear-gradient(160deg, hsl(265 80% 55%) 0%, hsl(280 85% 65%) 100%)",
+                    boxShadow: "0 8px 20px -4px hsl(270 80% 40% / 0.6)",
                   }}
                 >
                   <Sparkles className="w-7 h-7 text-white" strokeWidth={2.5} />
