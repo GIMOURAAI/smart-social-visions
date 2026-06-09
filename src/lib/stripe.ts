@@ -10,6 +10,16 @@ export const STRIPE_PLANS = {
     price_id: "price_1SdwfQFEeMHcHuvRy3pQyGlm",
     credits: 600,
   },
+  solo: {
+    product_id: "prod_Tb8xvmZsjHVjSv",
+    price_id: "price_1SdwfEFEeMHcHuvR68GveCYR",
+    credits: 150,
+  },
+  business: {
+    product_id: "prod_Tb8xsKZ6h4LyXU",
+    price_id: "price_1SdwfQFEeMHcHuvRy3pQyGlm",
+    credits: 600,
+  },
 } as const;
 
 export type PlanType = keyof typeof STRIPE_PLANS | "free";
