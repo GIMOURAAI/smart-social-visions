@@ -106,7 +106,7 @@ const Index = () => {
           </div>
 
           {/* Hero text */}
-          <div className="relative z-10 h-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] flex flex-col justify-end px-7 md:px-14 pb-60 md:pb-64">
+          <div className="relative z-10 h-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] flex flex-col justify-end px-7 md:px-14" style={{ paddingBottom: "220px" }}>
             <h1 className="text-white font-extrabold leading-[0.95] tracking-tight text-5xl sm:text-6xl md:text-8xl max-w-4xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
               Crie Posts<br />
               <span className="relative inline-block">
@@ -122,7 +122,7 @@ const Index = () => {
           </div>
 
           {/* CTA card */}
-          <div className="absolute bottom-5 left-5 right-5 md:bottom-8 md:left-8 md:right-8 z-20">
+          <div className="absolute left-5 right-5 md:left-8 md:right-8 z-20" style={{ bottom: "24px" }}>
             <div className="bg-card rounded-3xl p-5 md:p-6 shadow-2xl flex flex-col sm:flex-row gap-3 items-stretch">
               <button
                 onClick={() => navigate("/auth")}
