@@ -116,6 +116,9 @@ const Index = () => {
               </span><br />
               usando a IA
             </h1>
+            <p className="mt-5 text-white/85 text-lg md:text-2xl max-w-sm">
+              Crie posts, legendas, imagens, CTAs, hashtags em um único lugar.
+            </p>
           </div>
 
           {/* CTA card */}
