@@ -70,7 +70,8 @@ export function StepConfirm({ data, onEdit }: Props) {
           <p className="text-xs text-muted-foreground">Confirme se as informações estão corretas</p>
         </div>
         <div className="px-4">
-          <Row label="Nome da marca" value={data.brandName ?? ""} onEdit={onEdit} step={1} />
+          <Row label="Criando para" value={data.forClient ? "🤝 Cliente" : "🙋 Mim mesmo"} onEdit={onEdit} step={1} />
+          <Row label={data.forClient ? "Nome do cliente" : "Nome da marca"} value={data.brandName ?? ""} onEdit={onEdit} step={1} />
           <Row label="Nicho" value={NICHE_LABELS[data.niche] ?? data.niche} onEdit={onEdit} step={1} />
           <Row label="Tema / Assunto" value={data.theme} onEdit={onEdit} step={1} />
           <Row label="Objetivo" value={data.objective} onEdit={onEdit} step={2} />

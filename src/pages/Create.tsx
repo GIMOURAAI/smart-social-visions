@@ -37,6 +37,7 @@ export interface GeneratedPost {
 
 export interface WizardData {
   // Step 1
+  forClient: boolean;
   brandName: string;
   niche: string;
   theme: string;
@@ -92,6 +93,7 @@ export default function Create() {
   const isMonthMode = searchParams.get("mode") === "7days";
 
   const [wizardData, setWizardData] = useState<WizardData>({
+    forClient: false,
     brandName: "",
     niche: "",
     theme: "",
@@ -227,8 +229,8 @@ export default function Create() {
   const resetWizard = () => {
     setWizardData((prev) => ({
       ...prev,
-      brandName: "", niche: "", theme: "", objective: "", tone: "",
-      visualStyle: "", brandImages: [], feedPattern: "",
+      forClient: false, brandName: "", niche: "", theme: "",
+      objective: "", tone: "", visualStyle: "", brandImages: [], feedPattern: "",
       posts: [], allPosts: [], currentPostIndex: 0, currentBlock: 0, phase: "pilot",
     }));
     setShowFeedPreview(false);

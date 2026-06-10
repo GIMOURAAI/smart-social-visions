@@ -1,5 +1,20 @@
 import type { WizardData } from "@/pages/Create";
 
+const FOR_OPTIONS = [
+  {
+    id: "myself",
+    icon: "🙋",
+    label: "Para mim",
+    desc: "Estou criando conteúdo para o meu próprio negócio",
+  },
+  {
+    id: "client",
+    icon: "🤝",
+    label: "Para um cliente",
+    desc: "Sou social media, agência ou freelancer criando para terceiros",
+  },
+];
+
 const NICHES = [
   { id: "estetica", label: "Estética", emoji: "💆‍♀️" },
   { id: "moda", label: "Moda", emoji: "👗" },
@@ -21,21 +36,61 @@ interface Props {
 }
 
 export function StepBriefing({ data, onChange }: Props) {
+  const forClient = data.forClient ?? false;
+
   return (
     <div className="space-y-6">
-      {/* Brand name */}
+      {/* For myself or client */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground mb-1">
+          Você está criando para quem?
+        </h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Isso ajuda o SmartPostAI a personalizar melhor o conteúdo
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {FOR_OPTIONS.map((opt) => {
+            const isSelected = forClient ? opt.id === "client" : opt.id === "myself";
+            return (
+              <button
+                key={opt.id}
+                onClick={() => onChange({ forClient: opt.id === "client" })}
+                className={`rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 ${
+                  isSelected
+                    ? "border-primary bg-primary/5 shadow-glow"
+                    : "border-border bg-card hover:border-primary/40"
+                }`}
+              >
+                <div className="text-2xl mb-2">{opt.icon}</div>
+                <p className={`text-sm font-bold mb-1 ${isSelected ? "text-primary" : "text-foreground"}`}>
+                  {opt.label}
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-snug">{opt.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Brand name — label muda conforme seleção */}
       <div>
         <label className="block text-sm font-semibold text-foreground mb-1">
-          Nome da sua marca ou negócio
+          {forClient ? "Nome do negócio do cliente" : "Nome da sua marca ou negócio"}
         </label>
         <p className="text-xs text-muted-foreground mb-2">
-          Aparece nas legendas, CTAs e títulos gerados
+          {forClient
+            ? "Aparece nas legendas e CTAs — personalize para o cliente"
+            : "Aparece nas legendas, CTAs e títulos gerados"}
         </p>
         <input
           type="text"
           value={data.brandName ?? ""}
           onChange={(e) => onChange({ brandName: e.target.value })}
-          placeholder="Ex: Studio Bella, Clínica Saúde Plena, Dr. Rafael..."
+          placeholder={
+            forClient
+              ? "Ex: Clínica do Dr. João, Boutique Ana Lima..."
+              : "Ex: Studio Bella, Clínica Saúde Plena, Dr. Rafael..."
+          }
           className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
         />
       </div>
