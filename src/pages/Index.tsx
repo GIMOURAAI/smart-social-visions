@@ -106,7 +106,7 @@ const Index = () => {
           </div>
 
           {/* Hero text */}
-          <div className="relative z-10 h-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] flex flex-col justify-end px-7 md:px-14 pb-44 md:pb-52">
+          <div className="relative z-10 h-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] flex flex-col justify-end px-7 md:px-14 pb-60 md:pb-64">
             <h1 className="text-white font-extrabold leading-[0.95] tracking-tight text-5xl sm:text-6xl md:text-8xl max-w-4xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
               Crie Posts<br />
               <span className="relative inline-block">
