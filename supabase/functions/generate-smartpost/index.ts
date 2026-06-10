@@ -2,8 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface SmartPostRequest {
@@ -12,13 +11,16 @@ interface SmartPostRequest {
   objective: string;
   tone: string;
   visualStyle: string;
-  brandImages?: string[]; // base64 data URLs for brand reference
-  format: "4:5" | "1:1" | "9:16" | "16:9";
-  quantity: number; // 1 or 7
+  format: string;
+  quantity: number;
+  imageQuantity: number;
+  brandImages?: string[];
+  blockIndex?: number; // 0-3 for Dor/Autoridade/Valor/Venda
 }
 
 interface GeneratedPost {
   tema: string;
+  bloco: string;
   objetivo: string;
   tipoConteudo: string;
   intencaoEmocional: string;
@@ -32,161 +34,285 @@ interface GeneratedPost {
   estiloVisual: string;
   promptVisual: string;
   storyComplementar: string;
+  imageUrl?: string;
+  creditoCusto: number;
 }
 
-const systemPrompt = `Você é o motor estratégico de conteúdo do SmartPostAI.
+// 9 TEMA visual style templates mapped to nichos
+const TEMAS: Record<string, { name: string; prompt: string; nichos: string[] }> = {
+  "tema-01-saas": {
+    name: "TEMA 01 — Clean Premium SaaS",
+    nichos: ["saas", "tech", "startup", "empreendedorismo", "marketing"],
+    prompt: `Ultra-premium SaaS editorial photo. Subject: confident professional (30s), standing near floor-to-ceiling glass window in modern minimalist office. Wearing tailored charcoal blazer over white dress shirt. Posture: relaxed power — one hand in pocket, slight forward lean. Expression: focused, visionary. Background: real blurred office interior — white walls, floating shelves with plants, MacBook Pro on desk, soft window light. Foreground: floating glassmorphism card with [PALETA DO CLIENTE] accent glow, Cormorant Garamond serif headline + Montserrat body text. Cinematic lighting: golden ratio composition, key light from window left. Color grading: desaturated cool tones with warm skin accent. Negative space left for text overlay. 8K, Hasselblad quality, editorial magazine cover.`,
+  },
+  "tema-02-moda": {
+    name: "TEMA 02 — High Luxury Editorial Moda",
+    nichos: ["moda", "beleza", "lifestyle", "luxo", "stylist"],
+    prompt: `High fashion editorial photograph. Subject: elegant woman (late 20s), couture pose — slight S-curve, chin tilted up, gaze off-camera. Wearing structured blazer in ivory or [PALETA DO CLIENTE] color, minimal gold jewelry. Background: real blurred Haussmann corridor, marble floors, warm amber sconces. Foreground: translucent glassmorphism panel with bold Cormorant Garamond display font in gold foil effect, Montserrat subtext in white. Lighting: dramatic Rembrandt lighting, butterfly catch-light. Color palette: warm champagne, ivory, deep navy. Subject at golden ratio right third, negative space on left. Film grain texture. Vogue cover quality.`,
+  },
+  "tema-03-tech": {
+    name: "TEMA 03 — Tech Futurista Dark Neon",
+    nichos: ["tech", "cripto", "ia", "games", "programacao", "futurismo"],
+    prompt: `Cyberpunk tech editorial. Subject: young professional (late 20s), seated at ultra-wide curved monitor setup. Wearing all-black tech-wear bomber jacket. Background: dark room with LED ambient strips in [PALETA DO CLIENTE] neon color, holographic data visualizations blurred. Multiple screens visible, particle effects in air. Foreground: glassmorphism dark card with neon border glow in [PALETA DO CLIENTE], monospace + Montserrat typography, floating data metrics. Lighting: neon underlighting from desk, rim light from screens, high contrast. Color grade: teal-orange split, deep blacks, HDR-punchy. 8K render quality.`,
+  },
+  "tema-04-resultado": {
+    name: "TEMA 04 — Prova Social & Resultados",
+    nichos: ["coach", "mentoria", "vendas", "resultados", "marketing digital"],
+    prompt: `Before/after transformation editorial. Subject: confident person (30s), arms slightly open — power pose, genuine smile. Wearing smart casual — pressed chinos, clean button shirt. Background: real blurred modern coworking or home office — warm, aspirational. Foreground: glassmorphism card with split result panels — before/after numbers in Cormorant Garamond bold, checkmarks, testimonial quote in Montserrat. [PALETA DO CLIENTE] accent highlights. Lighting: bright, optimistic — large softbox from left, warm fill. Color grading: slightly warm, high saturation skin, clean whites. Nikon D850 commercial quality.`,
+  },
+  "tema-05-emocional": {
+    name: "TEMA 05 — Dor Emocional & Conexão",
+    nichos: ["coach", "psicologa", "terapeuta", "autoconhecimento", "bem-estar"],
+    prompt: `Intimate emotional storytelling photograph. Subject: woman (30s), seated in cozy reading nook near window, relaxed contemplative posture. Soft authentic expression — real warmth, not performative. Wearing comfortable linen blouse, minimal styling. Background: real cozy interior — warm-toned walls, bookshelf, candle bokeh, morning light streaming in. Foreground: minimal glassmorphism card with [PALETA DO CLIENTE] warm accent, thin border, Cormorant Garamond italic headline — emotional, poetic copy. Lighting: gentle window key light, soft fill from opposite side, golden hour feel. Color grade: warm, slightly desaturated, nostalgic film tone.`,
+  },
+  "tema-06-saude": {
+    name: "TEMA 06 — Médico & Saúde",
+    nichos: ["medico", "saude", "nutricao", "estetica", "fisioterapia", "farmacia"],
+    prompt: `Professional medical/health editorial. Subject: healthcare professional (30s), standing in modern clinic corridor. Wearing clean white lab coat over professional attire, stethoscope around neck. Posture: confident, approachable — warm smile. Background: real blurred clinical environment — white corridors, medical equipment visible. Foreground: clean glassmorphism card with [PALETA DO CLIENTE] blue or teal accent, Montserrat body, Cormorant Garamond authority headline, health stat inside card. Lighting: clean bright clinical light from above, soft fill, catchlight in eyes. Color grade: clean whites, cool clinical tones, warm skin balance. Medical journal quality.`,
+  },
+  "tema-07-imoveis": {
+    name: "TEMA 07 — Imobiliária & Corretores",
+    nichos: ["imoveis", "corretor", "imobiliaria", "real estate", "construtora"],
+    prompt: `Luxury real estate editorial. Subject: real estate agent (30-40s), standing near premium property entrance or penthouse terrace. Wearing tailored suit in charcoal or navy, confident posture. Background: blurred luxury interior — marble floors, floor-to-ceiling windows, city skyline — or exterior with pool glimpse. Foreground: prestigious glassmorphism card with property metrics (price range, area, location badge) in [PALETA DO CLIENTE] gold/navy accent. Cormorant Garamond headline, Montserrat data. Lighting: warm late afternoon golden light. Color grade: warm, rich, aspirational. Premium property listing magazine quality.`,
+  },
+  "tema-08-juridico": {
+    name: "TEMA 08 — Advogada & Jurídico",
+    nichos: ["advogado", "juridico", "direito", "escritorio juridico", "consultoria juridica"],
+    prompt: `Premium legal authority editorial. Subject: lawyer/attorney (30s), standing in front of legal library wall with leather-bound law books or glass-walled corner office. Wearing impeccably tailored dark suit — charcoal or deep navy. Posture: authoritative, composed. Background: real blurred law office — dark wood paneling, books. Foreground: prestige glassmorphism card with [PALETA DO CLIENTE] deep navy/gold accent, Cormorant Garamond serif headline for gravitas, Montserrat for data. Lighting: sophisticated dramatic side lighting, single strong key light. Color grade: dark, serious, prestigious — deep blacks, warm browns, gold accents. Business Insider legal journal cover quality.`,
+  },
+  "tema-09-influencer": {
+    name: "TEMA 09 — Influenciadora & Personal Brand",
+    nichos: ["influencer", "criador de conteudo", "personal brand", "digital", "lifestyle"],
+    prompt: `Bold personal brand editorial. Subject: confident creator/influencer (20s-30s), dynamic pose — walking toward camera, hair movement, strong eye contact. Wearing expressive on-brand outfit in [PALETA DO CLIENTE] signature color — statement piece, curated casual-chic. Background: artistic location — neon-lit street, colorful mural wall, rooftop at golden hour, or minimal studio. Foreground: energetic glassmorphism card with [PALETA DO CLIENTE] vibrant accent, bold Montserrat headline (uppercase), engagement metrics chips floating. Lighting: dramatic fill, color gel from back in [PALETA DO CLIENTE] hue, soft front light. Color grade: vibrant, punchy, high saturation. Campaign photography quality.`,
+  },
+};
 
-Sua função é criar posts completos para redes sociais com base nas informações fornecidas pelo usuário.
+// PostLab 4-block structure
+const POSTLAB_BLOCKS = [
+  {
+    id: "dor",
+    name: "Dor",
+    description: "Identifica e ressoa com a dor, frustração e desafio do avatar",
+    frameworks: "SPIN Selling (Situation/Problem), Storytelling emocional",
+    tipos: ["problema_identificacao", "frustracao_relato", "custo_inacao"],
+    intencoes: ["identificação", "empatia", "curiosidade"],
+  },
+  {
+    id: "autoridade",
+    name: "Autoridade",
+    description: "Estabelece credibilidade, expertise e prova social",
+    frameworks: "Authority positioning, Social proof, Case studies",
+    tipos: ["prova_social", "resultado_cliente", "conquista_pessoal"],
+    intencoes: ["confiança", "autoridade", "segurança"],
+  },
+  {
+    id: "valor",
+    name: "Valor",
+    description: "Entrega valor real — dicas, educação, transformação",
+    frameworks: "AIDA (Attention/Interest/Desire), Value ladder",
+    tipos: ["dica_acionavel", "lista_pratica", "insight_exclusivo"],
+    intencoes: ["gratidão", "desejo", "engajamento"],
+  },
+  {
+    id: "venda",
+    name: "Venda",
+    description: "Converte — oferta, CTA, urgência, benefícios",
+    frameworks: "AIDA (Action), Scarcity/Urgency, Objection breaking",
+    tipos: ["oferta_direta", "quebra_objecao", "transformacao_promessa"],
+    intencoes: ["urgência", "desejo", "ação"],
+  },
+];
 
-Você atua como especialista em social media, copywriting, marketing digital, branding e criação visual com IA.
+function getTemaForNiche(niche: string, visualStyle: string): typeof TEMAS[string] {
+  if (TEMAS[visualStyle]) return TEMAS[visualStyle];
+  const nicheLower = niche.toLowerCase();
+  for (const [, tema] of Object.entries(TEMAS)) {
+    if (tema.nichos.some((n) => nicheLower.includes(n))) return tema;
+  }
+  return TEMAS["tema-01-saas"];
+}
 
-Para cada post, você deve entregar obrigatoriamente os seguintes campos como JSON:
-- tema: assunto principal do post
-- objetivo: função estratégica (vender, educar, engajar, etc.)
-- tipoConteudo: educativo | venda | autoridade | conexão | prova social | engajamento | bastidor | oferta | lista | dica prática | quebra de objeção
-- intencaoEmocional: o que o conteúdo deve despertar (desejo, identificação, urgência, confiança, curiosidade, segurança, autoridade, conexão)
-- gancho: frase inicial forte para prender atenção (máx 100 chars)
-- tituloArte: texto principal curto para o design (máx 60 chars)
-- subtituloArte: frase de apoio (máx 100 chars)
-- textoArte: frase pequena opcional para o design (máx 80 chars)
-- legenda: legenda completa estratégica com início envolvente, desenvolvimento e CTA final (200-400 chars)
-- cta: chamada para ação específica
-- hashtags: 5 a 10 hashtags relevantes separadas por espaço
-- estiloVisual: descrição do estilo visual aplicado
-- promptVisual: prompt detalhado em inglês para gerar a imagem/design do post (composição, cores, iluminação, fundo, estilo, atmosfera, hierarquia visual)
-- storyComplementar: sugestão simples de story para acompanhar o post
+function buildSystemPrompt(req: SmartPostRequest, blockIndex: number): string {
+  const block = POSTLAB_BLOCKS[blockIndex % 4];
+  const temaInfo = getTemaForNiche(req.niche, req.visualStyle);
+  const postsInBlock = Math.min(req.quantity, 3);
 
-Regras:
-- Escreva sempre em português brasileiro (exceto promptVisual que deve ser em inglês)
-- Adapte ao nicho informado
-- Não use linguagem genérica
-- O título da arte deve ser curto, forte e visualmente impactante
-- A legenda deve ter início envolvente, desenvolvimento persuasivo e CTA final
-- As hashtags devem ser relevantes ao nicho e tema
-- O prompt visual deve ser detalhado com composição, cores, estilo, iluminação e atmosfera
-- Evite textos longos demais dentro da arte
-- O conteúdo deve parecer profissional e pronto para redes sociais`;
+  return `Você é o POSTLAB AI — motor estratégico de conteúdo premium para redes sociais. Combina copywriting avançado, psicologia do consumidor e direção de arte cinematográfica.
+
+## METODOLOGIA POSTLAB
+4 blocos estratégicos: Dor → Autoridade → Valor → Venda. Cada bloco tem 3 posts. Resultado: máquina de conteúdo que transforma seguidores em clientes.
+
+## BLOCO ATUAL: ${block.name.toUpperCase()} (Bloco ${blockIndex + 1}/4)
+${block.description}
+Frameworks: ${block.frameworks}
+Tipos de conteúdo: ${block.tipos.join(", ")}
+Intenções emocionais: ${block.intencoes.join(", ")}
+
+## CONTEXTO DO CLIENTE
+- Nicho: ${req.niche}
+- Tema/Assunto: ${req.theme}
+- Objetivo: ${req.objective}
+- Tom de voz: ${req.tone}
+- Formato visual: ${req.format}
+
+## ESTILO VISUAL — ${temaInfo.name}
+Template base para prompts visuais:
+${temaInfo.prompt}
+
+## VIRAL HOOKS — escolha padrões diferentes para cada post
+1. "Eu nunca imaginei que [situação] poderia [resultado surpreendente]..."
+2. "O erro que [avatar] comete todo dia (e como parar agora)"
+3. "Ninguém fala isso sobre [tema], mas precisa ser dito:"
+4. "[N] coisas que mudaram tudo na minha [área] — a #[X] me surpreendeu"
+5. "Se você está lutando com [dor], leia isso antes de desistir"
+6. "A verdade incômoda sobre [tema] que ninguém quer ouvir"
+7. "Você está [ação] errado. Veja o que o top 1% faz"
+8. "Isso não deveria funcionar. Funcionou. [resultado]"
+
+## ESTRUTURA AIDA PARA LEGENDAS
+A: Atenção — gancho que para o scroll (primeira linha)
+I: Interesse — desenvolvimento envolvente
+D: Desejo — benefício concreto / transformação
+A: Ação — CTA claro e específico
+
+## REGRAS DE PRODUÇÃO
+- Exatamente ${postsInBlock} posts distintos para o bloco ${block.name}
+- Cada post: tipo diferente, ângulo diferente, hook diferente
+- gancho: máx 60 chars — para o scroll
+- tituloArte: máx 50 chars — bold, impacto visual
+- subtituloArte: máx 80 chars
+- textoArte: 3-5 linhas curtas separadas por \\n
+- legenda: 200-400 chars com abertura forte + CTA
+- hashtags: 8-12 em português e inglês
+- promptVisual: SEMPRE em inglês, ultra-detalhado, cinematográfico
+- Adapte o template visual para o nicho "${req.niche}"
+
+## FORMATO DE SAÍDA — JSON VÁLIDO APENAS
+{"posts":[{"tema":"string","bloco":"${block.name}","objetivo":"string","tipoConteudo":"string","intencaoEmocional":"string","gancho":"string máx 60 chars","tituloArte":"string máx 50 chars","subtituloArte":"string máx 80 chars","textoArte":"string linhas separadas por \\n","legenda":"string 200-400 chars","cta":"string","hashtags":"string hashtags separadas por espaço","estiloVisual":"${temaInfo.name}","promptVisual":"string ultra-detailed English prompt","storyComplementar":"string sugestão de story","creditoCusto":1}]}`;
+}
+
+async function generatePostImage(promptVisual: string, openaiKey: string): Promise<string | undefined> {
+  try {
+    const resp = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${openaiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: promptVisual,
+        n: 1,
+        size: "1024x1024",
+        quality: "hd",
+        style: "vivid",
+      }),
+    });
+    if (!resp.ok) return undefined;
+    const data = await resp.json();
+    return data.data?.[0]?.url;
+  } catch {
+    return undefined;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const body = (await req.json()) as SmartPostRequest;
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY não configurada");
-
-    const isCustomStyle =
-      body.visualStyle === "custom" &&
-      body.brandImages &&
-      body.brandImages.length > 0;
-
-    const userTextPrompt = `Nicho: ${body.niche}
-Tema: ${body.theme}
-Objetivo: ${body.objective}
-Tom de voz: ${body.tone}
-Estilo visual: ${isCustomStyle ? "Adaptar ao estilo da marca enviada" : body.visualStyle}
-Formato: ${body.format}
-Quantidade de posts: ${body.quantity}
-
-Gere ${body.quantity} post(s) variado(s) seguindo as instruções. Retorne um JSON com chave "posts" contendo array de objetos com todos os campos especificados.`;
-
-    type MessageContent =
-      | string
-      | Array<
-          | { type: "text"; text: string }
-          | { type: "image_url"; image_url: { url: string } }
-        >;
-
-    const userContent: MessageContent = isCustomStyle
-      ? [
-          {
-            type: "text",
-            text: "Analise o estilo visual dessas imagens de referência da marca do cliente. Identifique paleta de cores, composição, atmosfera e linguagem visual. Use esse estilo como inspiração para criar os posts, sem copiar literalmente.",
-          },
-          ...body.brandImages!.map((img) => ({
-            type: "image_url" as const,
-            image_url: { url: img },
-          })),
-          { type: "text" as const, text: userTextPrompt },
-        ]
-      : userTextPrompt;
-
-    const response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userContent },
-          ],
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const txt = await response.text();
-      console.error("OpenAI error", response.status, txt);
-
-      if (response.status === 401) {
-        return new Response(
-          JSON.stringify({
-            error:
-              "Chave de API inválida. Verifique a configuração do OPENAI_API_KEY.",
-          }),
-          {
-            status: 401,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({
-            error:
-              "Limite de requisições da OpenAI atingido. Tente novamente em instantes.",
-          }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      throw new Error(`Erro OpenAI: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error("Resposta inválida da OpenAI");
-
-    const parsed = JSON.parse(content);
-    const posts: GeneratedPost[] = parsed.posts;
-
-    if (!Array.isArray(posts)) {
-      throw new Error("Formato de resposta inválido: campo 'posts' ausente ou não é array");
-    }
-
-    return new Response(JSON.stringify(posts), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (err: any) {
-    console.error("generate-smartpost error", err);
+  const openaiKey = Deno.env.get("OPENAI_API_KEY");
+  if (!openaiKey) {
     return new Response(
-      JSON.stringify({ error: err.message || "Erro desconhecido" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: "OPENAI_API_KEY not configured" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  try {
+    const body: SmartPostRequest = await req.json();
+    const { niche, theme, objective, tone, format, quantity, imageQuantity = 0, brandImages, blockIndex = 0 } = body;
+
+    const systemPrompt = buildSystemPrompt(body, blockIndex);
+    const postsToGenerate = Math.min(quantity, 3);
+    const blockName = POSTLAB_BLOCKS[blockIndex % 4].name;
+
+    const userText = `Crie ${postsToGenerate} posts estratégicos para o bloco ${blockName}:
+- Nicho: ${niche}
+- Tema: ${theme}
+- Objetivo: ${objective}
+- Tom: ${tone}
+- Formato: ${format}
+Cada post deve ter hook viral único e aplicar o framework do bloco ${blockName}.`;
+
+    const messages: any[] = [{ role: "system", content: systemPrompt }];
+
+    if (brandImages && brandImages.length > 0) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: userText + "\n\nAnalise as imagens de referência e adapte o estilo visual mantendo a essência sem copiar o design." },
+          ...brandImages.slice(0, 3).map((img: string) => ({
+            type: "image_url",
+            image_url: { url: img, detail: "low" },
+          })),
+        ],
+      });
+    } else {
+      messages.push({ role: "user", content: userText });
+    }
+
+    const openaiResp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${openaiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages,
+        response_format: { type: "json_object" },
+        temperature: 0.85,
+        max_tokens: 4000,
+      }),
+    });
+
+    if (!openaiResp.ok) {
+      const err = await openaiResp.json().catch(() => ({}));
+      const status = openaiResp.status;
+      if (status === 401) throw new Error("Chave OpenAI inválida ou expirada.");
+      if (status === 429) throw new Error("Limite de uso OpenAI atingido. Tente em instantes.");
+      throw new Error(err?.error?.message ?? `OpenAI error ${status}`);
+    }
+
+    const openaiData = await openaiResp.json();
+    const rawContent = openaiData.choices?.[0]?.message?.content;
+    if (!rawContent) throw new Error("OpenAI retornou resposta vazia.");
+
+    const parsed = JSON.parse(rawContent);
+    const posts: GeneratedPost[] = Array.isArray(parsed.posts) ? parsed.posts : [];
+    if (posts.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
+
+    // Generate images for specified number of posts
+    if (imageQuantity > 0) {
+      const toImage = posts.slice(0, Math.min(imageQuantity, posts.length));
+      await Promise.all(
+        toImage.map(async (post, i) => {
+          const url = await generatePostImage(post.promptVisual, openaiKey);
+          if (url) posts[i].imageUrl = url;
+        })
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ posts, blockName, blockIndex, totalBlocks: 4 }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err: any) {
+    console.error("generate-smartpost error:", err);
+    return new Response(
+      JSON.stringify({ error: err?.message ?? "Erro interno" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
