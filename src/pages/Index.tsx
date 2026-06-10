@@ -97,13 +97,6 @@ const Index = () => {
 
         {/* DESKTOP: conteúdo alinhado à esquerda, verticalmente centralizado */}
         <div className="hidden md:flex relative z-10 min-h-screen flex-col justify-center px-14 lg:px-20" style={{ maxWidth: "660px" }}>
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border w-fit"
-            style={{ borderColor: "rgba(167,139,250,0.35)", background: "rgba(124,58,237,0.15)" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-            <span className="text-violet-300 text-xs font-semibold tracking-widest uppercase">IA para redes sociais</span>
-          </div>
-
           <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: "1.0" }}
             className="text-white font-black text-6xl lg:text-7xl tracking-tight">
             Crie Posts<br />
@@ -138,31 +131,10 @@ const Index = () => {
             </button>
           </div>
 
-          {/* Prova social */}
-          <div className="mt-10 flex items-center gap-6">
-            <div className="flex -space-x-2">
-              {["#7c3aed","#a855f7","#ec4899","#f59e0b"].map((c, i) => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-[#07050f] flex items-center justify-center text-white text-xs font-bold" style={{ background: c }}>
-                  {["A","B","C","D"][i]}
-                </div>
-              ))}
-            </div>
-            <div>
-              <div className="flex items-center gap-1">
-                {[1,2,3,4,5].map(i => <span key={i} className="text-yellow-400 text-xs">★</span>)}
-              </div>
-              <p className="text-white/40 text-xs mt-0.5">+2.400 criadores usando</p>
-            </div>
-          </div>
         </div>
 
         {/* MOBILE: texto embaixo + card CTA flutuante */}
         <div className="md:hidden relative z-10 flex flex-col justify-end min-h-screen px-6" style={{ paddingBottom: "210px" }}>
-          <div className="inline-flex items-center gap-2 mb-5 px-3 py-1 rounded-full border w-fit"
-            style={{ borderColor: "rgba(167,139,250,0.35)", background: "rgba(124,58,237,0.15)" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-            <span className="text-violet-300 text-xs font-semibold tracking-widest uppercase">IA para redes sociais</span>
-          </div>
           <h1 className="text-white font-black text-5xl tracking-tight" style={{ lineHeight: "1.0" }}>
             Crie Posts<br />
             <span style={{ background: "linear-gradient(90deg, #f5d020, #f472b6, #e879f9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
