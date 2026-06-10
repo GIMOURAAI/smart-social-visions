@@ -108,7 +108,7 @@ const Index = () => {
           {/* Hero text */}
           <div className="relative z-10 h-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] flex flex-col justify-end px-7 md:px-14 pb-44 md:pb-52">
             <h1 className="text-white font-extrabold leading-[0.95] tracking-tight text-5xl sm:text-6xl md:text-8xl max-w-4xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
-              SmartPostAI é uma IA que cria o conteúdo de um mês inteiro em minutos.
+              Crie Posts para um mês em minutos usando a IA
             </h1>
             <p className="mt-5 md:mt-7 text-white/85 text-lg md:text-2xl max-w-xl">
               Crie posts, legendas, imagens, CTAs, hashtags e artes profissionais para qualquer nicho — tudo em um único lugar.
