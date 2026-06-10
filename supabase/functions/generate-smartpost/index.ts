@@ -178,17 +178,19 @@ A: Ação — CTA claro e específico
 ## REGRAS DE PRODUÇÃO
 - Exatamente ${postsInBlock} posts distintos para o bloco ${block.name}
 - Cada post: tipo diferente, ângulo diferente, hook diferente
-- gancho: máx 60 chars — para o scroll
-- tituloArte: máx 50 chars — bold, impacto visual
-- subtituloArte: máx 80 chars
-- textoArte: 3-5 linhas curtas separadas por \\n
-- legenda: 200-400 chars com abertura forte + CTA
-- hashtags: 8-12 em português e inglês
+- gancho: frase de impacto que para o scroll — sem limite fixo, seja criativo
+- tituloArte: título bold e impactante para o design visual
+- subtituloArte: complementa o título com contexto ou benefício
+- textoArte: 3-6 linhas para compor o design — cada linha em novo parágrafo
+- legenda: legendas completas, ricas e envolventes — sem cortar o conteúdo
+- cta: chamada para ação específica e persuasiva
+- hashtags: 10-15 hashtags relevantes em português e inglês
+- storyComplementar: story completo e detalhado que complementa o post
 - promptVisual: SEMPRE em inglês, ultra-detalhado, cinematográfico
 - Adapte o template visual para o nicho "${req.niche}"
 
 ## FORMATO DE SAÍDA — JSON VÁLIDO APENAS
-{"posts":[{"tema":"string","bloco":"${block.name}","objetivo":"string","tipoConteudo":"string","intencaoEmocional":"string","gancho":"string máx 60 chars","tituloArte":"string máx 50 chars","subtituloArte":"string máx 80 chars","textoArte":"string linhas separadas por \\n","legenda":"string 200-400 chars","cta":"string","hashtags":"string hashtags separadas por espaço","estiloVisual":"${temaInfo.name}","promptVisual":"string ultra-detailed English prompt","storyComplementar":"string sugestão de story","creditoCusto":1}]}`;
+{"posts":[{"tema":"string","bloco":"${block.name}","objetivo":"string","tipoConteudo":"string","intencaoEmocional":"string","gancho":"string impactante","tituloArte":"string bold para design","subtituloArte":"string complemento","textoArte":"string linhas separadas por \\n","legenda":"string completa e envolvente","cta":"string persuasivo","hashtags":"string hashtags separadas por espaço","estiloVisual":"${temaInfo.name}","promptVisual":"string ultra-detailed English cinematic prompt","storyComplementar":"string story completo","creditoCusto":1}]}`;
 }
 
 async function generatePostImage(promptVisual: string, openaiKey: string): Promise<string | undefined> {

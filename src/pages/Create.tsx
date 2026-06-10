@@ -80,7 +80,7 @@ export default function Create() {
     brandImages: [],
     format: "4:5",
     quantity: isMonthMode ? 12 : 3,
-    imageQuantity: 0,
+    imageQuantity: isMonthMode ? 12 : 3,
     posts: [],
     currentPostIndex: 0,
     currentBlock: 0,
@@ -303,7 +303,7 @@ export default function Create() {
                       )}
                     </Button>
                     <p className="text-[10px] text-muted-foreground">
-                      3 créditos serão descontados
+                      créditos somente para imagens
                     </p>
                   </div>
                 ) : allBlocksDone ? (
@@ -356,7 +356,7 @@ export default function Create() {
                   </Button>
                   {step === 4 && !loading && (
                     <p className="text-[10px] text-muted-foreground">
-                      {wizardData.quantity + (wizardData.imageQuantity ?? 0)} créditos serão descontados
+                      {wizardData.imageQuantity ?? wizardData.quantity} crédito{(wizardData.imageQuantity ?? wizardData.quantity) !== 1 ? "s" : ""} (só imagens)
                     </p>
                   )}
                 </div>
