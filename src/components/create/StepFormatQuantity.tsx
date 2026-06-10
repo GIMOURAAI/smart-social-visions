@@ -141,7 +141,7 @@ export function StepFormatQuantity({ data, onChange }: Props) {
         </div>
       </div>
 
-      {/* Credit cost — images only */}
+      {/* Credit cost breakdown */}
       <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
         <div className="flex items-start gap-3">
           <span className="text-lg mt-0.5">💳</span>
@@ -150,21 +150,23 @@ export function StepFormatQuantity({ data, onChange }: Props) {
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">
-                  {data.quantity} posts (copy, legenda, hashtags)
+                  {data.quantity} post{data.quantity !== 1 ? "s" : ""} — copy, legenda, CTA, hashtags
                 </span>
-                <span className="font-semibold text-green-600">Incluso no plano</span>
+                <span className="font-semibold text-foreground">{data.quantity} crédito{data.quantity !== 1 ? "s" : ""}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">{imageQuantity} imagem{imageQuantity !== 1 ? "ns" : ""} gerada{imageQuantity !== 1 ? "s" : ""} com IA</span>
+                <span className="text-muted-foreground">
+                  {imageQuantity} imagem{imageQuantity !== 1 ? "ns" : ""} gerada{imageQuantity !== 1 ? "s" : ""} com IA
+                </span>
                 <span className="font-semibold text-foreground">{imageQuantity} crédito{imageQuantity !== 1 ? "s" : ""}</span>
               </div>
               <div className="border-t border-amber-500/20 pt-1.5 flex justify-between text-sm">
                 <span className="font-semibold text-foreground">Total a descontar</span>
-                <span className="font-bold text-amber-600">{imageQuantity} crédito{imageQuantity !== 1 ? "s" : ""}</span>
+                <span className="font-bold text-amber-600">{data.quantity + imageQuantity} crédito{(data.quantity + imageQuantity) !== 1 ? "s" : ""}</span>
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">
-              Créditos descontados após geração. Imagens ficam disponíveis por 7 dias.
+              Créditos descontados após a confirmação. Imagens ficam disponíveis por 7 dias.
             </p>
           </div>
         </div>

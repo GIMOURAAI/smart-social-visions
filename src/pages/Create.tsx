@@ -356,7 +356,7 @@ export default function Create() {
                   </Button>
                   {step === 4 && !loading && (
                     <p className="text-[10px] text-muted-foreground">
-                      {wizardData.imageQuantity ?? wizardData.quantity} crédito{(wizardData.imageQuantity ?? wizardData.quantity) !== 1 ? "s" : ""} (só imagens)
+                      {wizardData.quantity + (wizardData.imageQuantity ?? wizardData.quantity)} créditos serão descontados
                     </p>
                   )}
                 </div>
