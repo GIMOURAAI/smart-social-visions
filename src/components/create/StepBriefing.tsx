@@ -23,6 +23,24 @@ interface Props {
 export function StepBriefing({ data, onChange }: Props) {
   return (
     <div className="space-y-6">
+      {/* Brand name */}
+      <div>
+        <label className="block text-sm font-semibold text-foreground mb-1">
+          Nome da sua marca ou negócio
+        </label>
+        <p className="text-xs text-muted-foreground mb-2">
+          Aparece nas legendas, CTAs e títulos gerados
+        </p>
+        <input
+          type="text"
+          value={data.brandName ?? ""}
+          onChange={(e) => onChange({ brandName: e.target.value })}
+          placeholder="Ex: Studio Bella, Clínica Saúde Plena, Dr. Rafael..."
+          className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+        />
+      </div>
+
+      {/* Niche */}
       <div>
         <h3 className="text-sm font-semibold text-foreground mb-1">
           Qual é o seu nicho?
@@ -44,11 +62,7 @@ export function StepBriefing({ data, onChange }: Props) {
                 }`}
               >
                 <span className="text-2xl leading-none">{n.emoji}</span>
-                <span
-                  className={`text-[11px] font-semibold leading-tight ${
-                    isSelected ? "text-primary" : "text-foreground"
-                  }`}
-                >
+                <span className={`text-[11px] font-semibold leading-tight ${isSelected ? "text-primary" : "text-foreground"}`}>
                   {n.label}
                 </span>
               </button>
@@ -57,26 +71,23 @@ export function StepBriefing({ data, onChange }: Props) {
         </div>
       </div>
 
+      {/* Theme */}
       <div>
-        <label
-          htmlFor="theme-textarea"
-          className="block text-sm font-semibold text-foreground mb-1"
-        >
+        <label className="block text-sm font-semibold text-foreground mb-1">
           Sobre o que você quer postar?
         </label>
         <p className="text-xs text-muted-foreground mb-2">
-          Descreva o tema, promoção ou assunto do post
+          Descreva o tema, promoção, serviço ou assunto principal
         </p>
         <textarea
-          id="theme-textarea"
           value={data.theme}
           onChange={(e) => onChange({ theme: e.target.value })}
-          placeholder="Ex: Promoção de fim de semana com 30% de desconto em todos os serviços"
+          placeholder="Ex: Promoção de fim de semana com 30% de desconto em todos os serviços. Quero atrair clientes novos e mostrar resultados reais."
           rows={4}
           className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
         />
         <p className="text-[10px] text-muted-foreground mt-1 text-right">
-          {data.theme.length}/500
+          {data.theme.length} caracteres
         </p>
       </div>
     </div>

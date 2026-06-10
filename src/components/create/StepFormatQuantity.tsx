@@ -13,11 +13,25 @@ const FORMATS: {
   { value: "16:9", label: "YouTube", sublabel: "16:9", widthClass: "w-12", heightClass: "h-7" },
 ];
 
-const QUANTITIES = [
-  { value: 3, label: "3 posts", sublabel: "1 bloco estratégico", badge: null },
-  { value: 6, label: "6 posts", sublabel: "2 blocos (Dor + Autoridade)", badge: null },
-  { value: 9, label: "9 posts", sublabel: "3 blocos completos", badge: "Popular" },
-  { value: 12, label: "12 posts", sublabel: "Mês completo — 4 blocos PostLab", badge: "Completo" },
+const DAYS_OPTIONS = [
+  { days: 7, posts: 7, label: "7 dias", sublabel: "1 semana de conteúdo", badge: null },
+  { days: 15, posts: 15, label: "15 dias", sublabel: "2 semanas completas", badge: "Popular" },
+  { days: 30, posts: 30, label: "30 dias", sublabel: "1 mês — calendário completo", badge: "Completo" },
+];
+
+const PILOT_OPTIONS = [
+  {
+    value: 1,
+    label: "1 post piloto",
+    desc: "Gera 1 post + imagem primeiro para você aprovar o estilo antes de continuar",
+    icon: "🔍",
+  },
+  {
+    value: 3,
+    label: "3 posts piloto",
+    desc: "Gera 3 posts + imagens do bloco Dor para validar o estilo e o conteúdo",
+    icon: "🎯",
+  },
 ];
 
 interface Props {
@@ -26,6 +40,10 @@ interface Props {
 }
 
 export function StepFormatQuantity({ data, onChange }: Props) {
+  const selectedDays = data.daysQuantity ?? 7;
+  const selectedOption = DAYS_OPTIONS.find((o) => o.days === selectedDays) ?? DAYS_OPTIONS[0];
+  const pilotQuantity = data.pilotQuantity ?? 1;
+
   return (
     <div className="space-y-8">
       {/* Format */}
@@ -46,11 +64,9 @@ export function StepFormatQuantity({ data, onChange }: Props) {
                 }`}
               >
                 <div className="flex items-center justify-center h-12">
-                  <div
-                    className={`${fmt.widthClass} ${fmt.heightClass} rounded border-2 transition-all ${
-                      isSelected ? "border-primary bg-primary/20" : "border-muted-foreground/40 bg-muted"
-                    }`}
-                  />
+                  <div className={`${fmt.widthClass} ${fmt.heightClass} rounded border-2 transition-all ${
+                    isSelected ? "border-primary bg-primary/20" : "border-muted-foreground/40 bg-muted"
+                  }`} />
                 </div>
                 <div className="text-center">
                   <p className={`text-xs font-bold leading-tight ${isSelected ? "text-primary" : "text-foreground"}`}>
@@ -64,36 +80,36 @@ export function StepFormatQuantity({ data, onChange }: Props) {
         </div>
       </div>
 
-      {/* Quantity */}
+      {/* Days quantity */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-1">Quantos posts gerar?</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-1">Para quantos dias?</h3>
         <p className="text-xs text-muted-foreground mb-3">
-          Geração em blocos PostLab: Dor → Autoridade → Valor → Venda (3 posts por bloco)
+          Gerado em blocos PostLab de 3 posts — Dor → Autoridade → Valor → Venda
         </p>
-        <div className="grid grid-cols-2 gap-3">
-          {QUANTITIES.map((q) => {
-            const isSelected = data.quantity === q.value;
+        <div className="grid grid-cols-3 gap-3">
+          {DAYS_OPTIONS.map((opt) => {
+            const isSelected = selectedDays === opt.days;
             return (
               <button
-                key={q.value}
-                onClick={() => onChange({ quantity: q.value, imageQuantity: q.value })}
+                key={opt.days}
+                onClick={() => onChange({ daysQuantity: opt.days, quantity: opt.posts })}
                 className={`rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 relative ${
                   isSelected
                     ? "border-primary bg-primary/5 shadow-glow"
                     : "border-border bg-card hover:border-primary/40"
                 }`}
               >
-                {q.badge && (
+                {opt.badge && (
                   <span className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">
-                    {q.badge}
+                    {opt.badge}
                   </span>
                 )}
                 <p className={`text-base font-bold mb-0.5 ${isSelected ? "text-primary" : "text-foreground"}`}>
-                  {q.label}
+                  {opt.label}
                 </p>
-                <p className="text-[11px] text-muted-foreground leading-tight">{q.sublabel}</p>
+                <p className="text-[11px] text-muted-foreground leading-tight">{opt.sublabel}</p>
                 <p className="text-[10px] text-primary/70 font-semibold mt-1.5">
-                  {q.value} crédito{q.value !== 1 ? "s" : ""}
+                  {opt.posts} créditos
                 </p>
               </button>
             );
@@ -101,16 +117,46 @@ export function StepFormatQuantity({ data, onChange }: Props) {
         </div>
       </div>
 
-      {/* Credit info */}
+      {/* Pilot quantity */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground mb-1">Quantos posts gerar primeiro?</h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Veja o resultado antes de continuar — mesmos créditos, você aprova o estilo
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {PILOT_OPTIONS.map((opt) => {
+            const isSelected = pilotQuantity === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => onChange({ pilotQuantity: opt.value })}
+                className={`rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 ${
+                  isSelected
+                    ? "border-primary bg-primary/5 shadow-glow"
+                    : "border-border bg-card hover:border-primary/40"
+                }`}
+              >
+                <div className="text-xl mb-2">{opt.icon}</div>
+                <p className={`text-sm font-bold mb-1 ${isSelected ? "text-primary" : "text-foreground"}`}>
+                  {opt.label}
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{opt.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Credit summary */}
       <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
         <div className="flex items-start gap-3">
           <span className="text-lg mt-0.5">💳</span>
-          <div className="flex-1">
+          <div>
             <p className="text-sm font-semibold text-foreground mb-1">
-              Esta geração vai descontar <span className="text-amber-600">{data.quantity} crédito{data.quantity !== 1 ? "s" : ""}</span> do seu saldo
+              Total: <span className="text-amber-600">{selectedOption.posts} créditos</span>
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Cada post inclui: copy estratégico, legenda completa, CTA, hashtags, gancho viral, story e imagem gerada com IA — tudo por 1 crédito. Sem saldo, nenhuma geração é realizada.
+              1 crédito = 1 post completo (copy + legenda + CTA + hashtags + imagem IA). Descontados conforme cada bloco é aprovado e gerado.
             </p>
           </div>
         </div>

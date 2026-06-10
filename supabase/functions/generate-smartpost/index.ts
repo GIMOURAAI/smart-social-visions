@@ -11,11 +11,13 @@ interface SmartPostRequest {
   objective: string;
   tone: string;
   visualStyle: string;
+  feedPattern: string;
+  brandName: string;
   format: string;
   quantity: number;
   imageQuantity: number;
   brandImages?: string[];
-  blockIndex?: number; // 0-3 for Dor/Autoridade/Valor/Venda
+  blockIndex?: number;
 }
 
 interface GeneratedPost {
@@ -149,11 +151,13 @@ Tipos de conteúdo: ${block.tipos.join(", ")}
 Intenções emocionais: ${block.intencoes.join(", ")}
 
 ## CONTEXTO DO CLIENTE
+- Marca/Negócio: ${req.brandName}
 - Nicho: ${req.niche}
 - Tema/Assunto: ${req.theme}
 - Objetivo: ${req.objective}
 - Tom de voz: ${req.tone}
 - Formato visual: ${req.format}
+- Padrão de cores do feed: ${req.feedPattern}
 
 ## ESTILO VISUAL — ${temaInfo.name}
 Template base para prompts visuais:
@@ -187,7 +191,8 @@ A: Ação — CTA claro e específico
 - hashtags: 10-15 hashtags relevantes em português e inglês
 - storyComplementar: story completo e detalhado que complementa o post
 - promptVisual: SEMPRE em inglês, ultra-detalhado, cinematográfico
-- Adapte o template visual para o nicho "${req.niche}"
+- Adapte o template visual para o nicho "${req.niche}" e aplique o padrão de feed "${req.feedPattern}" nos fundos
+- Use o nome da marca "${req.brandName}" nas legendas, CTAs e onde fizer sentido
 
 ## FORMATO DE SAÍDA — JSON VÁLIDO APENAS
 {"posts":[{"tema":"string","bloco":"${block.name}","objetivo":"string","tipoConteudo":"string","intencaoEmocional":"string","gancho":"string impactante","tituloArte":"string bold para design","subtituloArte":"string complemento","textoArte":"string linhas separadas por \\n","legenda":"string completa e envolvente","cta":"string persuasivo","hashtags":"string hashtags separadas por espaço","estiloVisual":"${temaInfo.name}","promptVisual":"string ultra-detailed English cinematic prompt","storyComplementar":"string story completo","creditoCusto":1}]}`;
@@ -233,7 +238,7 @@ serve(async (req) => {
 
   try {
     const body: SmartPostRequest = await req.json();
-    const { niche, theme, objective, tone, format, quantity, imageQuantity = 0, brandImages, blockIndex = 0 } = body;
+    const { niche, theme, objective, tone, format, quantity, imageQuantity = 0, brandImages, blockIndex = 0, feedPattern = "", brandName = "" } = body;
 
     const systemPrompt = buildSystemPrompt(body, blockIndex);
     const postsToGenerate = Math.min(quantity, 3);
