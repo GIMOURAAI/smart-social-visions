@@ -8,13 +8,9 @@ import {
   LogOut,
   Sparkles,
   ArrowLeft,
-  BookOpen,
-  Volume2,
-  PenLine,
-  TrendingUp,
-  Image as ImageIcon,
-  Layers,
   ArrowRight,
+  Image as ImageIcon,
+  CalendarDays,
 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
@@ -26,6 +22,8 @@ interface Post {
   image_url: string | null;
   created_at: string;
 }
+
+const PLAN_LIMIT = 30;
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -86,42 +84,16 @@ export default function Dashboard() {
   }
 
   const username = user?.email?.split("@")[0] ?? "criador";
-  const totalPosts = posts.length;
-  // métricas decorativas
-  const goal = 20;
-  const progress = Math.min(100, Math.round((totalPosts / goal) * 100));
-
-  const quickActions = [
-    {
-      label: "Criar Post",
-      desc: "Wizard completo",
-      icon: Sparkles,
-      onClick: () => navigate("/create"),
-      gradient: "from-[hsl(258_70%_45%)] to-[hsl(275_75%_60%)]",
-    },
-    {
-      label: "Carrossel",
-      desc: "Vários posts",
-      icon: Layers,
-      onClick: () => navigate("/create"),
-      gradient: "from-[hsl(285_75%_65%)] to-[hsl(310_80%_72%)]",
-    },
-    {
-      label: "Reels / Story",
-      desc: "Formato 9:16",
-      icon: ImageIcon,
-      onClick: () => navigate("/create"),
-      gradient: "from-[hsl(258_70%_45%)] to-[hsl(265_75%_55%)]",
-    },
-  ];
+  const used = posts.length;
+  const remaining = Math.max(0, PLAN_LIMIT - used);
 
   return (
     <div className="min-h-screen bg-gradient-soft">
-      {/* HERO escuro roxo (estilo referência) */}
+      {/* HERO escuro roxo */}
       <section className="relative overflow-hidden bg-gradient-hero text-white rounded-b-[2.5rem] shadow-glow">
         {/* glows decorativos */}
         <div className="pointer-events-none absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 -left-16 w-72 h-72 rounded-full bg-[hsl(var(--pink-glow))]/20 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 -left-16 w-72 h-72 rounded-full bg-[hsl(var(--pink-glow,285_75%_65%))]/20 blur-3xl" />
 
         {/* topo */}
         <div className="relative z-10 px-5 pt-6 flex items-center justify-between">
@@ -132,12 +104,23 @@ export default function Dashboard() {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
+
+          {/* Brand + Plano */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
-            <span className="font-bold tracking-tight">SmartSocial</span>
+            <span className="font-bold tracking-tight">
+              SmartPost
+              <span className="bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-transparent">
+                AI
+              </span>
+            </span>
+            <span className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow">
+              Pro
+            </span>
           </div>
+
           <button
             onClick={handleLogout}
             className="w-10 h-10 rounded-full bg-white/15 backdrop-blur flex items-center justify-center hover:bg-white/25 transition"
@@ -147,102 +130,77 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* saudação + progresso */}
+        {/* saudação */}
         <div className="relative z-10 px-6 pt-10 pb-12">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs uppercase tracking-[0.25em] text-white/60 mb-2">
-                Workspace
-              </p>
-              <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">
-                Olá, {username}! 👋
-              </h1>
-              <p className="text-white/75 mt-2 text-sm md:text-base max-w-md">
-                Pronto para criar conteúdo que converte? Vamos começar.
-              </p>
-            </div>
+          <p className="text-xs uppercase tracking-[0.25em] text-white/60 mb-2">
+            Workspace
+          </p>
+          <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">
+            Olá, {username}! 👋
+          </h1>
+          <p className="text-white/75 mt-2 text-sm md:text-base max-w-md">
+            Pronto para criar conteúdo que converte? Vamos começar.
+          </p>
 
-            {/* anel de progresso */}
-            <div className="relative w-20 h-20 shrink-0">
-              <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="34"
-                  stroke="hsl(0 0% 100% / 0.2)"
-                  strokeWidth="6"
-                  fill="none"
-                />
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="34"
-                  stroke="white"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  fill="none"
-                  strokeDasharray={2 * Math.PI * 34}
-                  strokeDashoffset={
-                    2 * Math.PI * 34 - (2 * Math.PI * 34 * progress) / 100
-                  }
-                  className="transition-all duration-700"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-sm font-bold">
-                {progress}%
-              </div>
-            </div>
-          </div>
-
-          {/* stats inline */}
+          {/* stats pills */}
           <div className="mt-8 grid grid-cols-3 gap-3">
-            <StatPill label="Posts" value={totalPosts} />
-            <StatPill label="Meta" value={goal} />
-            <StatPill label="Streak" value={"7d"} />
+            <StatPill label="Posts usados" value={used} />
+            <StatPill label="Limite do plano" value={PLAN_LIMIT} />
+            <StatPill label="Créditos restantes" value={remaining} />
           </div>
         </div>
       </section>
 
-      {/* CARD DE AÇÕES (sobreposto, estilo card branco da referência) */}
+      {/* CARD DE AÇÕES */}
       <section className="px-4 -mt-8 relative z-20">
-        <div className="bg-card rounded-3xl shadow-card p-5 md:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-bold text-foreground">Criar agora</h2>
-              <p className="text-xs text-muted-foreground">
-                Escolha o formato e siga o wizard
-              </p>
-            </div>
-            <Button
-              size="sm"
-              onClick={() => navigate("/create")}
-              className="rounded-full bg-gradient-primary border-0 shadow-glow"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Novo
-            </Button>
+        <div className="bg-card rounded-3xl shadow-card p-5 md:p-6 space-y-3">
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-foreground">Criar agora</h2>
+            <p className="text-xs text-muted-foreground">
+              Escolha o que deseja criar
+            </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            {quickActions.map((a) => {
-              const Icon = a.icon;
-              return (
-                <button
-                  key={a.label}
-                  onClick={a.onClick}
-                  className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${a.gradient} p-4 text-left text-white shadow-soft hover:shadow-glow transition-all hover:-translate-y-0.5`}
-                >
-                  <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center mb-6">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <p className="font-semibold text-sm leading-tight">
-                    {a.label}
-                  </p>
-                  <p className="text-[10px] text-white/75 mt-0.5">{a.desc}</p>
-                </button>
-              );
-            })}
-          </div>
+          {/* Main action: criar novo post */}
+          <button
+            onClick={() => navigate("/create")}
+            className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[hsl(258_70%_45%)] to-[hsl(275_75%_60%)] p-5 text-left text-white shadow-glow hover:shadow-[0_0_40px_hsl(258_70%_45%/0.5)] transition-all hover:-translate-y-0.5"
+          >
+            <div className="pointer-events-none absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10 blur-2xl" />
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shrink-0">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-base">Criar novo post</p>
+                <p className="text-xs text-white/75 mt-0.5">
+                  Wizard completo com IA — briefing, estilo e legenda
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            </div>
+          </button>
+
+          {/* Secondary action: 7 days */}
+          <button
+            onClick={() => navigate("/create?mode=7days")}
+            className="group relative w-full overflow-hidden rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 p-5 text-left transition-all hover:-translate-y-0.5"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0">
+                <CalendarDays className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-base text-foreground">
+                  Criar conteúdo para 7 dias
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Gere uma semana completa de posts de uma vez
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-primary opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            </div>
+          </button>
         </div>
       </section>
 
@@ -283,13 +241,12 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="space-y-3">
-            {posts.map((post, idx) => (
+            {posts.map((post) => (
               <button
                 key={post.id}
                 onClick={() => navigate("/create")}
                 className="w-full group bg-card rounded-2xl p-4 shadow-card hover:shadow-glow transition-all flex items-center gap-4 text-left hover:-translate-y-0.5"
               >
-                {/* thumb / placeholder */}
                 <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-card flex items-center justify-center">
                   {post.image_url ? (
                     <img
@@ -302,7 +259,6 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                {/* infos */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm text-foreground truncate">
                     {post.title || "Sem título"}
@@ -314,13 +270,6 @@ export default function Dashboard() {
                     <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                       {post.style}
                     </span>
-                  </div>
-                  {/* mini progress (decorativo) */}
-                  <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-primary rounded-full"
-                      style={{ width: `${((idx + 1) * 23) % 100 || 40}%` }}
-                    />
                   </div>
                 </div>
 
@@ -334,28 +283,6 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-
-        {/* Exercícios / atalhos extras estilo referência */}
-        <h3 className="text-xl font-bold text-foreground tracking-tight mt-10 mb-4">
-          Ferramentas
-        </h3>
-        <div className="grid grid-cols-3 gap-3">
-          <ToolCard
-            icon={BookOpen}
-            label="Templates"
-            color="from-[hsl(258_70%_45%)] to-[hsl(265_75%_55%)]"
-          />
-          <ToolCard
-            icon={Volume2}
-            label="Áudio"
-            color="from-[hsl(285_75%_70%)] to-[hsl(305_80%_75%)]"
-          />
-          <ToolCard
-            icon={PenLine}
-            label="Legendas"
-            color="from-[hsl(258_70%_45%)] to-[hsl(275_75%_55%)]"
-          />
-        </div>
       </section>
     </div>
   );
@@ -369,24 +296,5 @@ function StatPill({ label, value }: { label: string; value: string | number }) {
         {label}
       </p>
     </div>
-  );
-}
-
-function ToolCard({
-  icon: Icon,
-  label,
-  color,
-}: {
-  icon: typeof BookOpen;
-  label: string;
-  color: string;
-}) {
-  return (
-    <button
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${color} aspect-square p-4 flex flex-col items-center justify-center text-white shadow-soft hover:shadow-glow hover:-translate-y-0.5 transition-all`}
-    >
-      <Icon className="w-7 h-7 mb-2" strokeWidth={1.8} />
-      <span className="text-xs font-semibold">{label}</span>
-    </button>
   );
 }

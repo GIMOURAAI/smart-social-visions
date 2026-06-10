@@ -1,194 +1,80 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Instagram, Twitter, Linkedin, Mail, Sparkles, Copy, Wand2, Zap } from "lucide-react";
-import { HeroButton } from "@/components/ui/button-variants";
+import { Instagram, Twitter, Linkedin, Mail, Sparkles, CheckCircle2, Wand2 } from "lucide-react";
 import { PricingCard } from "@/components/PricingCard";
-import { Header } from "@/components/Header";
 import heroImage from "@/assets/hero-creator.jpg";
 import postFormats from "@/assets/post-formats.jpg";
-import cloneAi from "@/assets/clone-ai.jpg";
-import customServices from "@/assets/custom-services.jpg";
 
 const Index = () => {
-  const [lang, setLang] = useState<"pt" | "en" | "es">("pt");
   const navigate = useNavigate();
 
-  const translations = {
-    pt: {
-      hero: {
-        title: "Crie. Clone. Inspire.",
-        subtitle: "O futuro do social media começa aqui.",
-        cta1: "Começar Agora",
-        cta2: "Ver Demo",
-      },
-      formats: {
-        title: "Crie Posts em Todos os Formatos",
-        subtitle: "Do feed ao stories, do TikTok ao YouTube. Todos os formatos, um só lugar.",
-        format1: "1:1 - Feed Perfeito",
-        format2: "3:4 - Retratos",
-        format3: "9:16 - Stories & Reels",
-        format4: "16:9 - YouTube",
-      },
-      clone: {
-        title: "Clone Posts com IA",
-        subtitle: "Encontrou um post inspirador? Clone o estilo com um clique usando nossa IA avançada.",
-        feature1: "Análise automática de estilo",
-        feature2: "Adaptação inteligente",
-        feature3: "Resultados em segundos",
-      },
-      pricing: {
-        title: "Planos para Todo Criador",
-        free: {
-          title: "Free",
-          price: "R$ 0",
-          period: "mês",
-          features: ["5 posts/mês", "Todos os formatos", "Watermark", "Suporte por email"],
-        },
-        premium: {
-          title: "Premium",
-          price: "R$ 29",
-          period: "mês",
-          features: ["200 créditos/mês", "Sem watermark", "Clone de posts", "Estilos premium", "Suporte prioritário"],
-        },
-        pro: {
-          title: "Pro Agency",
-          price: "R$ 99",
-          period: "mês",
-          features: ["600 créditos/mês", "5 usuários", "API de integração", "White label", "Gestor de conta dedicado"],
-        },
-      },
-      custom: {
-        title: "Precisando de Algo Sob Medida?",
-        subtitle: "Criamos seu aplicativo MVP em 30 dias. A partir de R$ 10.000. Pagamento antecipado via PayPal ou Fiverr.",
-        cta: "Falar com Especialista",
-      },
-      footer: {
-        tagline: "O futuro do social media começa aqui.",
-        rights: "Todos os direitos reservados.",
-      },
-    },
-    en: {
-      hero: {
-        title: "Create. Clone. Inspire.",
-        subtitle: "The future of social media starts here.",
-        cta1: "Get Started",
-        cta2: "Watch Demo",
-      },
-      formats: {
-        title: "Create Posts in All Formats",
-        subtitle: "From feed to stories, TikTok to YouTube. All formats, one place.",
-        format1: "1:1 - Perfect Feed",
-        format2: "3:4 - Portraits",
-        format3: "9:16 - Stories & Reels",
-        format4: "16:9 - YouTube",
-      },
-      clone: {
-        title: "Clone Posts with AI",
-        subtitle: "Found an inspiring post? Clone the style with one click using our advanced AI.",
-        feature1: "Automatic style analysis",
-        feature2: "Smart adaptation",
-        feature3: "Results in seconds",
-      },
-      pricing: {
-        title: "Plans for Every Creator",
-        free: {
-          title: "Free",
-          price: "$0",
-          period: "month",
-          features: ["5 posts/month", "All formats", "Watermark", "Email support"],
-        },
-        premium: {
-          title: "Premium",
-          price: "$7",
-          period: "month",
-          features: ["200 credits/month", "No watermark", "Post cloning", "Premium styles", "Priority support"],
-        },
-        pro: {
-          title: "Pro Agency",
-          price: "$25",
-          period: "month",
-          features: ["600 credits/month", "5 users", "API integration", "White label", "Dedicated account manager"],
-        },
-      },
-      custom: {
-        title: "Need Something Custom?",
-        subtitle: "We build your MVP app in 30 days. Starting from $2,000. Upfront payment via PayPal or Fiverr.",
-        cta: "Talk to Specialist",
-      },
-      footer: {
-        tagline: "The future of social media starts here.",
-        rights: "All rights reserved.",
-      },
-    },
-    es: {
-      hero: {
-        title: "Crea. Clona. Inspira.",
-        subtitle: "El futuro de las redes sociales comienza aquí.",
-        cta1: "Empezar Ahora",
-        cta2: "Ver Demo",
-      },
-      formats: {
-        title: "Crea Publicaciones en Todos los Formatos",
-        subtitle: "Del feed a las historias, de TikTok a YouTube. Todos los formatos, un solo lugar.",
-        format1: "1:1 - Feed Perfecto",
-        format2: "3:4 - Retratos",
-        format3: "9:16 - Historias y Reels",
-        format4: "16:9 - YouTube",
-      },
-      clone: {
-        title: "Clona Publicaciones con IA",
-        subtitle: "¿Encontraste una publicación inspiradora? Clona el estilo con un clic usando nuestra IA avanzada.",
-        feature1: "Análisis automático de estilo",
-        feature2: "Adaptación inteligente",
-        feature3: "Resultados en segundos",
-      },
-      pricing: {
-        title: "Planes para Cada Creador",
-        free: {
-          title: "Gratis",
-          price: "$0",
-          period: "mes",
-          features: ["5 publicaciones/mes", "Todos los formatos", "Marca de agua", "Soporte por email"],
-        },
-        premium: {
-          title: "Premium",
-          price: "$7",
-          period: "mes",
-          features: ["200 créditos/mes", "Sin marca de agua", "Clonación de posts", "Estilos premium", "Soporte prioritario"],
-        },
-        pro: {
-          title: "Pro Agency",
-          price: "$25",
-          period: "mes",
-          features: ["600 créditos/mes", "5 usuarios", "Integración API", "Marca blanca", "Gestor de cuenta dedicado"],
-        },
-      },
-      custom: {
-        title: "¿Necesitas Algo a Medida?",
-        subtitle: "Creamos tu app MVP en 30 días. Desde €2.000. Pago anticipado por PayPal o Fiverr.",
-        cta: "Hablar con Especialista",
-      },
-      footer: {
-        tagline: "El futuro de las redes sociales comienza aquí.",
-        rights: "Todos los derechos reservados.",
-      },
-    },
-  };
+  const deliverables = [
+    "Gancho",
+    "Título e subtítulo",
+    "Legenda completa",
+    "CTA estratégico",
+    "Hashtags relevantes",
+    "Imagem/design pronto",
+    "Prompt visual",
+    "Story complementar",
+  ];
 
-  const t = translations[lang];
+  const visualStyles = [
+    {
+      name: "Premium Dark",
+      description: "Sofisticado, escuro e elegante",
+      color: "from-gray-800 to-gray-900",
+      dot: "bg-gray-400",
+    },
+    {
+      name: "Futurista Roxo",
+      description: "Tech, vibrante e moderno",
+      color: "from-purple-700 to-violet-900",
+      dot: "bg-purple-400",
+    },
+    {
+      name: "Feminino Elegante",
+      description: "Rose, delicado e sofisticado",
+      color: "from-pink-400 to-rose-600",
+      dot: "bg-pink-300",
+    },
+    {
+      name: "Minimalista Clean",
+      description: "Branco, espaço e clareza",
+      color: "from-slate-100 to-slate-200",
+      dot: "bg-slate-400",
+      dark: true,
+    },
+    {
+      name: "Editorial Sofisticado",
+      description: "Clássico, tipográfico e premium",
+      color: "from-amber-800 to-stone-900",
+      dot: "bg-amber-400",
+    },
+    {
+      name: "Tech Neon",
+      description: "Brilhante, digital e chamativo",
+      color: "from-cyan-500 to-blue-700",
+      dot: "bg-cyan-300",
+    },
+  ];
+
+  const steps = [
+    { number: "1", title: "Escolha seu nicho", description: "Selecione a área de atuação do seu negócio ou perfil." },
+    { number: "2", title: "Descreva o tema", description: "Informe o assunto ou objetivo do post que deseja criar." },
+    { number: "3", title: "Gere seus posts", description: "A IA cria textos, legendas, CTAs e hashtags prontos." },
+    { number: "4", title: "Baixe e publique", description: "Exporte o conteúdo e poste direto nas redes sociais." },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-soft">
-      {/* Hero Section — card roxo com imagem nítida e CTA flutuante */}
+      {/* Hero Section */}
       <section className="relative min-h-screen p-3 md:p-6">
         <div className="relative w-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] rounded-[2.5rem] overflow-hidden shadow-2xl">
-          {/* Imagem de fundo nítida */}
           <img
             src={heroImage}
             alt="Criadora de conteúdo trabalhando no celular e laptop"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          {/* Overlay roxo (multiply) que dá o tom da referência */}
           <div
             className="absolute inset-0 mix-blend-multiply"
             style={{ background: "hsl(258 75% 45% / 0.85)" }}
@@ -201,7 +87,7 @@ const Index = () => {
             }}
           />
 
-          {/* Top bar: menu + language selector */}
+          {/* Top bar */}
           <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-5 md:p-8">
             <button
               aria-label="Menu"
@@ -211,70 +97,55 @@ const Index = () => {
               <span className="block h-0.5 w-5 bg-white rounded-full" />
               <span className="block h-0.5 w-7 bg-white rounded-full" />
             </button>
-            <div className="flex gap-2">
-              {(["pt", "en", "es"] as const).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  className={cn(
-                    "px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all duration-300",
-                    lang === l
-                      ? "bg-primary text-primary-foreground shadow-lg"
-                      : "bg-white/95 text-foreground hover:bg-white"
-                  )}
-                >
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
+            <button
+              onClick={() => navigate("/auth")}
+              className="px-5 py-2 rounded-full text-sm font-bold tracking-wide bg-white/95 text-foreground hover:bg-white transition-all duration-300"
+            >
+              Entrar
+            </button>
           </div>
 
-          {/* Título grande à esquerda */}
+          {/* Hero text */}
           <div className="relative z-10 h-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] flex flex-col justify-end px-7 md:px-14 pb-44 md:pb-52">
             <h1 className="text-white font-extrabold leading-[0.95] tracking-tight text-5xl sm:text-6xl md:text-8xl max-w-4xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
-              {t.hero.title}
+              SmartPostAI é uma IA que cria o conteúdo de um mês inteiro em minutos.
             </h1>
             <p className="mt-5 md:mt-7 text-white/85 text-lg md:text-2xl max-w-xl">
-              {t.hero.subtitle}
+              Crie posts, legendas, imagens, CTAs, hashtags e artes profissionais para qualquer nicho — tudo em um único lugar.
             </p>
           </div>
 
-          {/* Card branco flutuante com CTA */}
+          {/* CTA card */}
           <div className="absolute bottom-5 left-5 right-5 md:bottom-8 md:left-8 md:right-8 z-20">
             <div className="bg-card rounded-3xl p-5 md:p-6 shadow-2xl flex flex-col sm:flex-row gap-3 items-stretch">
               <button
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate("/auth")}
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-widest text-base md:text-lg py-5 rounded-2xl transition-all duration-300 hover:shadow-glow active:scale-[0.98]"
               >
-                {t.hero.cta1.toUpperCase()}
+                COMEÇAR AGORA
               </button>
               <button
                 onClick={() => {
-                  const pricingSection = document.getElementById('pricing');
-                  pricingSection?.scrollIntoView({ behavior: 'smooth' });
+                  document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
                 }}
                 className="flex-1 sm:flex-none sm:px-8 border-2 border-primary text-primary hover:bg-primary/5 font-bold tracking-wide text-base md:text-lg py-5 rounded-2xl transition-all duration-300"
               >
-                {t.hero.cta2}
+                Ver planos
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Post Formats Section — fundo claro */}
+      {/* How It Works Section */}
       <section className="py-24 bg-gradient-soft">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <Wand2 className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="text-5xl font-bold mb-4 text-foreground">{t.formats.title}</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.formats.subtitle}</p>
+            <h2 className="text-5xl font-bold mb-4 text-foreground">Como funciona</h2>
           </div>
-          <div className="mb-12">
-            <img src={postFormats} alt="Post formats" className="w-full max-w-5xl mx-auto rounded-3xl shadow-card" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {[t.formats.format1, t.formats.format2, t.formats.format3, t.formats.format4].map((format, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto mb-16">
+            {steps.map((step, i) => (
               <div
                 key={i}
                 className="p-6 rounded-2xl border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-glow text-center"
@@ -293,14 +164,22 @@ const Index = () => {
                 >
                   <Sparkles className="w-7 h-7 text-white" strokeWidth={2.5} />
                 </div>
-                <p className="font-bold text-white text-lg">{format}</p>
+                <p className="font-bold text-white text-lg mb-2">{step.title}</p>
+                <p className="text-white/75 text-sm">{step.description}</p>
               </div>
             ))}
+          </div>
+          <div>
+            <img
+              src={postFormats}
+              alt="Formatos de posts"
+              className="w-full max-w-5xl mx-auto rounded-3xl shadow-card"
+            />
           </div>
         </div>
       </section>
 
-      {/* Clone Section — card roxo grande dentro de fundo claro */}
+      {/* What SmartPostAI Delivers Section */}
       <section
         className="py-16"
         style={{
@@ -318,60 +197,137 @@ const Index = () => {
           >
             <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-pink-glow/40 blur-3xl" />
             <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-white/20 blur-3xl" />
-            <div className="relative grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-              <div className="order-2 md:order-1">
-                <Copy className="w-12 h-12 text-white mb-6" />
-                <h2 className="text-5xl font-bold mb-6 text-white">{t.clone.title}</h2>
-                <p className="text-xl text-white/80 mb-8">{t.clone.subtitle}</p>
-                <ul className="space-y-4">
-                  {[t.clone.feature1, t.clone.feature2, t.clone.feature3].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-white/15 backdrop-blur-sm border border-white/20">
-                        <Zap className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-lg text-white/90">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+            <div className="relative max-w-4xl mx-auto">
+              <div className="text-center mb-12">
+                <CheckCircle2 className="w-12 h-12 text-white mx-auto mb-6" />
+                <h2 className="text-4xl md:text-5xl font-bold text-white">O que o SmartPostAI entrega</h2>
               </div>
-              <div className="order-1 md:order-2">
-                <img src={cloneAi} alt="AI Cloning" className="w-full rounded-3xl shadow-2xl" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {deliverables.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4"
+                  >
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-white/15 border border-white/20">
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-lg font-semibold text-white">{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section — fundo claro */}
-      <section id="pricing" className="py-24 bg-gradient-soft">
+      {/* Visual Styles Section */}
+      <section className="py-24 bg-gradient-soft">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="text-5xl font-bold mb-4 text-foreground">{t.pricing.title}</h2>
+            <h2 className="text-5xl font-bold mb-4 text-foreground">Estilos visuais prontos</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Escolha um estilo pronto ou envie referências da sua marca
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <PricingCard {...t.pricing.free} planType="free" />
-            <PricingCard {...t.pricing.premium} isPopular planType="premium" />
-            <PricingCard {...t.pricing.pro} planType="pro" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {visualStyles.map((style, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "p-6 rounded-2xl bg-gradient-to-br shadow-lg border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-glow",
+                  style.color
+                )}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={cn("w-10 h-10 rounded-full flex-shrink-0", style.dot)} />
+                  <p className={cn("font-bold text-lg", style.dark ? "text-gray-800" : "text-white")}>
+                    {style.name}
+                  </p>
+                </div>
+                <p className={cn("text-sm", style.dark ? "text-gray-600" : "text-white/75")}>
+                  {style.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Custom Services — card roxo grande */}
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 bg-gradient-soft">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h2 className="text-5xl font-bold mb-4 text-foreground">Planos para todo criador</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <PricingCard
+              title="Solo"
+              price="R$49"
+              period="mês"
+              planType="solo"
+              features={[
+                "15 posts/mês",
+                "5 imagens com IA",
+                "Legendas com CTA",
+                "Estilos prontos SmartPostAI",
+                "Copiar e baixar",
+                "Histórico",
+              ]}
+            />
+            <PricingCard
+              title="Pro"
+              price="R$79"
+              period="mês"
+              planType="pro"
+              isPopular
+              features={[
+                "30 posts/mês",
+                "15 imagens com IA",
+                "Tudo do Solo",
+                "Estilo da minha marca",
+                "Calendário editorial",
+                "Melhoria de qualidade",
+                "Stories e Reels",
+              ]}
+            />
+            <PricingCard
+              title="Business"
+              price="R$129"
+              period="mês"
+              planType="business"
+              features={[
+                "60 posts/mês",
+                "30 imagens com IA",
+                "Tudo do Pro",
+                "Até 3 marcas/perfis",
+                "Geração em lote",
+                "Suporte prioritário",
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Benefit Section */}
       <section className="py-16 bg-gradient-soft">
         <div className="container mx-auto px-3 md:px-6">
-          <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-hero p-8 md:p-16 shadow-2xl">
+          <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-hero p-8 md:p-16 shadow-2xl text-center">
             <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary-glow/30 blur-3xl" />
-            <div className="relative grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-              <div>
-                <img src={customServices} alt="Custom Services" className="w-full rounded-3xl shadow-2xl" />
-              </div>
-              <div>
-                <Wand2 className="w-12 h-12 text-white mb-6" />
-                <h2 className="text-5xl font-bold mb-6 text-white">{t.custom.title}</h2>
-                <p className="text-xl text-white/80 mb-8">{t.custom.subtitle}</p>
-                <HeroButton variant="primary" onClick={() => window.open('mailto:contato@exemplo.com', '_blank')}>{t.custom.cta}</HeroButton>
-              </div>
+            <div className="relative max-w-3xl mx-auto">
+              <p className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-6">
+                Pare de perder tempo pensando no que postar.
+              </p>
+              <p className="text-lg md:text-xl text-white/80 mb-10">
+                Gere conteúdos prontos, bonitos e estratégicos com IA — em minutos.
+              </p>
+              <button
+                onClick={() => navigate("/auth")}
+                className="inline-block bg-white text-primary font-bold tracking-wide text-lg px-10 py-5 rounded-2xl transition-all duration-300 hover:bg-white/90 hover:shadow-glow active:scale-[0.98]"
+              >
+                Criar meu primeiro post
+              </button>
             </div>
           </div>
         </div>
@@ -381,6 +337,9 @@ const Index = () => {
       <footer className="py-12 border-t border-white/10" style={{ background: "hsl(258 70% 12%)" }}>
         <div className="container mx-auto px-6">
           <div className="flex flex-col items-center gap-8">
+            <div className="text-2xl font-bold bg-gradient-to-r from-primary via-accent to-lime bg-clip-text text-transparent">
+              SmartPostAI
+            </div>
             <div className="flex gap-6">
               {[
                 { icon: Instagram, href: "#" },
@@ -399,9 +358,9 @@ const Index = () => {
               ))}
             </div>
             <div className="text-center">
-              <p className="text-lg text-white/80 mb-2">{t.footer.tagline}</p>
+              <p className="text-lg text-white/80 mb-2">IA que cria o conteúdo de um mês inteiro em minutos.</p>
               <p className="text-sm text-white/50">
-                © 2025 Smart Social Media. {t.footer.rights}
+                © 2025 SmartPostAI. Todos os direitos reservados.
               </p>
             </div>
           </div>

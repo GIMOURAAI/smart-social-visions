@@ -1,72 +1,77 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WizardProgress } from "@/components/create/WizardProgress";
-import { StepIntent } from "@/components/create/StepIntent";
-import { StepFormat } from "@/components/create/StepFormat";
-import { StepBusiness } from "@/components/create/StepBusiness";
-import { StepFrequency } from "@/components/create/StepFrequency";
-import { StepStyleNew } from "@/components/create/StepStyleNew";
-import { StepPreviewNew } from "@/components/create/StepPreviewNew";
-import { StepCaption } from "@/components/create/StepCaption";
-import { StepEdit } from "@/components/create/StepEdit";
+import { StepBriefing } from "@/components/create/StepBriefing";
+import { StepObjective } from "@/components/create/StepObjective";
+import { StepVisualStyle } from "@/components/create/StepVisualStyle";
+import { StepFormatQuantity } from "@/components/create/StepFormatQuantity";
+import { StepResult } from "@/components/create/StepResult";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Plus } from "lucide-react";
 
-export interface PostData {
+export interface GeneratedPost {
+  tema: string;
+  objetivo: string;
+  tipoConteudo: string;
+  intencaoEmocional: string;
   gancho: string;
-  titulo: string;
-  subtitulo: string;
+  tituloArte: string;
+  subtituloArte: string;
+  textoArte: string;
   legenda: string;
+  cta: string;
+  hashtags: string;
+  estiloVisual: string;
+  promptVisual: string;
+  storyComplementar: string;
   imageUrl: string;
-  format: string;
-  // legados (mantidos pra compat com StepEdit/CanvasEditor)
-  title?: string;
-  content?: string;
 }
 
 export interface WizardData {
-  intent: "venda" | "autoridade" | "viral" | "engajamento" | null;
-  format: "post" | "reels" | "story" | "youtube" | null;
-  formatRatio: "5:4" | "9:16" | "16:9" | "1:1";
-  business: string;
-  handle: string;
+  niche: string;
+  theme: string;
+  objective: string;
+  tone: string;
+  visualStyle: string;
+  brandImages: string[];
+  format: "4:5" | "1:1" | "9:16" | "16:9";
   quantity: number;
-  days: number;
-  palette: string;
-  customPalette: string[];
-  logoDataUrl: string;
-  borderPadding: number;
-  elementPadding: number;
-  posts: PostData[];
+  posts: GeneratedPost[];
   currentPostIndex: number;
 }
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 4;
+
+const STEP_TITLES = [
+  "Sobre o seu negócio",
+  "Objetivo e tom de voz",
+  "Estilo visual",
+  "Formato e quantidade",
+];
 
 export default function Create() {
-  const [user, setUser] = useState<any>(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const isSevenDays = searchParams.get("mode") === "7days";
+
   const [wizardData, setWizardData] = useState<WizardData>({
-    intent: null,
-    format: null,
-    formatRatio: "5:4",
-    business: "",
-    handle: "@",
-    quantity: 3,
-    days: 7,
-    palette: "purple",
-    customPalette: ["#7C3AED", "#A78BFA", "#F5F3FF"],
-    logoDataUrl: "",
-    borderPadding: 8,
-    elementPadding: 6,
+    niche: "",
+    theme: "",
+    objective: "",
+    tone: "",
+    visualStyle: "",
+    brandImages: [],
+    format: "4:5",
+    quantity: isSevenDays ? 7 : 1,
     posts: [],
     currentPostIndex: 0,
   });
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     (async () => {
@@ -75,9 +80,7 @@ export default function Create() {
       } = await supabase.auth.getSession();
       if (!session) {
         navigate("/auth");
-        return;
       }
-      setUser(session.user);
     })();
   }, [navigate]);
 
@@ -87,72 +90,112 @@ export default function Create() {
   const canProceed = (): boolean => {
     switch (step) {
       case 1:
-        return wizardData.intent !== null;
+        return wizardData.niche.trim().length > 0 && wizardData.theme.trim().length >= 5;
       case 2:
-        return wizardData.format !== null;
+        return wizardData.objective.trim().length > 0 && wizardData.tone.trim().length > 0;
       case 3:
         return (
-          wizardData.business.trim().length >= 5 &&
-          wizardData.handle.replace("@", "").trim().length >= 1
+          wizardData.visualStyle.trim().length > 0 ||
+          (wizardData.brandImages ?? []).length > 0
         );
       case 4:
-        return wizardData.quantity > 0 && wizardData.days > 0;
-      case 5:
-        return wizardData.customPalette.length > 0;
-      case 6:
-        return wizardData.posts.length > 0;
-      case 7:
-        return true;
-      case 8:
-        return true;
+        return wizardData.format.length > 0 && wizardData.quantity > 0;
       default:
         return false;
     }
   };
 
-  const titles = [
-    "Qual a intenção do post?",
-    "Qual o formato?",
-    "Sobre a empresa",
-    "Quantos posts e por quanto tempo?",
-    "Estilo, paleta e logo",
-    "Preview dos posts",
-    "Legendas com SEO",
-    "Editar arte final",
-  ];
+  const generateContent = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-smartpost", {
+        body: {
+          niche: wizardData.niche,
+          theme: wizardData.theme,
+          objective: wizardData.objective,
+          tone: wizardData.tone,
+          visualStyle: wizardData.visualStyle,
+          format: wizardData.format,
+          quantity: wizardData.quantity,
+        },
+      });
+
+      if (error) throw error;
+
+      const posts: GeneratedPost[] = Array.isArray(data?.posts)
+        ? data.posts
+        : data?.post
+        ? [data.post]
+        : [];
+
+      if (posts.length === 0) {
+        throw new Error("Nenhum post foi gerado. Tente novamente.");
+      }
+
+      updateWizardData({ posts, currentPostIndex: 0 });
+      setStep(5);
+    } catch (err: any) {
+      toast({
+        title: "Erro ao gerar posts",
+        description: err?.message ?? "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNext = () => {
+    if (step === 4) {
+      generateContent();
+    } else {
+      setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+    }
+  };
+
+  const handleBack = () => {
+    if (step === 5) {
+      setStep(4);
+    } else {
+      setStep((s) => Math.max(1, s - 1));
+    }
+  };
+
+  const handleRegenerate = () => {
+    generateContent();
+  };
+
+  const handleRegenerateImage = (_index: number) => {
+    toast({
+      title: "Regenerando imagem…",
+      description: "Esta funcionalidade estará disponível em breve.",
+    });
+  };
+
+  const handleEnhance = (_index: number) => {
+    toast({
+      title: "Melhorando qualidade…",
+      description: "Esta funcionalidade estará disponível em breve.",
+    });
+  };
 
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <StepIntent data={wizardData} updateData={updateWizardData} />;
+        return <StepBriefing data={wizardData} onChange={updateWizardData} />;
       case 2:
-        return <StepFormat data={wizardData} updateData={updateWizardData} />;
+        return <StepObjective data={wizardData} onChange={updateWizardData} />;
       case 3:
-        return <StepBusiness data={wizardData} updateData={updateWizardData} />;
+        return <StepVisualStyle data={wizardData} onChange={updateWizardData} />;
       case 4:
-        return (
-          <StepFrequency data={wizardData} updateData={updateWizardData} />
-        );
+        return <StepFormatQuantity data={wizardData} onChange={updateWizardData} />;
       case 5:
         return (
-          <StepStyleNew data={wizardData} updateData={updateWizardData} />
-        );
-      case 6:
-        return (
-          <StepPreviewNew
-            data={wizardData}
-            updateData={updateWizardData}
-            setLoading={setLoading}
-          />
-        );
-      case 7:
-        return <StepCaption data={wizardData} updateData={updateWizardData} />;
-      case 8:
-        return (
-          <StepEdit
-            data={wizardData}
-            updateData={updateWizardData}
-            user={user}
+          <StepResult
+            posts={wizardData.posts}
+            onRegenerate={handleRegenerate}
+            onRegenerateImage={handleRegenerateImage}
+            onEnhance={handleEnhance}
           />
         );
       default:
@@ -162,19 +205,23 @@ export default function Create() {
 
   return (
     <div className="min-h-screen bg-gradient-soft relative overflow-hidden">
-      {/* Glows decorativos de fundo */}
+      {/* Background glows */}
       <div className="pointer-events-none absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/20 blur-3xl" />
       <div className="pointer-events-none absolute top-1/2 -left-40 w-96 h-96 rounded-full bg-secondary/20 blur-3xl" />
 
+      {/* Header */}
       <header className="relative z-10 glass border-b border-white/40 sticky top-0">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-3xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Smart Social Media
-            </h1>
+            <span className="text-xl font-bold text-foreground tracking-tight">
+              SmartPost
+              <span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
+                AI
+              </span>
+            </span>
           </div>
           <Button
             variant="ghost"
@@ -190,46 +237,83 @@ export default function Create() {
 
       <main className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
         <div className="glass rounded-3xl p-6 md:p-10 shadow-card">
-          <WizardProgress currentStep={step} totalSteps={TOTAL_STEPS} />
+          {/* Progress indicator — only steps 1-4 */}
+          {step <= 4 && <WizardProgress currentStep={step} />}
 
-          <div className="mt-8">
-            <h2 className="text-3xl font-bold text-center mb-2 text-foreground tracking-tight">
-              {titles[step - 1]}
-            </h2>
-            <div className="w-16 h-1 bg-gradient-primary mx-auto rounded-full mb-8" />
-
-            <div className="min-h-[400px] flex flex-col">{renderStep()}</div>
-
-            <div className="flex justify-between mt-8 pt-6 border-t border-border">
-              <Button
-                variant="outline"
-                onClick={() => setStep((s) => Math.max(1, s - 1))}
-                disabled={step === 1}
-                className="rounded-full"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Anterior
-              </Button>
-
-              {step < TOTAL_STEPS ? (
+          {step === 5 ? (
+            /* Result view */
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground tracking-tight">
+                    Seus posts estão prontos! 🎉
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {wizardData.posts.length === 1
+                      ? "1 post gerado com sucesso"
+                      : `${wizardData.posts.length} posts gerados — semana completa`}
+                  </p>
+                </div>
                 <Button
-                  onClick={() => setStep((s) => Math.min(TOTAL_STEPS, s + 1))}
+                  onClick={() => {
+                    setWizardData((prev) => ({
+                      ...prev,
+                      niche: "",
+                      theme: "",
+                      objective: "",
+                      tone: "",
+                      visualStyle: "",
+                      brandImages: [],
+                      posts: [],
+                      currentPostIndex: 0,
+                    }));
+                    setStep(1);
+                  }}
+                  variant="outline"
+                  className="rounded-full shrink-0"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Criar novo
+                </Button>
+              </div>
+              {renderStep()}
+            </div>
+          ) : (
+            /* Wizard steps 1-4 */
+            <div className="mt-8">
+              <h2 className="text-3xl font-bold text-center mb-2 text-foreground tracking-tight">
+                {STEP_TITLES[step - 1]}
+              </h2>
+              <div className="w-16 h-1 bg-gradient-primary mx-auto rounded-full mb-8" />
+
+              <div className="min-h-[400px] flex flex-col">{renderStep()}</div>
+
+              <div className="flex justify-between mt-8 pt-6 border-t border-border">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={step === 1}
+                  className="rounded-full"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Anterior
+                </Button>
+
+                <Button
+                  onClick={handleNext}
                   disabled={!canProceed() || loading}
                   className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
                 >
-                  {loading ? "Gerando..." : "Próximo"}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {loading
+                    ? "Gerando..."
+                    : step === 4
+                    ? "Gerar posts"
+                    : "Próximo"}
+                  {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
                 </Button>
-              ) : (
-                <Button
-                  onClick={() => navigate("/dashboard")}
-                  className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
-                >
-                  Concluir
-                </Button>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
