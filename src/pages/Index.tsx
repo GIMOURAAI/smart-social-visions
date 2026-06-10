@@ -66,100 +66,131 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
+    <div className="min-h-screen" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: "#07050f" }}>
       {/* Hero Section */}
-      <section className="relative min-h-screen p-3 md:p-6">
-        <div className="relative w-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] rounded-[2.5rem] overflow-hidden shadow-2xl">
-          <img
-            src={heroImage}
-            alt="Criadora de conteúdo trabalhando no celular e laptop"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
-          <div
-            className="absolute inset-0 mix-blend-multiply"
-            style={{ background: "hsl(258 75% 45% / 0.85)" }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, hsl(258 70% 35% / 0.4) 0%, hsl(270 75% 40% / 0.1) 40%, hsl(258 70% 20% / 0.7) 100%)",
-            }}
-          />
+      <section className="relative min-h-screen overflow-hidden">
+        {/* Imagem de fundo */}
+        <img
+          src={heroImage}
+          alt="Criadora de conteúdo"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Overlay escuro geral */}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(7,5,15,0.92) 0%, rgba(60,20,120,0.75) 50%, rgba(7,5,15,0.55) 100%)" }} />
+        {/* No desktop: fade lateral — esconde imagem no lado esquerdo, revela à direita */}
+        <div className="absolute inset-0 hidden md:block" style={{ background: "linear-gradient(90deg, rgba(7,5,15,0.97) 0%, rgba(7,5,15,0.80) 42%, rgba(7,5,15,0.0) 70%)" }} />
+        {/* Glow roxo ambiente */}
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)" }} />
 
-          {/* Top bar */}
-          <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-5 md:p-8">
-            <div className="flex items-center gap-2">
-              <span className="text-white font-extrabold text-lg tracking-tight">
-                SmartPost<span className="bg-gradient-to-r from-yellow-300 to-fuchsia-400 bg-clip-text text-transparent">AI</span>
+        {/* Navbar */}
+        <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-6 md:px-14 py-6">
+          <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="text-white font-black text-xl tracking-tight">
+            SmartPost<span style={{ background: "linear-gradient(90deg, #f5d020, #e879f9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AI</span>
+          </span>
+          <button
+            onClick={() => navigate("/auth")}
+            className="px-5 py-2 rounded-full text-sm font-bold bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+          >
+            Entrar
+          </button>
+        </nav>
+
+        {/* DESKTOP: conteúdo alinhado à esquerda, verticalmente centralizado */}
+        <div className="hidden md:flex relative z-10 min-h-screen flex-col justify-center px-14 lg:px-20" style={{ maxWidth: "660px" }}>
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border w-fit"
+            style={{ borderColor: "rgba(167,139,250,0.35)", background: "rgba(124,58,237,0.15)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+            <span className="text-violet-300 text-xs font-semibold tracking-widest uppercase">IA para redes sociais</span>
+          </div>
+
+          <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: "1.0" }}
+            className="text-white font-black text-6xl lg:text-7xl tracking-tight">
+            Crie Posts<br />
+            <span className="relative inline-block">
+              <span style={{ background: "linear-gradient(90deg, #f5d020 0%, #f472b6 50%, #e879f9 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                em minutos
               </span>
-            </div>
+              {/* sublinhado animado */}
+              <span className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full"
+                style={{ background: "linear-gradient(90deg, #f5d020, #e879f9)", opacity: 0.6 }} />
+            </span><br />
+            usando a IA
+          </h1>
+
+          <p className="mt-7 text-white/60 text-lg font-medium" style={{ maxWidth: "380px" }}>
+            Crie posts, legendas, imagens, CTAs, hashtags em um único lugar.
+          </p>
+
+          <div className="mt-10 flex items-center gap-4">
             <button
               onClick={() => navigate("/auth")}
-              className="px-5 py-2 rounded-full text-sm font-bold tracking-wide bg-white/95 text-foreground hover:bg-white transition-all duration-300"
+              className="font-bold text-base px-9 py-4 rounded-2xl text-white transition-all duration-200 hover:scale-[1.02]"
+              style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", boxShadow: "0 8px 30px rgba(124,58,237,0.45)" }}
             >
-              Entrar
+              Começar agora
+            </button>
+            <button
+              onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+              className="font-semibold text-base px-8 py-4 rounded-2xl text-white/70 hover:text-white border border-white/15 hover:border-white/30 transition-all duration-200"
+            >
+              Ver planos →
             </button>
           </div>
 
-          {/* MOBILE: texto em baixo + card CTA flutuante */}
-          <div className="md:hidden relative z-10 flex flex-col justify-end px-7 min-h-[calc(100vh-2rem)]" style={{ paddingBottom: "200px" }}>
-            <h1 className="text-white font-extrabold leading-[0.92] tracking-tight text-5xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-              Crie Posts<br />
-              <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-fuchsia-400 bg-clip-text text-transparent">
-                em minutos
-              </span><br />
-              usando a IA
-            </h1>
-            <p className="mt-4 text-white/80 text-base max-w-xs">
-              Crie posts, legendas, imagens, CTAs, hashtags em um único lugar.
-            </p>
-          </div>
-
-          {/* MOBILE: CTA card flutuante */}
-          <div className="md:hidden absolute left-5 right-5 z-20" style={{ bottom: "20px" }}>
-            <div className="bg-card rounded-3xl p-5 shadow-2xl flex flex-col gap-3">
-              <button
-                onClick={() => navigate("/auth")}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-widest text-base py-5 rounded-2xl transition-all duration-300 hover:shadow-glow"
-              >
-                COMEÇAR AGORA
-              </button>
-              <button
-                onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
-                className="w-full border-2 border-primary text-primary hover:bg-primary/5 font-bold text-base py-4 rounded-2xl transition-all duration-300"
-              >
-                Ver planos
-              </button>
+          {/* Prova social */}
+          <div className="mt-10 flex items-center gap-6">
+            <div className="flex -space-x-2">
+              {["#7c3aed","#a855f7","#ec4899","#f59e0b"].map((c, i) => (
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-[#07050f] flex items-center justify-center text-white text-xs font-bold" style={{ background: c }}>
+                  {["A","B","C","D"][i]}
+                </div>
+              ))}
+            </div>
+            <div>
+              <div className="flex items-center gap-1">
+                {[1,2,3,4,5].map(i => <span key={i} className="text-yellow-400 text-xs">★</span>)}
+              </div>
+              <p className="text-white/40 text-xs mt-0.5">+2.400 criadores usando</p>
             </div>
           </div>
+        </div>
 
-          {/* DESKTOP: layout centralizado */}
-          <div className="hidden md:flex relative z-10 min-h-[calc(100vh-3rem)] flex-col justify-center px-14 lg:px-20 max-w-3xl">
-            <h1 className="text-white font-extrabold leading-[0.92] tracking-tight text-6xl lg:text-7xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-              Crie Posts<br />
-              <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-fuchsia-400 bg-clip-text text-transparent">
-                em minutos
-              </span><br />
-              usando a IA
-            </h1>
-            <p className="mt-6 text-white/80 text-xl max-w-md">
-              Crie posts, legendas, imagens, CTAs, hashtags em um único lugar.
-            </p>
-            <div className="mt-10 flex items-center gap-4">
-              <button
-                onClick={() => navigate("/auth")}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wider text-base px-10 py-4 rounded-2xl transition-all duration-300 hover:shadow-glow"
-              >
-                COMEÇAR AGORA
-              </button>
-              <button
-                onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
-                className="border-2 border-white/70 text-white hover:bg-white/10 font-bold text-base px-8 py-4 rounded-2xl transition-all duration-300"
-              >
-                Ver planos
-              </button>
-            </div>
+        {/* MOBILE: texto embaixo + card CTA flutuante */}
+        <div className="md:hidden relative z-10 flex flex-col justify-end min-h-screen px-6" style={{ paddingBottom: "210px" }}>
+          <div className="inline-flex items-center gap-2 mb-5 px-3 py-1 rounded-full border w-fit"
+            style={{ borderColor: "rgba(167,139,250,0.35)", background: "rgba(124,58,237,0.15)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+            <span className="text-violet-300 text-xs font-semibold tracking-widest uppercase">IA para redes sociais</span>
+          </div>
+          <h1 className="text-white font-black text-5xl tracking-tight" style={{ lineHeight: "1.0" }}>
+            Crie Posts<br />
+            <span style={{ background: "linear-gradient(90deg, #f5d020, #f472b6, #e879f9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              em minutos
+            </span><br />
+            usando a IA
+          </h1>
+          <p className="mt-4 text-white/60 text-sm font-medium max-w-xs">
+            Crie posts, legendas, imagens, CTAs, hashtags em um único lugar.
+          </p>
+        </div>
+
+        {/* MOBILE: CTA card flutuante */}
+        <div className="md:hidden absolute left-4 right-4 z-20" style={{ bottom: "18px" }}>
+          <div className="rounded-3xl p-5 shadow-2xl flex flex-col gap-3" style={{ background: "rgba(15,10,30,0.95)", border: "1px solid rgba(124,58,237,0.3)", backdropFilter: "blur(20px)" }}>
+            <button
+              onClick={() => navigate("/auth")}
+              className="w-full font-bold text-base py-4 rounded-2xl text-white transition-all"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 6px 24px rgba(124,58,237,0.4)" }}
+            >
+              Começar agora
+            </button>
+            <button
+              onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+              className="w-full font-semibold text-base py-3.5 rounded-2xl text-white/70 hover:text-white border border-white/15 transition-all"
+            >
+              Ver planos
+            </button>
           </div>
         </div>
       </section>
