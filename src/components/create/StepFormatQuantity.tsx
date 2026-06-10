@@ -26,14 +26,6 @@ interface Props {
 }
 
 export function StepFormatQuantity({ data, onChange }: Props) {
-  const imageQuantity = data.imageQuantity ?? data.quantity;
-
-  const imageOptions = [
-    { value: 1, label: "1 imagem", sublabel: "Só o post destaque", icon: "🖼️" },
-    { value: Math.ceil(data.quantity / 2), label: `${Math.ceil(data.quantity / 2)} imagens`, sublabel: "Metade dos posts", icon: "🎨" },
-    { value: data.quantity, label: `${data.quantity} imagens`, sublabel: "Todos os posts", icon: "✨", recommended: true },
-  ];
-
   return (
     <div className="space-y-8">
       {/* Format */}
@@ -72,7 +64,7 @@ export function StepFormatQuantity({ data, onChange }: Props) {
         </div>
       </div>
 
-      {/* Quantity — PostLab blocks */}
+      {/* Quantity */}
       <div>
         <h3 className="text-sm font-semibold text-foreground mb-1">Quantos posts gerar?</h3>
         <p className="text-xs text-muted-foreground mb-3">
@@ -100,73 +92,25 @@ export function StepFormatQuantity({ data, onChange }: Props) {
                   {q.label}
                 </p>
                 <p className="text-[11px] text-muted-foreground leading-tight">{q.sublabel}</p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Image quantity — no zero option */}
-      <div>
-        <h3 className="text-sm font-semibold text-foreground mb-1">Quantas imagens gerar com IA?</h3>
-        <p className="text-xs text-muted-foreground mb-3">
-          Cada imagem custa <span className="font-semibold text-foreground">1 crédito</span> e leva ~30s para ser criada
-        </p>
-        <div className="grid grid-cols-3 gap-3">
-          {imageOptions.map((opt) => {
-            const isSelected = imageQuantity === opt.value;
-            return (
-              <button
-                key={opt.value}
-                onClick={() => onChange({ imageQuantity: opt.value })}
-                className={`rounded-2xl border-2 p-3 text-center transition-all hover:-translate-y-0.5 relative ${
-                  isSelected
-                    ? "border-primary bg-primary/5 shadow-glow"
-                    : "border-border bg-card hover:border-primary/40"
-                }`}
-              >
-                {opt.recommended && (
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary text-white whitespace-nowrap">
-                    Recomendado
-                  </span>
-                )}
-                <div className="text-xl mb-1">{opt.icon}</div>
-                <p className={`text-xs font-bold leading-tight ${isSelected ? "text-primary" : "text-foreground"}`}>
-                  {opt.label}
+                <p className="text-[10px] text-primary/70 font-semibold mt-1.5">
+                  {q.value} crédito{q.value !== 1 ? "s" : ""}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{opt.sublabel}</p>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Credit cost breakdown — single wallet */}
+      {/* Credit info */}
       <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
         <div className="flex items-start gap-3">
           <span className="text-lg mt-0.5">💳</span>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground mb-2">Custo desta geração</p>
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">
-                  {data.quantity} post{data.quantity !== 1 ? "s" : ""} — copy, legenda, CTA, hashtags
-                </span>
-                <span className="font-semibold text-foreground">−{data.quantity}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">
-                  {imageQuantity} imagem{imageQuantity !== 1 ? "ns" : ""} com IA
-                </span>
-                <span className="font-semibold text-foreground">−{imageQuantity}</span>
-              </div>
-              <div className="border-t border-amber-500/20 pt-1.5 flex justify-between text-sm">
-                <span className="font-semibold text-foreground">Total descontado do saldo</span>
-                <span className="font-bold text-amber-600">−{data.quantity + imageQuantity} crédito{(data.quantity + imageQuantity) !== 1 ? "s" : ""}</span>
-              </div>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">
-              Todos os créditos vêm do mesmo saldo. Sem saldo, nenhuma geração é feita.
+            <p className="text-sm font-semibold text-foreground mb-1">
+              Esta geração vai descontar <span className="text-amber-600">{data.quantity} crédito{data.quantity !== 1 ? "s" : ""}</span> do seu saldo
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Cada post inclui: copy estratégico, legenda completa, CTA, hashtags, gancho viral, story e imagem gerada com IA — tudo por 1 crédito. Sem saldo, nenhuma geração é realizada.
             </p>
           </div>
         </div>
