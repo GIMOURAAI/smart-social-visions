@@ -73,7 +73,7 @@ const Index = () => {
           <img
             src={heroImage}
             alt="Criadora de conteúdo trabalhando no celular e laptop"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-center"
           />
           <div
             className="absolute inset-0 mix-blend-multiply"
@@ -83,20 +83,17 @@ const Index = () => {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(180deg, hsl(258 70% 35% / 0.35) 0%, hsl(270 75% 40% / 0.15) 40%, hsl(258 70% 25% / 0.55) 100%)",
+                "linear-gradient(180deg, hsl(258 70% 35% / 0.4) 0%, hsl(270 75% 40% / 0.1) 40%, hsl(258 70% 20% / 0.7) 100%)",
             }}
           />
 
           {/* Top bar */}
           <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-5 md:p-8">
-            <button
-              aria-label="Menu"
-              className="w-11 h-11 flex flex-col items-start justify-center gap-1.5 text-white"
-            >
-              <span className="block h-0.5 w-7 bg-white rounded-full" />
-              <span className="block h-0.5 w-5 bg-white rounded-full" />
-              <span className="block h-0.5 w-7 bg-white rounded-full" />
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-extrabold text-lg tracking-tight">
+                SmartPost<span className="bg-gradient-to-r from-yellow-300 to-fuchsia-400 bg-clip-text text-transparent">AI</span>
+              </span>
+            </div>
             <button
               onClick={() => navigate("/auth")}
               className="px-5 py-2 rounded-full text-sm font-bold tracking-wide bg-white/95 text-foreground hover:bg-white transition-all duration-300"
@@ -105,36 +102,60 @@ const Index = () => {
             </button>
           </div>
 
-          {/* Hero text */}
-          <div className="relative z-10 h-full min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] flex flex-col justify-end px-7 md:px-14" style={{ paddingBottom: "280px" }}>
-            <h1 className="text-white font-extrabold leading-[0.95] tracking-tight text-5xl sm:text-6xl md:text-8xl max-w-4xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
+          {/* MOBILE: texto em baixo + card CTA flutuante */}
+          <div className="md:hidden relative z-10 flex flex-col justify-end px-7 min-h-[calc(100vh-2rem)]" style={{ paddingBottom: "200px" }}>
+            <h1 className="text-white font-extrabold leading-[0.92] tracking-tight text-5xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
               Crie Posts<br />
-              <span className="relative inline-block">
-                <span className="relative z-10 bg-gradient-to-r from-yellow-300 via-pink-300 to-fuchsia-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(250,204,21,0.5)]">
-                  em minutos
-                </span>
+              <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-fuchsia-400 bg-clip-text text-transparent">
+                em minutos
               </span><br />
               usando a IA
             </h1>
-            <p className="mt-5 text-white/85 text-lg md:text-2xl max-w-sm">
+            <p className="mt-4 text-white/80 text-base max-w-xs">
               Crie posts, legendas, imagens, CTAs, hashtags em um único lugar.
             </p>
           </div>
 
-          {/* CTA card */}
-          <div className="absolute left-5 right-5 md:left-8 md:right-8 z-20" style={{ bottom: "24px" }}>
-            <div className="bg-card rounded-3xl p-5 md:p-6 shadow-2xl flex flex-col sm:flex-row gap-3 items-stretch">
+          {/* MOBILE: CTA card flutuante */}
+          <div className="md:hidden absolute left-5 right-5 z-20" style={{ bottom: "20px" }}>
+            <div className="bg-card rounded-3xl p-5 shadow-2xl flex flex-col gap-3">
               <button
                 onClick={() => navigate("/auth")}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-widest text-base md:text-lg py-5 rounded-2xl transition-all duration-300 hover:shadow-glow active:scale-[0.98]"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-widest text-base py-5 rounded-2xl transition-all duration-300 hover:shadow-glow"
               >
                 COMEÇAR AGORA
               </button>
               <button
-                onClick={() => {
-                  document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="flex-1 sm:flex-none sm:px-8 border-2 border-primary text-primary hover:bg-primary/5 font-bold tracking-wide text-base md:text-lg py-5 rounded-2xl transition-all duration-300"
+                onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+                className="w-full border-2 border-primary text-primary hover:bg-primary/5 font-bold text-base py-4 rounded-2xl transition-all duration-300"
+              >
+                Ver planos
+              </button>
+            </div>
+          </div>
+
+          {/* DESKTOP: layout centralizado */}
+          <div className="hidden md:flex relative z-10 min-h-[calc(100vh-3rem)] flex-col justify-center px-14 lg:px-20 max-w-3xl">
+            <h1 className="text-white font-extrabold leading-[0.92] tracking-tight text-6xl lg:text-7xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+              Crie Posts<br />
+              <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-fuchsia-400 bg-clip-text text-transparent">
+                em minutos
+              </span><br />
+              usando a IA
+            </h1>
+            <p className="mt-6 text-white/80 text-xl max-w-md">
+              Crie posts, legendas, imagens, CTAs, hashtags em um único lugar.
+            </p>
+            <div className="mt-10 flex items-center gap-4">
+              <button
+                onClick={() => navigate("/auth")}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wider text-base px-10 py-4 rounded-2xl transition-all duration-300 hover:shadow-glow"
+              >
+                COMEÇAR AGORA
+              </button>
+              <button
+                onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+                className="border-2 border-white/70 text-white hover:bg-white/10 font-bold text-base px-8 py-4 rounded-2xl transition-all duration-300"
               >
                 Ver planos
               </button>
