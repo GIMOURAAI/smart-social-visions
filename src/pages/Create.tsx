@@ -275,6 +275,7 @@ export default function Create() {
   const isPilotPhase = wizardData.currentBlock === 0 && wizardData.allPosts.length <= wizardData.pilotQuantity;
 
   const resetWizard = () => {
+    setBatchId(null);
     setWizardData((prev) => ({
       ...prev,
       forClient: false, brandName: "", niche: "", theme: "",
@@ -301,10 +302,13 @@ export default function Create() {
               SmartPost<span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">AI</span>
             </span>
           </div>
-          <Button variant="ghost" onClick={() => navigate("/dashboard")} size="sm" className="rounded-full">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Dashboard
-          </Button>
+          <div className="flex items-center gap-2">
+            <CreditsBadge />
+            <Button variant="ghost" onClick={() => navigate("/dashboard")} size="sm" className="rounded-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
+          </div>
         </div>
       </header>
 
