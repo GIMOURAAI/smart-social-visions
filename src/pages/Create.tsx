@@ -91,6 +91,7 @@ export default function Create() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const credits = useCredits();
 
   const isMonthMode = searchParams.get("mode") === "7days";
 
