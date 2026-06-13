@@ -13,6 +13,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
+import { useCredits } from "@/hooks/useCredits";
 
 interface Post {
   id: string;
@@ -23,14 +24,13 @@ interface Post {
   created_at: string;
 }
 
-const PLAN_LIMIT = 30;
-
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const credits = useCredits();
 
   useEffect(() => {
     checkUser();
@@ -46,6 +46,8 @@ export default function Dashboard() {
     }
     setUser(session.user);
     loadPosts(session.user.id);
+    // Sync subscription state from Stripe (fires plan renewals + plan changes)
+    supabase.functions.invoke("check-subscription").catch(() => {});
   };
 
   const loadPosts = async (userId: string) => {
@@ -85,7 +87,8 @@ export default function Dashboard() {
 
   const username = user?.email?.split("@")[0] ?? "criador";
   const used = posts.length;
-  const remaining = Math.max(0, PLAN_LIMIT - used);
+  const remaining = credits.remaining;
+  const planLabel = credits.planSlug ? credits.planSlug.charAt(0).toUpperCase() + credits.planSlug.slice(1) : "Free";
 
   return (
     <div className="min-h-screen bg-gradient-soft">
