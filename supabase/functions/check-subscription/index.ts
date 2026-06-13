@@ -1,105 +1,82 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
-};
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
-  );
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    logStep("Function started");
+    const authHeader = req.headers.get("Authorization")!;
+    const supa = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user?.email) throw new Error("Not authenticated");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { email: user.email });
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
     if (customers.data.length === 0) {
-      logStep("No customer found");
-      return new Response(JSON.stringify({ 
-        subscribed: false,
-        product_id: null,
-        subscription_end: null,
-        credits: 5 // Free tier
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      return resp({ subscribed: false, plan_slug: null });
     }
-
     const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
+    const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
 
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-    
-    const hasActiveSub = subscriptions.data.length > 0;
-    let productId = null;
-    let subscriptionEnd = null;
-    let credits = 5; // Free tier
-
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      productId = subscription.items.data[0].price.product;
-      
-      // Determine credits based on product
-      if (productId === "prod_Tb8xvmZsjHVjSv") {
-        credits = 200; // Premium
-      } else if (productId === "prod_Tb8xsKZ6h4LyXU") {
-        credits = 600; // Pro Agency
-      }
-      
-      logStep("Active subscription found", { productId, credits, endDate: subscriptionEnd });
+    if (subs.data.length === 0) {
+      await admin.from("user_credits").update({
+        plan_slug: null, subscription_status: "inactive", stripe_customer_id: customerId,
+      }).eq("user_id", user.id);
+      return resp({ subscribed: false, plan_slug: null });
     }
 
-    return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      product_id: productId,
-      subscription_end: subscriptionEnd,
-      credits
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    const sub = subs.data[0];
+    const priceId = sub.items.data[0].price.id;
+    const { data: plan } = await admin.from("subscription_plans").select("*").eq("stripe_price_id", priceId).single();
+    if (!plan) return resp({ subscribed: true, plan_slug: null, warning: "Unknown price" });
+
+    const periodStart = new Date(sub.current_period_start * 1000).toISOString();
+    const periodEnd = new Date(sub.current_period_end * 1000).toISOString();
+
+    // Get current row to detect renewal (period_start changed)
+    const { data: current } = await admin.from("user_credits").select("period_start, plan_slug").eq("user_id", user.id).single();
+
+    const isNewPeriod = !current?.period_start || current.period_start !== periodStart;
+    const isPlanChange = current?.plan_slug !== plan.slug;
+
+    if (isNewPeriod || isPlanChange) {
+      await admin.from("user_credits").update({
+        plan_slug: plan.slug,
+        credits_remaining: plan.credits_per_month,
+        credits_total_month: plan.credits_per_month,
+        period_start: periodStart,
+        period_end: periodEnd,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: sub.id,
+        subscription_status: "active",
+      }).eq("user_id", user.id);
+
+      await admin.from("credit_transactions").insert({
+        user_id: user.id, delta: plan.credits_per_month,
+        reason: isPlanChange ? `plan_change:${plan.slug}` : `renewal:${plan.slug}`,
+      });
+    } else {
+      await admin.from("user_credits").update({
+        subscription_status: "active", period_end: periodEnd, stripe_subscription_id: sub.id,
+      }).eq("user_id", user.id);
+    }
+
+    return resp({ subscribed: true, plan_slug: plan.slug, period_end: periodEnd });
+  } catch (e: any) {
+    console.error(e);
+    return resp({ error: e.message }, 500);
   }
 });
+
+function resp(b: any, s = 200) {
+  return new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
