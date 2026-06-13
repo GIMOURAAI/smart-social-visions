@@ -123,14 +123,14 @@ export function downloadPDF(posts: GeneratedPost[], brandName: string) {
     <div class="cover-date">Gerado em ${date}</div>
   </div>
   ${postPages}
+  <script>window.onload = function() { setTimeout(function() { window.print(); }, 800); };</script>
 </body>
 </html>`;
 
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${brandName.replace(/\s+/g, "-")}-SmartPostAI-${date.replace(/\//g, "-")}.html`;
-  a.click();
-  URL.revokeObjectURL(url);
+  // Abre nova janela e dispara print automático — usuário salva como PDF
+  const win = window.open("", "_blank");
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+  }
 }

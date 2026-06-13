@@ -251,10 +251,20 @@ export default function Create() {
   };
 
   const handleNextBlock = () => {
-    const nextBlock = wizardData.currentBlock + 1;
+    const postsInCurrentBlock = wizardData.allPosts.filter(
+      (_, i) => Math.floor(i / 3) === wizardData.currentBlock
+    ).length;
+    const remainingInBlock = 3 - postsInCurrentBlock;
     const postsLeft = wizardData.quantity - wizardData.allPosts.length;
-    const count = Math.min(3, postsLeft);
-    if (count > 0) generatePosts(nextBlock, count);
+
+    if (remainingInBlock > 0 && postsLeft > 0) {
+      // Completa o bloco atual antes de avançar
+      generatePosts(wizardData.currentBlock, Math.min(remainingInBlock, postsLeft));
+    } else {
+      // Bloco atual completo — vai para o próximo
+      const nextBlock = wizardData.currentBlock + 1;
+      if (postsLeft > 0) generatePosts(nextBlock, Math.min(3, postsLeft));
+    }
   };
 
   const handleRegenerate = () => {
