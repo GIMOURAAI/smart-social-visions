@@ -14,41 +14,175 @@ export type Database = {
   }
   public: {
     Tables: {
-      posts: {
+      credit_transactions: {
         Row: {
-          content: string | null
-          created_at: string | null
+          created_at: string
+          delta: number
+          id: string
+          post_id: string | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          post_id?: string | null
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          post_id?: string | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      post_batches: {
+        Row: {
+          brand_images: string[] | null
+          brand_name: string
+          created_at: string
+          days: number
+          feed_pattern: string
           format: string
           id: string
+          niche: string
+          objective: string
+          pilot_count: number
+          status: string
+          theme: string
+          tone: string
+          total_posts: number
+          updated_at: string
+          user_id: string
+          visual_style: string
+        }
+        Insert: {
+          brand_images?: string[] | null
+          brand_name: string
+          created_at?: string
+          days: number
+          feed_pattern: string
+          format: string
+          id?: string
+          niche: string
+          objective: string
+          pilot_count?: number
+          status?: string
+          theme: string
+          tone: string
+          total_posts: number
+          updated_at?: string
+          user_id: string
+          visual_style: string
+        }
+        Update: {
+          brand_images?: string[] | null
+          brand_name?: string
+          created_at?: string
+          days?: number
+          feed_pattern?: string
+          format?: string
+          id?: string
+          niche?: string
+          objective?: string
+          pilot_count?: number
+          status?: string
+          theme?: string
+          tone?: string
+          total_posts?: number
+          updated_at?: string
+          user_id?: string
+          visual_style?: string
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          approved: boolean | null
+          batch_id: string | null
+          block: string | null
+          content: string | null
+          created_at: string | null
+          cta: string | null
+          format: string
+          gancho: string | null
+          hashtags: string[] | null
+          id: string
+          image_prompt: string | null
           image_url: string | null
+          legenda: string | null
+          position: number | null
+          story_complementar: string | null
           style: string
+          subtitulo: string | null
+          texto_arte: string | null
           title: string
+          titulo_arte: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          approved?: boolean | null
+          batch_id?: string | null
+          block?: string | null
           content?: string | null
           created_at?: string | null
+          cta?: string | null
           format: string
+          gancho?: string | null
+          hashtags?: string[] | null
           id?: string
+          image_prompt?: string | null
           image_url?: string | null
+          legenda?: string | null
+          position?: number | null
+          story_complementar?: string | null
           style: string
+          subtitulo?: string | null
+          texto_arte?: string | null
           title: string
+          titulo_arte?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          approved?: boolean | null
+          batch_id?: string | null
+          block?: string | null
           content?: string | null
           created_at?: string | null
+          cta?: string | null
           format?: string
+          gancho?: string | null
+          hashtags?: string[] | null
           id?: string
+          image_prompt?: string | null
           image_url?: string | null
+          legenda?: string | null
+          position?: number | null
+          story_complementar?: string | null
           style?: string
+          subtitulo?: string | null
+          texto_arte?: string | null
           title?: string
+          titulo_arte?: string | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "post_batches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -73,6 +207,92 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          credits_per_month: number
+          currency: string
+          id: string
+          name: string
+          price_cents: number
+          slug: string
+          sort_order: number
+          stripe_price_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          credits_per_month: number
+          currency?: string
+          id?: string
+          name: string
+          price_cents: number
+          slug: string
+          sort_order?: number
+          stripe_price_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          credits_per_month?: number
+          currency?: string
+          id?: string
+          name?: string
+          price_cents?: number
+          slug?: string
+          sort_order?: number
+          stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
+      user_credits: {
+        Row: {
+          created_at: string
+          credits_remaining: number
+          credits_total_month: number
+          period_end: string | null
+          period_start: string | null
+          plan_slug: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_remaining?: number
+          credits_total_month?: number
+          period_end?: string | null
+          period_start?: string | null
+          plan_slug?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_remaining?: number
+          credits_total_month?: number
+          period_end?: string | null
+          period_start?: string | null
+          plan_slug?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_credits_plan_slug_fkey"
+            columns: ["plan_slug"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["slug"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -100,6 +320,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_credit: {
+        Args: {
+          _amount: number
+          _post_id?: string
+          _reason: string
+          _user_id: string
+        }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
