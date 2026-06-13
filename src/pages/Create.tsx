@@ -14,6 +14,8 @@ import { FeedPreview } from "@/components/create/FeedPreview";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Sparkles, Plus, ChevronRight, FileDown } from "lucide-react";
 import { downloadPDF } from "@/lib/downloadPDF";
+import { CreditsBadge } from "@/components/CreditsBadge";
+import { useCredits } from "@/hooks/useCredits";
 
 export interface GeneratedPost {
   tema: string;
@@ -89,6 +91,7 @@ export default function Create() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const credits = useCredits();
 
   const isMonthMode = searchParams.get("mode") === "7days";
 
@@ -138,30 +141,75 @@ export default function Create() {
 
   const totalBlocks = Math.ceil(wizardData.quantity / 3);
 
+  const [batchId, setBatchId] = useState<string | null>(null);
+  const BLOCK_KEYS = ["dor", "autoridade", "valor", "venda"];
+
+  const ensureBatch = async (): Promise<string> => {
+    if (batchId) return batchId;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Não autenticado");
+    const { data, error } = await supabase.from("post_batches").insert({
+      user_id: user.id,
+      brand_name: wizardData.brandName,
+      niche: wizardData.niche,
+      theme: wizardData.theme,
+      objective: wizardData.objective,
+      tone: wizardData.tone,
+      visual_style: wizardData.visualStyle,
+      brand_images: wizardData.brandImages,
+      feed_pattern: wizardData.feedPattern,
+      format: wizardData.format,
+      days: wizardData.daysQuantity,
+      total_posts: wizardData.quantity,
+      pilot_count: wizardData.pilotQuantity,
+    }).select("id").single();
+    if (error || !data) throw new Error(error?.message ?? "Falha ao criar lote");
+    setBatchId(data.id);
+    return data.id;
+  };
+
+  const mapRow = (r: any): GeneratedPost => ({
+    tema: wizardData.theme,
+    bloco: r.block ? r.block.charAt(0).toUpperCase() + r.block.slice(1) : "",
+    objetivo: wizardData.objective,
+    tipoConteudo: r.block ?? "",
+    intencaoEmocional: "",
+    gancho: r.gancho ?? "",
+    tituloArte: r.titulo_arte ?? r.title ?? "",
+    subtituloArte: r.subtitulo ?? "",
+    textoArte: r.texto_arte ?? "",
+    legenda: r.legenda ?? r.content ?? "",
+    cta: r.cta ?? "",
+    hashtags: Array.isArray(r.hashtags) ? r.hashtags.map((h: string) => `#${h}`).join(" ") : (r.hashtags ?? ""),
+    estiloVisual: wizardData.visualStyle,
+    promptVisual: r.image_prompt ?? "",
+    storyComplementar: r.story_complementar ?? "",
+    imageUrl: r.image_url ?? undefined,
+    creditoCusto: 1,
+  });
+
   const generatePosts = async (blockIndex: number, count: number) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-smartpost", {
-        body: {
-          niche: wizardData.niche,
-          theme: wizardData.theme,
-          objective: wizardData.objective,
-          tone: wizardData.tone,
-          visualStyle: wizardData.visualStyle,
-          feedPattern: wizardData.feedPattern,
-          brandName: wizardData.brandName,
-          format: wizardData.format,
-          quantity: count,
-          imageQuantity: count,
-          brandImages: wizardData.brandImages,
-          blockIndex,
-        },
+      const id = await ensureBatch();
+      const blockKey = BLOCK_KEYS[blockIndex % 4];
+      const { data, error } = await supabase.functions.invoke("generate-post-batch", {
+        body: { batchId: id, block: blockKey, count: Math.min(3, count) },
       });
 
-      if (error) throw error;
+      if (error) {
+        const ctx = (error as any).context;
+        if (ctx?.status === 402 || /INSUFFICIENT_CREDITS/i.test(error.message)) {
+          toast({ title: "Sem créditos", description: "Faça upgrade do plano para continuar.", variant: "destructive" });
+          navigate("/pricing");
+          return;
+        }
+        throw error;
+      }
 
-      const newPosts: GeneratedPost[] = Array.isArray(data?.posts) ? data.posts : [];
-      if (newPosts.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
+      const rows = Array.isArray(data?.posts) ? data.posts : [];
+      if (rows.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
+      const newPosts = rows.map(mapRow);
 
       const accumulated = [...wizardData.allPosts, ...newPosts];
       const isComplete = accumulated.length >= wizardData.quantity;
@@ -227,6 +275,7 @@ export default function Create() {
   const isPilotPhase = wizardData.currentBlock === 0 && wizardData.allPosts.length <= wizardData.pilotQuantity;
 
   const resetWizard = () => {
+    setBatchId(null);
     setWizardData((prev) => ({
       ...prev,
       forClient: false, brandName: "", niche: "", theme: "",
@@ -253,10 +302,13 @@ export default function Create() {
               SmartPost<span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">AI</span>
             </span>
           </div>
-          <Button variant="ghost" onClick={() => navigate("/dashboard")} size="sm" className="rounded-full">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Dashboard
-          </Button>
+          <div className="flex items-center gap-2">
+            <CreditsBadge />
+            <Button variant="ghost" onClick={() => navigate("/dashboard")} size="sm" className="rounded-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -299,19 +351,26 @@ export default function Create() {
                   </Button>
 
                   <div className="flex flex-col items-end gap-1">
-                    <Button
-                      onClick={handleNext}
-                      disabled={!canProceed() || loading}
-                      className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
-                    >
-                      {loading ? "Gerando..." : step === 6 ? `Gerar piloto (${wizardData.pilotQuantity} post${wizardData.pilotQuantity > 1 ? "s" : ""})` : "Próximo"}
-                      {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
-                    </Button>
-                    {step === 6 && !loading && (
-                      <p className="text-[10px] text-muted-foreground">
-                        {wizardData.pilotQuantity} crédito{wizardData.pilotQuantity > 1 ? "s" : ""} agora · resto após aprovação
-                      </p>
-                    )}
+                    {(() => {
+                      const noCredits = step === 6 && !credits.loading && credits.remaining < wizardData.pilotQuantity;
+                      return (
+                        <>
+                          <Button
+                            onClick={noCredits ? () => navigate("/pricing") : handleNext}
+                            disabled={!canProceed() || loading}
+                            className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
+                          >
+                            {loading ? "Gerando..." : noCredits ? "Sem créditos · Ver planos" : step === 6 ? `Gerar piloto (${wizardData.pilotQuantity} post${wizardData.pilotQuantity > 1 ? "s" : ""})` : "Próximo"}
+                            {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
+                          </Button>
+                          {step === 6 && !loading && (
+                            <p className="text-[10px] text-muted-foreground">
+                              Saldo: {credits.remaining} crédito{credits.remaining !== 1 ? "s" : ""} · piloto custa {wizardData.pilotQuantity}
+                            </p>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
