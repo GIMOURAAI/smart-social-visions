@@ -119,9 +119,9 @@ export default function Dashboard() {
                 AI
               </span>
             </span>
-            <span className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow">
-              Pro
-            </span>
+            <button onClick={() => navigate("/pricing")} className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow hover:opacity-90">
+              {planLabel}
+            </button>
           </div>
 
           <button
@@ -147,8 +147,8 @@ export default function Dashboard() {
 
           {/* stats pills */}
           <div className="mt-8 grid grid-cols-3 gap-3">
-            <StatPill label="Posts usados" value={used} />
-            <StatPill label="Limite do plano" value={PLAN_LIMIT} />
+            <StatPill label="Posts criados" value={used} />
+            <StatPill label="Créditos totais" value={credits.total} />
             <StatPill label="Créditos restantes" value={remaining} />
           </div>
         </div>
