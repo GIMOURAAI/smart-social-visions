@@ -351,19 +351,26 @@ export default function Create() {
                   </Button>
 
                   <div className="flex flex-col items-end gap-1">
-                    <Button
-                      onClick={handleNext}
-                      disabled={!canProceed() || loading}
-                      className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
-                    >
-                      {loading ? "Gerando..." : step === 6 ? `Gerar piloto (${wizardData.pilotQuantity} post${wizardData.pilotQuantity > 1 ? "s" : ""})` : "Próximo"}
-                      {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
-                    </Button>
-                    {step === 6 && !loading && (
-                      <p className="text-[10px] text-muted-foreground">
-                        {wizardData.pilotQuantity} crédito{wizardData.pilotQuantity > 1 ? "s" : ""} agora · resto após aprovação
-                      </p>
-                    )}
+                    {(() => {
+                      const noCredits = step === 6 && !credits.loading && credits.remaining < wizardData.pilotQuantity;
+                      return (
+                        <>
+                          <Button
+                            onClick={noCredits ? () => navigate("/pricing") : handleNext}
+                            disabled={!canProceed() || loading}
+                            className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
+                          >
+                            {loading ? "Gerando..." : noCredits ? "Sem créditos · Ver planos" : step === 6 ? `Gerar piloto (${wizardData.pilotQuantity} post${wizardData.pilotQuantity > 1 ? "s" : ""})` : "Próximo"}
+                            {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
+                          </Button>
+                          {step === 6 && !loading && (
+                            <p className="text-[10px] text-muted-foreground">
+                              Saldo: {credits.remaining} crédito{credits.remaining !== 1 ? "s" : ""} · piloto custa {wizardData.pilotQuantity}
+                            </p>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
