@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Image as ImageIcon,
   CalendarDays,
+  Trash2,
 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { useCredits } from "@/hooks/useCredits";
@@ -48,6 +49,18 @@ export default function Dashboard() {
     loadPosts(session.user.id);
     // Sync subscription state from Stripe (fires plan renewals + plan changes)
     supabase.functions.invoke("check-subscription").catch(() => {});
+  };
+
+  const deletePost = async (postId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Excluir este post? Essa ação não pode ser desfeita.")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", postId);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+    } else {
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      toast({ title: "Post excluído" });
+    }
   };
 
   const loadPosts = async (userId: string) => {
@@ -276,11 +289,17 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-1 shrink-0">
+                <div className="flex flex-col items-end gap-2 shrink-0">
                   <span className="text-[10px] text-muted-foreground">
                     {new Date(post.created_at).toLocaleDateString("pt-BR")}
                   </span>
-                  <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition" />
+                  <button
+                    onClick={(e) => deletePost(post.id, e)}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition opacity-0 group-hover:opacity-100"
+                    title="Excluir post"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </button>
             ))}
