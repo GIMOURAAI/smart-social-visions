@@ -43,7 +43,7 @@ export interface WizardData {
   brandName: string;
   niche: string;
   theme: string;
-  objective: string;
+  objective: string[];
   // Step 2
   tone: string;
   // Step 3
@@ -100,7 +100,7 @@ export default function Create() {
     brandName: "",
     niche: "",
     theme: "",
-    objective: "",
+    objective: [],
     tone: "",
     visualStyle: "",
     brandImages: [],
@@ -153,7 +153,7 @@ export default function Create() {
       brand_name: wizardData.brandName,
       niche: wizardData.niche,
       theme: wizardData.theme,
-      objective: wizardData.objective,
+      objective: wizardData.objective.join(", "),
       tone: wizardData.tone,
       visual_style: wizardData.visualStyle,
       brand_images: wizardData.brandImages,
@@ -171,7 +171,7 @@ export default function Create() {
   const mapRow = (r: any): GeneratedPost => ({
     tema: wizardData.theme,
     bloco: r.block ? r.block.charAt(0).toUpperCase() + r.block.slice(1) : "",
-    objetivo: wizardData.objective,
+    objetivo: wizardData.objective.join(", "),
     tipoConteudo: r.block ?? "",
     intencaoEmocional: "",
     gancho: r.gancho ?? "",
@@ -238,6 +238,7 @@ export default function Create() {
       if (!wizardData.brandName?.trim()) return "Preencha o nome da marca antes de continuar";
       if (!wizardData.niche) return "Selecione um nicho";
       if ((wizardData.theme?.trim().length ?? 0) < 5) return "Descreva melhor o assunto (mínimo 5 caracteres)";
+      if (wizardData.objective.length === 0) return "Selecione pelo menos 1 objetivo";
     }
     if (step === 2) {
       if (!wizardData.tone?.trim()) return "Selecione um tom de voz";
@@ -309,7 +310,7 @@ export default function Create() {
     setWizardData((prev) => ({
       ...prev,
       forClient: false, brandName: "", niche: "", theme: "",
-      objective: "", tone: "", visualStyle: "", brandImages: [], feedPattern: "",
+      objective: [], tone: "", visualStyle: "", brandImages: [], feedPattern: "",
       posts: [], allPosts: [], currentPostIndex: 0, currentBlock: 0, phase: "pilot",
     }));
     setShowFeedPreview(false);

@@ -225,10 +225,15 @@ export function StepBriefing({ data, onChange }: Props) {
         )}
       </div>
 
-      {/* Objetivo do post — cards robustos */}
+      {/* Objetivo do post — multi-select até 7 */}
       <div>
         <h3 className="text-lg font-bold text-foreground mb-1">O que você quer que o público faça?</h3>
-        <p className="text-sm text-muted-foreground mb-3">Selecione o objetivo principal do conteúdo</p>
+        <p className="text-sm text-muted-foreground mb-3">
+          Escolha até <span className="font-bold text-primary">7 objetivos</span>
+          {Array.isArray(data.objective) && data.objective.length > 0 && (
+            <span className="ml-2 text-primary font-bold">· {data.objective.length} selecionado{data.objective.length > 1 ? "s" : ""}</span>
+          )}
+        </p>
         <div className="grid grid-cols-1 gap-2">
           {[
             { id: "Vender",             Icon: ShoppingCart, desc: "Converter seguidores em clientes e gerar vendas diretas." },
@@ -243,14 +248,36 @@ export function StepBriefing({ data, onChange }: Props) {
             { id: "Despertar desejo",   Icon: Flame,        desc: "Criar vontade e fazer o público querer mais." },
             { id: "__livre__",          Icon: PenLine,      desc: "Defina o objetivo com suas próprias palavras." },
           ].map(({ id, Icon, desc }) => {
-            const isSelected = data.objective === id;
+            const selected: string[] = Array.isArray(data.objective) ? data.objective : [];
+            const isSelected = id === "__livre__" ? selected.includes("__livre__") : selected.includes(id);
+            const atLimit = selected.filter(o => o !== "__livre__").length >= 7;
             const label = id === "__livre__" ? "Escrever o próprio" : id;
+
+            const handleClick = () => {
+              if (id === "__livre__") {
+                const next = selected.includes("__livre__")
+                  ? selected.filter(o => o !== "__livre__")
+                  : [...selected, "__livre__"];
+                onChange({ objective: next });
+                return;
+              }
+              if (isSelected) {
+                onChange({ objective: selected.filter(o => o !== id) });
+              } else if (!atLimit) {
+                onChange({ objective: [...selected, id] });
+              }
+            };
+
+            const isDisabled = !isSelected && atLimit && id !== "__livre__";
             return (
               <button
                 key={id}
-                onClick={() => onChange({ objective: id === "__livre__" ? "" : id })}
+                onClick={handleClick}
+                disabled={isDisabled}
                 className={`w-full flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 ${
-                  isSelected ? "border-transparent shadow-glow" : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
+                  isSelected ? "border-transparent shadow-glow"
+                  : isDisabled ? "border-border bg-card opacity-40 cursor-not-allowed"
+                  : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
                 }`}
                 style={isSelected ? { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" } : {}}
               >
@@ -272,14 +299,17 @@ export function StepBriefing({ data, onChange }: Props) {
             );
           })}
         </div>
-        {data.objective === "" && (
+        {Array.isArray(data.objective) && data.objective.includes("__livre__") && (
           <div className="mt-3">
             <input
               type="text"
               autoFocus
               placeholder="Ex: Fidelizar clientes existentes..."
               className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
-              onChange={(e) => onChange({ objective: e.target.value })}
+              onChange={(e) => {
+                const rest = (data.objective as string[]).filter(o => o !== "__livre__");
+                onChange({ objective: [...rest, e.target.value] });
+              }}
             />
           </div>
         )}
