@@ -4,6 +4,7 @@ import {
   PenLine, Scissors, Shirt, UtensilsCrossed, ShoppingBag,
   Home, Briefcase, Smartphone, HeartPulse, GraduationCap,
   Sparkles, Wrench, User, UserCheck,
+  ShoppingCart, Zap, Trophy, Megaphone, UserPlus, Heart, Package, HelpCircle, Flame,
 } from "lucide-react";
 import type { WizardData } from "@/pages/Create";
 
@@ -224,28 +225,64 @@ export function StepBriefing({ data, onChange }: Props) {
         )}
       </div>
 
-      {/* Objetivo do post */}
+      {/* Objetivo do post — cards robustos */}
       <div>
         <h3 className="text-lg font-bold text-foreground mb-1">O que você quer que o público faça?</h3>
         <p className="text-sm text-muted-foreground mb-3">Selecione o objetivo principal do conteúdo</p>
-        <div className="flex flex-wrap gap-2">
-          {["Vender","Educar","Engajar","Gerar autoridade","Divulgar oferta","Atrair seguidores","Gerar conexão","Apresentar produto","Quebrar objeção","Despertar desejo"].map((obj) => {
-            const isSelected = data.objective === obj;
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            { id: "Vender",             Icon: ShoppingCart, desc: "Converter seguidores em clientes e gerar vendas diretas." },
+            { id: "Educar",             Icon: BookOpen,     desc: "Ensinar algo valioso e posicionar como referência." },
+            { id: "Engajar",            Icon: Zap,          desc: "Gerar curtidas, comentários e compartilhamentos." },
+            { id: "Gerar autoridade",   Icon: Trophy,       desc: "Mostrar expertise e construir credibilidade no nicho." },
+            { id: "Divulgar oferta",    Icon: Megaphone,    desc: "Apresentar promoção, desconto ou condição especial." },
+            { id: "Atrair seguidores",  Icon: UserPlus,     desc: "Crescer a audiência e ganhar novos seguidores." },
+            { id: "Gerar conexão",      Icon: Heart,        desc: "Criar identificação emocional com o público." },
+            { id: "Apresentar produto", Icon: Package,      desc: "Mostrar um produto ou serviço em detalhe." },
+            { id: "Quebrar objeção",    Icon: HelpCircle,   desc: "Responder dúvidas e remover barreiras de compra." },
+            { id: "Despertar desejo",   Icon: Flame,        desc: "Criar vontade e fazer o público querer mais." },
+            { id: "__livre__",          Icon: PenLine,      desc: "Defina o objetivo com suas próprias palavras." },
+          ].map(({ id, Icon, desc }) => {
+            const isSelected = data.objective === id;
+            const label = id === "__livre__" ? "Escrever o próprio" : id;
             return (
               <button
-                key={obj}
-                onClick={() => onChange({ objective: obj })}
-                className={`rounded-full border-2 px-4 py-2 text-sm font-semibold transition-all hover:-translate-y-0.5 ${
-                  isSelected
-                    ? "border-fuchsia-500 bg-fuchsia-500 text-white shadow-glow"
-                    : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-primary/5"
+                key={id}
+                onClick={() => onChange({ objective: id === "__livre__" ? "" : id })}
+                className={`w-full flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 ${
+                  isSelected ? "border-transparent shadow-glow" : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
                 }`}
+                style={isSelected ? { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" } : {}}
               >
-                {obj}
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? "bg-white/20" : "bg-muted"}`}>
+                  <Icon className={`w-5 h-5 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-base font-bold mb-0.5 ${isSelected ? "text-white" : "text-foreground"}`}>{label}</p>
+                  <p className={`text-xs leading-snug ${isSelected ? "text-white/80" : "text-muted-foreground"}`}>{desc}</p>
+                </div>
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center shrink-0">
+                    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                )}
               </button>
             );
           })}
         </div>
+        {data.objective === "" && (
+          <div className="mt-3">
+            <input
+              type="text"
+              autoFocus
+              placeholder="Ex: Fidelizar clientes existentes..."
+              className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+              onChange={(e) => onChange({ objective: e.target.value })}
+            />
+          </div>
+        )}
       </div>
 
     </div>
