@@ -225,6 +225,30 @@ export function StepBriefing({ data, onChange }: Props) {
         )}
       </div>
 
+      {/* Objetivo do post */}
+      <div>
+        <h3 className="text-lg font-bold text-foreground mb-1">O que você quer que o público faça?</h3>
+        <p className="text-sm text-muted-foreground mb-3">Selecione o objetivo principal do conteúdo</p>
+        <div className="flex flex-wrap gap-2">
+          {["Vender","Educar","Engajar","Gerar autoridade","Divulgar oferta","Atrair seguidores","Gerar conexão","Apresentar produto","Quebrar objeção","Despertar desejo"].map((obj) => {
+            const isSelected = data.objective === obj;
+            return (
+              <button
+                key={obj}
+                onClick={() => onChange({ objective: obj })}
+                className={`rounded-full border-2 px-4 py-2 text-sm font-semibold transition-all hover:-translate-y-0.5 ${
+                  isSelected
+                    ? "border-fuchsia-500 bg-fuchsia-500 text-white shadow-glow"
+                    : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-primary/5"
+                }`}
+              >
+                {obj}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
     </div>
   );
 }

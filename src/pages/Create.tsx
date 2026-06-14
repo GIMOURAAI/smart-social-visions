@@ -130,7 +130,7 @@ export default function Create() {
   const canProceed = (): boolean => {
     switch (step) {
       case 1: return (wizardData.brandName?.trim().length ?? 0) > 0 && wizardData.niche.trim().length > 0 && wizardData.theme.trim().length >= 5;
-      case 2: return wizardData.objective.trim().length > 0 && wizardData.tone.trim().length > 0;
+      case 2: return wizardData.tone.trim().length > 0;
       case 3: return wizardData.visualStyle.trim().length > 0 || (wizardData.brandImages ?? []).length > 0;
       case 4: return (wizardData.feedPattern ?? "").trim().length > 0;
       case 5: return wizardData.format.length > 0 && wizardData.daysQuantity > 0;
@@ -240,7 +240,6 @@ export default function Create() {
       if ((wizardData.theme?.trim().length ?? 0) < 5) return "Descreva melhor o assunto (mínimo 5 caracteres)";
     }
     if (step === 2) {
-      if (!wizardData.objective?.trim()) return "Descreva o objetivo do conteúdo";
       if (!wizardData.tone?.trim()) return "Selecione um tom de voz";
     }
     if (step === 3 && !wizardData.visualStyle?.trim() && !(wizardData.brandImages ?? []).length)
