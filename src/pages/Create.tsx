@@ -376,10 +376,14 @@ export default function Create() {
                 </div>
 
                 <div className="flex justify-between mt-8 pt-6 border-t border-border">
-                  <Button variant="outline" onClick={handleBack} disabled={step === 1} className="rounded-full">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Anterior
-                  </Button>
+                  {step === 1 ? (
+                    <div />
+                  ) : (
+                    <Button variant="outline" onClick={handleBack} className="rounded-full">
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Anterior
+                    </Button>
+                  )}
 
                   <div className="flex flex-col items-end gap-1">
                     {(() => {
