@@ -11,6 +11,9 @@ import {
   ArrowRight,
   Image as ImageIcon,
   CalendarDays,
+  Copy,
+  ScanEye,
+  Trash2,
 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
@@ -29,6 +32,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCloneList, setShowCloneList] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -65,6 +69,25 @@ export default function Dashboard() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deletePost = async (postId: string) => {
+    if (!confirm("Excluir este post?")) return;
+    await supabase.from("posts").delete().eq("id", postId);
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  };
+
+  const clonePost = async (post: Post) => {
+    const { data, error } = await supabase
+      .from("posts")
+      .insert({ ...post, id: undefined, title: `${post.title} (cópia)`, created_at: undefined })
+      .select()
+      .single();
+    if (!error && data) {
+      setPosts((prev) => [data, ...prev]);
+      setShowCloneList(false);
+      toast({ title: "Post clonado!", description: "Cópia adicionada ao topo da lista" });
     }
   };
 
@@ -201,6 +224,71 @@ export default function Dashboard() {
               <ArrowRight className="w-5 h-5 text-primary opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
             </div>
           </button>
+
+          {/* Copiar estilo de imagem */}
+          <button
+            onClick={() => navigate("/create-style")}
+            className="group relative w-full overflow-hidden rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/5 hover:bg-fuchsia-500/10 p-5 text-left transition-all hover:-translate-y-0.5"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-fuchsia-500/15 flex items-center justify-center shrink-0">
+                <ScanEye className="w-6 h-6 text-fuchsia-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-base text-foreground">
+                  Copiar estilo de imagem
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Envie uma arte — a IA replica o estilo e cria posts
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-fuchsia-600 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            </div>
+          </button>
+
+          {/* Clonar post existente */}
+          {posts.length > 0 && (
+            <div>
+              <button
+                onClick={() => setShowCloneList((v) => !v)}
+                className="group relative w-full overflow-hidden rounded-2xl border border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/10 p-5 text-left transition-all hover:-translate-y-0.5"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-violet-500/15 flex items-center justify-center shrink-0">
+                    <Copy className="w-6 h-6 text-violet-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-base text-foreground">Clonar post existente</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Duplica um post seu para editar e reusar
+                    </p>
+                  </div>
+                  <ArrowRight className={`w-5 h-5 text-violet-600 transition-all ${showCloneList ? "rotate-90 opacity-100" : "opacity-40 group-hover:opacity-100 group-hover:translate-x-1"}`} />
+                </div>
+              </button>
+
+              {showCloneList && (
+                <div className="mt-2 rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+                  {posts.slice(0, 5).map((post) => (
+                    <button
+                      key={post.id}
+                      onClick={() => clonePost(post)}
+                      className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-muted transition border-b border-border last:border-0"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0">
+                        <ImageIcon className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{post.title || "Sem título"}</p>
+                        <p className="text-xs text-muted-foreground">{post.format} · {new Date(post.created_at).toLocaleDateString("pt-BR")}</p>
+                      </div>
+                      <Copy className="w-4 h-4 text-primary shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -273,11 +361,16 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-1 shrink-0">
+                <div className="flex flex-col items-end gap-2 shrink-0">
                   <span className="text-[10px] text-muted-foreground">
                     {new Date(post.created_at).toLocaleDateString("pt-BR")}
                   </span>
-                  <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition" />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deletePost(post.id); }}
+                    className="w-7 h-7 rounded-full bg-red-500/10 flex items-center justify-center hover:bg-red-500/20 transition opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                  </button>
                 </div>
               </button>
             ))}
