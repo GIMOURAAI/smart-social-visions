@@ -156,9 +156,10 @@ export function StepBriefing({ data, onChange }: Props) {
               <button
                 key={id}
                 onClick={() => onChange({ niche: id })}
-                className={`flex flex-col items-center gap-2 rounded-2xl p-3 text-center bg-primary text-white transition-all hover:-translate-y-0.5 hover:bg-primary/90 ${
-                  isSelected ? "ring-2 ring-white/70 shadow-glow scale-[1.02]" : ""
+                className={`flex flex-col items-center gap-2 rounded-2xl p-3 text-center text-white transition-all hover:-translate-y-0.5 ${
+                  isSelected ? "shadow-glow scale-[1.02]" : "bg-primary hover:bg-primary/90"
                 }`}
+                style={isSelected ? { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" } : {}}
               >
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/15">
                   <Icon className="w-5 h-5 text-white" />
