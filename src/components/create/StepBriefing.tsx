@@ -158,14 +158,15 @@ export function StepBriefing({ data, onChange }: Props) {
                 onClick={() => onChange({ niche: id })}
                 className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-3 text-center transition-all hover:-translate-y-0.5 ${
                   isSelected
-                    ? "border-fuchsia-500 bg-fuchsia-500 shadow-glow"
-                    : "border-primary bg-primary hover:bg-primary/80 hover:border-primary/80"
+                    ? "border-transparent shadow-glow"
+                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
                 }`}
+                style={isSelected ? { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" } : {}}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/15">
-                  <Icon className="w-5 h-5 text-white" />
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isSelected ? "bg-white/20" : "bg-muted"}`}>
+                  <Icon className={`w-5 h-5 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
                 </div>
-                <span className="text-xs font-bold leading-tight text-white">
+                <span className={`text-xs font-bold leading-tight ${isSelected ? "text-white" : "text-foreground"}`}>
                   {label}
                 </span>
               </button>
@@ -225,95 +226,6 @@ export function StepBriefing({ data, onChange }: Props) {
         )}
       </div>
 
-      {/* Objetivo do post — multi-select até 7 */}
-      <div>
-        <h3 className="text-lg font-bold text-foreground mb-1">O que você quer que o público faça?</h3>
-        <p className="text-sm text-muted-foreground mb-3">
-          Escolha até <span className="font-bold text-primary">7 objetivos</span>
-          {Array.isArray(data.objective) && data.objective.length > 0 && (
-            <span className="ml-2 text-primary font-bold">· {data.objective.length} selecionado{data.objective.length > 1 ? "s" : ""}</span>
-          )}
-        </p>
-        <div className="grid grid-cols-1 gap-2">
-          {[
-            { id: "Vender",             Icon: ShoppingCart, desc: "Converter seguidores em clientes e gerar vendas diretas." },
-            { id: "Educar",             Icon: BookOpen,     desc: "Ensinar algo valioso e posicionar como referência." },
-            { id: "Engajar",            Icon: Zap,          desc: "Gerar curtidas, comentários e compartilhamentos." },
-            { id: "Gerar autoridade",   Icon: Trophy,       desc: "Mostrar expertise e construir credibilidade no nicho." },
-            { id: "Divulgar oferta",    Icon: Megaphone,    desc: "Apresentar promoção, desconto ou condição especial." },
-            { id: "Atrair seguidores",  Icon: UserPlus,     desc: "Crescer a audiência e ganhar novos seguidores." },
-            { id: "Gerar conexão",      Icon: Heart,        desc: "Criar identificação emocional com o público." },
-            { id: "Apresentar produto", Icon: Package,      desc: "Mostrar um produto ou serviço em detalhe." },
-            { id: "Quebrar objeção",    Icon: HelpCircle,   desc: "Responder dúvidas e remover barreiras de compra." },
-            { id: "Despertar desejo",   Icon: Flame,        desc: "Criar vontade e fazer o público querer mais." },
-            { id: "__livre__",          Icon: PenLine,      desc: "Defina o objetivo com suas próprias palavras." },
-          ].map(({ id, Icon, desc }) => {
-            const selected: string[] = Array.isArray(data.objective) ? data.objective : [];
-            const isSelected = id === "__livre__" ? selected.includes("__livre__") : selected.includes(id);
-            const atLimit = selected.filter(o => o !== "__livre__").length >= 7;
-            const label = id === "__livre__" ? "Escrever o próprio" : id;
-
-            const handleClick = () => {
-              if (id === "__livre__") {
-                const next = selected.includes("__livre__")
-                  ? selected.filter(o => o !== "__livre__")
-                  : [...selected, "__livre__"];
-                onChange({ objective: next });
-                return;
-              }
-              if (isSelected) {
-                onChange({ objective: selected.filter(o => o !== id) });
-              } else if (!atLimit) {
-                onChange({ objective: [...selected, id] });
-              }
-            };
-
-            const isDisabled = !isSelected && atLimit && id !== "__livre__";
-            return (
-              <button
-                key={id}
-                onClick={handleClick}
-                disabled={isDisabled}
-                className={`w-full flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 ${
-                  isSelected ? "border-transparent shadow-glow"
-                  : isDisabled ? "border-border bg-card opacity-40 cursor-not-allowed"
-                  : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
-                }`}
-                style={isSelected ? { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" } : {}}
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? "bg-white/20" : "bg-muted"}`}>
-                  <Icon className={`w-5 h-5 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-base font-bold mb-0.5 ${isSelected ? "text-white" : "text-foreground"}`}>{label}</p>
-                  <p className={`text-xs leading-snug ${isSelected ? "text-white/80" : "text-muted-foreground"}`}>{desc}</p>
-                </div>
-                {isSelected && (
-                  <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center shrink-0">
-                    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        {Array.isArray(data.objective) && data.objective.includes("__livre__") && (
-          <div className="mt-3">
-            <input
-              type="text"
-              autoFocus
-              placeholder="Ex: Fidelizar clientes existentes..."
-              className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
-              onChange={(e) => {
-                const rest = (data.objective as string[]).filter(o => o !== "__livre__");
-                onChange({ objective: [...rest, e.target.value] });
-              }}
-            />
-          </div>
-        )}
-      </div>
 
     </div>
   );
