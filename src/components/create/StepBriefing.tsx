@@ -98,8 +98,8 @@ export function StepBriefing({ data, onChange }: Props) {
 
       {/* Para mim ou cliente */}
       <div>
-        <h3 className="text-base font-bold text-foreground mb-1">Criando para quem?</h3>
-        <p className="text-xs text-muted-foreground mb-3">Personalize a experiência de geração</p>
+        <h3 className="text-lg font-bold text-foreground mb-1">Criando para quem?</h3>
+        <p className="text-sm text-muted-foreground mb-3">Personalize a experiência de geração</p>
         <div className="grid grid-cols-2 gap-3">
           {[
             { id: "myself", Icon: User,      label: "Para mim",       desc: "Meu próprio negócio" },
@@ -118,8 +118,8 @@ export function StepBriefing({ data, onChange }: Props) {
                   <opt.Icon className={`w-4 h-4 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
                 </div>
                 <div>
-                  <p className={`text-sm font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>{opt.label}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug">{opt.desc}</p>
+                  <p className={`text-base font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>{opt.label}</p>
+                  <p className="text-xs text-muted-foreground leading-snug">{opt.desc}</p>
                 </div>
               </button>
             );
@@ -129,10 +129,10 @@ export function StepBriefing({ data, onChange }: Props) {
 
       {/* Nome da marca */}
       <div>
-        <label className="block text-base font-bold text-foreground mb-1">
+        <label className="block text-lg font-bold text-foreground mb-1">
           {forClient ? "Nome do negócio do cliente" : "Nome da sua marca"}
         </label>
-        <p className="text-xs text-muted-foreground mb-2">
+        <p className="text-sm text-muted-foreground mb-2">
           {forClient ? "Aparece nas legendas e CTAs do cliente" : "Aparece nas legendas, CTAs e títulos gerados"}
         </p>
         <input
@@ -140,14 +140,14 @@ export function StepBriefing({ data, onChange }: Props) {
           value={data.brandName ?? ""}
           onChange={(e) => onChange({ brandName: e.target.value })}
           placeholder={forClient ? "Ex: Clínica Dr. João, Boutique Ana Lima..." : "Ex: Studio Bella, Clínica Saúde Plena..."}
-          className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+          className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
         />
       </div>
 
       {/* Nicho — ícones premium */}
       <div>
-        <h3 className="text-base font-bold text-foreground mb-1">Qual é o seu nicho?</h3>
-        <p className="text-xs text-muted-foreground mb-3">Selecione a categoria do seu negócio</p>
+        <h3 className="text-lg font-bold text-foreground mb-1">Qual é o seu nicho?</h3>
+        <p className="text-sm text-muted-foreground mb-3">Selecione a categoria do seu negócio</p>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {NICHES.map(({ id, label, Icon }) => {
             const isSelected = data.niche === id;
@@ -157,14 +157,14 @@ export function StepBriefing({ data, onChange }: Props) {
                 onClick={() => onChange({ niche: id })}
                 className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-3 text-center transition-all hover:-translate-y-0.5 ${
                   isSelected
-                    ? "border-primary bg-primary shadow-glow"
-                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
+                    ? "border-violet-700 bg-violet-700 shadow-glow"
+                    : "border-primary bg-primary hover:bg-primary/80 hover:border-primary/80"
                 }`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected ? "bg-white/20" : "bg-primary/10"}`}>
-                  <Icon className={`w-4 h-4 ${isSelected ? "text-white" : "text-primary"}`} />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/15">
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
-                <span className={`text-[11px] font-semibold leading-tight ${isSelected ? "text-white" : "text-foreground"}`}>
+                <span className="text-xs font-bold leading-tight text-white">
                   {label}
                 </span>
               </button>
@@ -175,8 +175,8 @@ export function StepBriefing({ data, onChange }: Props) {
 
       {/* Linha editorial */}
       <div>
-        <h3 className="text-base font-bold text-foreground mb-1">Qual é o objetivo do conteúdo?</h3>
-        <p className="text-xs text-muted-foreground mb-3">Escolha a linha editorial ou escreva livremente</p>
+        <h3 className="text-lg font-bold text-foreground mb-1">Qual é o objetivo do conteúdo?</h3>
+        <p className="text-sm text-muted-foreground mb-3">Escolha a linha editorial ou escreva livremente</p>
         <div className="grid grid-cols-1 gap-2">
           {LINHAS_EDITORIAIS.map((linha) => {
             const isSelected = selectedLinha === linha.id;
@@ -194,8 +194,8 @@ export function StepBriefing({ data, onChange }: Props) {
                   <linha.icon className={`w-4 h-4 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>{linha.label}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug">{linha.desc}</p>
+                  <p className={`text-base font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>{linha.label}</p>
+                  <p className="text-xs text-muted-foreground leading-snug">{linha.desc}</p>
                 </div>
                 {isSelected && (
                   <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shrink-0">
