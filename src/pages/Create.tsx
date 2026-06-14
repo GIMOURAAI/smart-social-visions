@@ -233,9 +233,30 @@ export default function Create() {
     }
   };
 
+  const getMissingField = (): string | null => {
+    if (step === 1) {
+      if (!wizardData.brandName?.trim()) return "Preencha o nome da marca antes de continuar";
+      if (!wizardData.niche) return "Selecione um nicho";
+      if ((wizardData.theme?.trim().length ?? 0) < 5) return "Descreva melhor o assunto (mínimo 5 caracteres)";
+    }
+    if (step === 2) {
+      if (!wizardData.objective?.trim()) return "Descreva o objetivo do conteúdo";
+      if (!wizardData.tone?.trim()) return "Selecione um tom de voz";
+    }
+    if (step === 3 && !wizardData.visualStyle?.trim() && !(wizardData.brandImages ?? []).length)
+      return "Escolha um estilo visual";
+    if (step === 4 && !wizardData.feedPattern?.trim()) return "Escolha o padrão do feed";
+    if (step === 5 && (!wizardData.format || !wizardData.daysQuantity)) return "Escolha o formato e período";
+    return null;
+  };
+
   const handleNext = () => {
+    const missing = getMissingField();
+    if (missing) {
+      toast({ title: "Campo obrigatório", description: missing, variant: "destructive" });
+      return;
+    }
     if (step === 6) {
-      // Start with pilot
       generatePosts(0, wizardData.pilotQuantity);
     } else {
       setStep((s) => Math.min(TOTAL_WIZARD_STEPS, s + 1));
@@ -367,7 +388,7 @@ export default function Create() {
                         <>
                           <Button
                             onClick={noCredits ? () => navigate("/pricing") : handleNext}
-                            disabled={(!canProceed() && !noCredits) || loading}
+                            disabled={loading}
                             className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
                           >
                             {loading ? "Gerando..." : noCredits ? "Sem créditos · Ver planos" : step === 6 ? `Gerar piloto (${wizardData.pilotQuantity} post${wizardData.pilotQuantity > 1 ? "s" : ""})` : "Próximo"}

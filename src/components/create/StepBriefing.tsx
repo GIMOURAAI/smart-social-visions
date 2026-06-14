@@ -1,5 +1,14 @@
 import type { WizardData } from "@/pages/Create";
 
+const MODELOS = [
+  { emoji: "💆‍♀️", label: "Estética & Beleza", niche: "estetica", theme: "Divulgar serviços de estética, mostrar resultados reais e atrair novos clientes com promoções e depoimentos." },
+  { emoji: "🍽️", label: "Restaurante", niche: "restaurante", theme: "Apresentar o cardápio, pratos especiais, ambiente e promoções do restaurante para atrair clientes." },
+  { emoji: "🛍️", label: "Loja Online", niche: "loja-online", theme: "Divulgar produtos, promoções, novidades e depoimentos de clientes para aumentar as vendas online." },
+  { emoji: "🏠", label: "Imobiliária", niche: "imobiliaria", theme: "Apresentar imóveis à venda e para alugar, dicas do mercado e diferenciais da imobiliária." },
+  { emoji: "📱", label: "Infoproduto", niche: "infoproduto", theme: "Lançar ou divulgar curso digital, ebook ou mentoria mostrando resultados e transformações dos alunos." },
+  { emoji: "💼", label: "Consultoria", niche: "consultoria", theme: "Posicionar expertise, compartilhar cases de sucesso e gerar leads qualificados para consultoria." },
+];
+
 const FOR_OPTIONS = [
   {
     id: "myself",
@@ -40,6 +49,45 @@ export function StepBriefing({ data, onChange }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Modelos prontos */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground mb-1">
+          Começar com um modelo pronto?
+        </h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Escolha um modelo e os campos serão preenchidos automaticamente
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {MODELOS.map((m) => {
+            const isSelected = data.niche === m.niche && data.theme === m.theme;
+            return (
+              <button
+                key={m.niche}
+                onClick={() => onChange({ niche: m.niche, theme: m.theme })}
+                className={`flex flex-col items-center gap-1 rounded-2xl border-2 p-3 text-center transition-all hover:-translate-y-0.5 ${
+                  isSelected
+                    ? "border-primary bg-primary/10 shadow-glow"
+                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
+                }`}
+              >
+                <span className="text-xl leading-none">{m.emoji}</span>
+                <span className={`text-[10px] font-semibold leading-tight ${isSelected ? "text-primary" : "text-foreground"}`}>
+                  {m.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {(data.niche || data.theme) && (
+          <button
+            onClick={() => onChange({ niche: "", theme: "" })}
+            className="mt-2 text-[10px] text-muted-foreground underline"
+          >
+            Limpar modelo
+          </button>
+        )}
+      </div>
+
       {/* For myself or client */}
       <div>
         <h3 className="text-sm font-semibold text-foreground mb-1">
