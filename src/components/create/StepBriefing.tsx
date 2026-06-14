@@ -157,7 +157,7 @@ export function StepBriefing({ data, onChange }: Props) {
                 onClick={() => onChange({ niche: id })}
                 className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-3 text-center transition-all hover:-translate-y-0.5 ${
                   isSelected
-                    ? "border-violet-700 bg-violet-700 shadow-glow"
+                    ? "border-fuchsia-500 bg-fuchsia-500 shadow-glow"
                     : "border-primary bg-primary hover:bg-primary/80 hover:border-primary/80"
                 }`}
               >
