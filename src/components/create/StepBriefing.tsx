@@ -184,23 +184,22 @@ export function StepBriefing({ data, onChange }: Props) {
               <button
                 key={linha.id}
                 onClick={() => handleLinha(linha)}
-                className={`flex items-center gap-3 rounded-2xl border-2 p-3.5 text-left transition-all hover:-translate-y-0.5 ${
-                  isSelected
-                    ? "border-primary bg-primary/5 shadow-glow"
-                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
+                className={`w-full flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 ${
+                  isSelected ? "border-transparent shadow-glow" : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
                 }`}
+                style={isSelected ? { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" } : {}}
               >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? "bg-primary" : "bg-muted"}`}>
-                  <linha.icon className={`w-4 h-4 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? "bg-white/20" : "bg-muted"}`}>
+                  <linha.icon className={`w-5 h-5 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-base font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>{linha.label}</p>
-                  <p className="text-xs text-muted-foreground leading-snug">{linha.desc}</p>
+                  <p className={`text-base font-bold mb-0.5 ${isSelected ? "text-white" : "text-foreground"}`}>{linha.label}</p>
+                  <p className={`text-xs leading-snug ${isSelected ? "text-white/80" : "text-muted-foreground"}`}>{linha.desc}</p>
                 </div>
                 {isSelected && (
-                  <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shrink-0">
-                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 12 12">
-                      <path d="M10 3L5 8.5 2 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center shrink-0">
+                    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
                 )}

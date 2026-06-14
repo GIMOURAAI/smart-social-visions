@@ -43,8 +43,8 @@ export interface WizardData {
   brandName: string;
   niche: string;
   theme: string;
-  // Step 2
   objective: string;
+  // Step 2
   tone: string;
   // Step 3
   visualStyle: string;
