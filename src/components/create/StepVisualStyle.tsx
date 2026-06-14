@@ -1,4 +1,8 @@
 import { useRef, useState } from "react";
+import {
+  Briefcase, Shirt, Zap, Trophy, Heart, Stethoscope,
+  Building2, Scale, Sparkles,
+} from "lucide-react";
 import type { WizardData } from "@/pages/Create";
 
 const TEMAS = [
@@ -7,7 +11,7 @@ const TEMAS = [
     name: "Clean Premium SaaS",
     desc: "Minimalista sofisticado — Tech, SaaS, Empreendedorismo",
     colors: ["#0a0a0a", "#7c3aed", "#d4af37"],
-    icon: "💼",
+    Icon: Briefcase,
     nichos: "Tech · SaaS · Marketing",
   },
   {
@@ -15,7 +19,7 @@ const TEMAS = [
     name: "High Luxury Editorial",
     desc: "Editorial fashion de alto padrão — Moda, Beleza, Lifestyle",
     colors: ["#fdf4ec", "#c9a84c", "#1a1a2e"],
-    icon: "👗",
+    Icon: Shirt,
     nichos: "Moda · Beleza · Luxo",
   },
   {
@@ -23,7 +27,7 @@ const TEMAS = [
     name: "Futurista Dark Neon",
     desc: "Cyberpunk energético — Tech, Cripto, IA, Games",
     colors: ["#000000", "#00ff88", "#8b5cf6"],
-    icon: "⚡",
+    Icon: Zap,
     nichos: "Tech · IA · Cripto",
   },
   {
@@ -31,7 +35,7 @@ const TEMAS = [
     name: "Prova Social & Resultados",
     desc: "Transformação e resultados — Coach, Mentoria, Vendas",
     colors: ["#ffffff", "#2563eb", "#16a34a"],
-    icon: "🏆",
+    Icon: Trophy,
     nichos: "Coach · Mentoria · Vendas",
   },
   {
@@ -39,7 +43,7 @@ const TEMAS = [
     name: "Dor Emocional & Conexão",
     desc: "Intimidade e acolhimento — Terapia, Coach, Bem-estar",
     colors: ["#fdf6f0", "#e8a87c", "#8b6057"],
-    icon: "💛",
+    Icon: Heart,
     nichos: "Psicologia · Terapia · Coach",
   },
   {
@@ -47,7 +51,7 @@ const TEMAS = [
     name: "Médico & Saúde",
     desc: "Autoridade clínica confiável — Saúde, Nutrição, Estética",
     colors: ["#ffffff", "#0ea5e9", "#0c4a6e"],
-    icon: "🩺",
+    Icon: Stethoscope,
     nichos: "Médico · Saúde · Nutrição",
   },
   {
@@ -55,15 +59,15 @@ const TEMAS = [
     name: "Imobiliária & Corretores",
     desc: "Prestígio e sofisticação — Imóveis, Real Estate",
     colors: ["#1a1a1a", "#c9a84c", "#f5f0e8"],
-    icon: "🏛️",
+    Icon: Building2,
     nichos: "Imóveis · Corretor · Construtora",
   },
   {
     id: "tema-08-juridico",
-    name: "Advogada & Jurídico",
+    name: "Advogado & Jurídico",
     desc: "Seriedade e autoridade — Direito, Jurídico, Consultoria",
     colors: ["#0f172a", "#b8860b", "#f8fafc"],
-    icon: "⚖️",
+    Icon: Scale,
     nichos: "Direito · Jurídico · Advocacia",
   },
   {
@@ -71,7 +75,7 @@ const TEMAS = [
     name: "Influenciadora & Personal Brand",
     desc: "Vibrante e magnético — Criadores, Personal Brand",
     colors: ["#ff6b9d", "#c4a7e7", "#f5d020"],
-    icon: "✨",
+    Icon: Sparkles,
     nichos: "Influencer · Criador · Digital",
   },
 ];
@@ -132,54 +136,53 @@ export function StepVisualStyle({ data, onChange }: Props) {
       </div>
 
       {activeTab === "presets" && (
-        <div className="grid grid-cols-1 gap-2.5">
+        <div className="grid grid-cols-1 gap-3">
           {TEMAS.map((tema) => {
             const isSelected = data.visualStyle === tema.id;
             return (
               <button
                 key={tema.id}
                 onClick={() => onChange({ visualStyle: tema.id })}
-                className={`rounded-2xl border-2 p-3.5 text-left transition-all hover:-translate-y-0.5 ${
+                className={`w-full flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 ${
                   isSelected
-                    ? "border-primary bg-primary/5 shadow-glow"
-                    : "border-border bg-card hover:border-primary/40"
+                    ? "border-transparent shadow-glow"
+                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
                 }`}
+                style={isSelected ? { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" } : {}}
               >
-                <div className="flex items-center gap-3">
-                  {/* Color palette preview */}
-                  <div className="flex gap-1 shrink-0">
-                    {tema.colors.map((color, i) => (
-                      <div
-                        key={i}
-                        className="w-4 h-4 rounded-full border border-white/20 shadow-sm"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                  {/* Text */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">{tema.icon}</span>
-                      <p className={`text-xs font-bold leading-tight truncate ${isSelected ? "text-primary" : "text-foreground"}`}>
-                        {tema.name}
-                      </p>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 truncate">
-                      {tema.desc}
-                    </p>
-                  </div>
-                  {/* Niche badge */}
-                  <span className="text-[9px] text-muted-foreground bg-muted rounded-full px-2 py-0.5 shrink-0 hidden sm:block">
-                    {tema.nichos}
-                  </span>
-                  {isSelected && (
-                    <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shrink-0">
-                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
+                {/* Icon */}
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? "bg-white/20" : "bg-muted"}`}>
+                  <tema.Icon className={`w-5 h-5 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
                 </div>
+
+                {/* Text */}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-bold mb-0.5 truncate ${isSelected ? "text-white" : "text-foreground"}`}>
+                    {tema.name}
+                  </p>
+                  <p className={`text-xs leading-snug truncate ${isSelected ? "text-white/80" : "text-muted-foreground"}`}>
+                    {tema.desc}
+                  </p>
+                </div>
+
+                {/* Color palette — large strips */}
+                <div className="flex gap-1 shrink-0">
+                  {tema.colors.map((color, i) => (
+                    <div
+                      key={i}
+                      className="w-6 h-10 rounded-lg shadow-sm border border-white/10"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center shrink-0">
+                    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                )}
               </button>
             );
           })}
@@ -188,10 +191,10 @@ export function StepVisualStyle({ data, onChange }: Props) {
 
       {activeTab === "custom" && (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
-            <p className="text-sm text-foreground font-semibold mb-1">⚠️ Copiar estilo visual</p>
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm text-foreground font-semibold mb-1">Copiar estilo visual</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Envie uma arte da sua marca como referência. O SmartPostAI criará posts com estética similar — cores, tipografia e atmosfera — sem copiar o design original. A IA pode adaptar livremente elementos para melhor adequação ao conteúdo.
+              Envie uma arte da sua marca como referência. O SmartPostAI criará posts com estética similar — cores, tipografia e atmosfera — sem copiar o design original.
             </p>
           </div>
 
