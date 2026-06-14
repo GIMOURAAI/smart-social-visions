@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   CalendarDays,
   Trash2,
+  Copy,
 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { useCredits } from "@/hooks/useCredits";
@@ -49,6 +50,24 @@ export default function Dashboard() {
     loadPosts(session.user.id);
     // Sync subscription state from Stripe (fires plan renewals + plan changes)
     supabase.functions.invoke("check-subscription").catch(() => {});
+  };
+
+  const clonePost = async (post: Post, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const { data, error } = await supabase.from("posts").insert({
+      user_id: user!.id,
+      title: `${post.title} (cópia)`,
+      format: post.format,
+      style: post.style,
+      image_url: post.image_url,
+      content: (post as any).content ?? null,
+    }).select().single();
+    if (error) {
+      toast({ title: "Erro ao copiar", description: error.message, variant: "destructive" });
+    } else {
+      setPosts((prev) => [data, ...prev]);
+      toast({ title: "Post copiado!", description: "A cópia foi adicionada aos seus projetos." });
+    }
   };
 
   const deletePost = async (postId: string, e: React.MouseEvent) => {
@@ -293,13 +312,22 @@ export default function Dashboard() {
                   <span className="text-[10px] text-muted-foreground">
                     {new Date(post.created_at).toLocaleDateString("pt-BR")}
                   </span>
-                  <button
-                    onClick={(e) => deletePost(post.id, e)}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition opacity-0 group-hover:opacity-100"
-                    title="Excluir post"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <button
+                      onClick={(e) => clonePost(post, e)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
+                      title="Copiar post"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => deletePost(post.id, e)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition"
+                      title="Excluir post"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </button>
             ))}
