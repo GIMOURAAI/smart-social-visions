@@ -74,7 +74,7 @@ export function StepConfirm({ data, onEdit }: Props) {
           <Row label={data.forClient ? "Nome do cliente" : "Nome da marca"} value={data.brandName ?? ""} onEdit={onEdit} step={1} />
           <Row label="Nicho" value={NICHE_LABELS[data.niche] ?? data.niche} onEdit={onEdit} step={1} />
           <Row label="Tema / Assunto" value={data.theme} onEdit={onEdit} step={1} />
-          <Row label="Objetivo" value={data.objective} onEdit={onEdit} step={2} />
+          <Row label="Objetivo" value={Array.isArray(data.objective) ? data.objective.join(", ") : (data.objective ?? "")} onEdit={onEdit} step={1} />
           <Row label="Tom de voz" value={TONE_LABELS[data.tone] ?? data.tone} onEdit={onEdit} step={2} />
           <Row label="Estilo visual" value={data.visualStyle === "custom" ? "Estilo da minha marca (upload)" : data.visualStyle} onEdit={onEdit} step={3} />
           <Row label="Padrão do feed" value={FEED_LABELS[data.feedPattern ?? ""] ?? "—"} onEdit={onEdit} step={4} />
