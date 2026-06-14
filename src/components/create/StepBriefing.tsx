@@ -88,9 +88,9 @@ export function StepBriefing({ data, onChange }: Props) {
   const handleLinha = (linha: typeof LINHAS_EDITORIAIS[0]) => {
     setSelectedLinha(linha.id);
     if (linha.id !== "livre") {
-      onChange({ theme: linha.theme });
+      onChange({ theme: linha.theme, objective: [linha.label] });
     } else {
-      onChange({ theme: "" });
+      onChange({ theme: "", objective: ["Escrever livremente"] });
     }
   };
 
