@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface CreditState {
@@ -15,7 +15,7 @@ export function useCredits(): CreditState {
   const [planSlug, setPlanSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
     const { data } = await supabase
@@ -29,11 +29,12 @@ export function useCredits(): CreditState {
       setPlanSlug(data.plan_slug ?? null);
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     load();
     let channel: ReturnType<typeof supabase.channel> | null = null;
+
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;

@@ -282,7 +282,7 @@ export default function Create() {
 
   const hasMoreBlocks = wizardData.allPosts.length < wizardData.quantity;
   const isComplete = wizardData.allPosts.length >= wizardData.quantity;
-  const isPilotPhase = wizardData.currentBlock === 0 && wizardData.allPosts.length <= wizardData.pilotQuantity;
+  const isPilotPhase = wizardData.currentBlock === 0 && wizardData.allPosts.length < wizardData.pilotQuantity;
 
   const resetWizard = () => {
     setBatchId(null);
@@ -367,7 +367,7 @@ export default function Create() {
                         <>
                           <Button
                             onClick={noCredits ? () => navigate("/pricing") : handleNext}
-                            disabled={!canProceed() || loading}
+                            disabled={(!canProceed() && !noCredits) || loading}
                             className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
                           >
                             {loading ? "Gerando..." : noCredits ? "Sem créditos · Ver planos" : step === 6 ? `Gerar piloto (${wizardData.pilotQuantity} post${wizardData.pilotQuantity > 1 ? "s" : ""})` : "Próximo"}
