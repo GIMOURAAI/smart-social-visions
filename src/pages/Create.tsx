@@ -222,6 +222,18 @@ export default function Create() {
     const result: GeneratedPost[] = [...approvedPosts];
 
     try {
+      // If user uploaded a style reference image in Step 8 but it wasn't analyzed yet, analyze it now
+      let stylePrompt = wizardData.styleAnalysis?.promptDalle;
+      if (wizardData.styleReferenceImage && !wizardData.styleAnalysis) {
+        const { data: styleData } = await supabase.functions.invoke("copy-style", {
+          body: { imageBase64: wizardData.styleReferenceImage, analyzeOnly: true },
+        });
+        if (styleData?.styleAnalysis) {
+          update({ styleAnalysis: styleData.styleAnalysis });
+          stylePrompt = styleData.styleAnalysis.promptDalle;
+        }
+      }
+
       for (let i = 0; i < approvedPosts.length; i += batchSize) {
         const batch = approvedPosts.slice(i, i + batchSize);
         const { data, error } = await supabase.functions.invoke("generate-smartpost", {
@@ -237,7 +249,7 @@ export default function Create() {
             quantity: batch.length,
             imageQuantity: batch.length,
             postsForImage: batch,
-            customStylePrompt: wizardData.styleAnalysis?.promptDalle,
+            customStylePrompt: stylePrompt,
             brandLogo: wizardData.brandLogo,
             modelPhoto: wizardData.modelPhoto,
           },
