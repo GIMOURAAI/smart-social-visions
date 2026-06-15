@@ -38,7 +38,8 @@ function PostCard({
   const [copied, setCopied] = useState(false);
 
   const copyLegenda = async () => {
-    await navigator.clipboard.writeText(post.legenda);
+    const parts = [post.legenda, post.cta, post.hashtags].filter(Boolean);
+    await navigator.clipboard.writeText(parts.join("\n\n"));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -128,84 +129,44 @@ function PostCard({
           )}
         </div>
 
-        {/* Legenda */}
-        <div className="rounded-2xl border border-border bg-card p-3">
-          <div className="flex items-center justify-between mb-2">
+        {/* Caption block — legenda + CTA + hashtags */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center justify-between px-3 pt-3 pb-2 border-b border-border/50">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-              Legenda
+              Legenda + CTA + Hashtags
             </p>
             <button
               onClick={copyLegenda}
-              className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 transition"
+              className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1 rounded-full hover:opacity-90 transition"
             >
-              {copied ? (
-                <Check className="w-3.5 h-3.5" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
-              {copied ? "Copiado!" : "Copiar"}
+              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              {copied ? "Copiado!" : "Copiar para postar"}
             </button>
           </div>
-          <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
-            {post.legenda}
-          </p>
+          <div className="p-3 space-y-2">
+            <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+              {post.legenda}
+            </p>
+            {post.cta && (
+              <p className="text-xs font-semibold text-primary">{post.cta}</p>
+            )}
+            {post.hashtags && (
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                {post.hashtags}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* CTA */}
-        {post.cta && (
-          <div>
-            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">
-              CTA
-            </p>
-            <p className="text-sm font-semibold text-primary">{post.cta}</p>
-          </div>
-        )}
-
-        {/* Hashtags */}
-        {post.hashtags && (
-          <div>
-            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">
-              Hashtags
-            </p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {post.hashtags}
-            </p>
-          </div>
-        )}
-
-        {/* Visual style */}
-        {post.estiloVisual && (
-          <div className="flex items-center gap-2">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-              Estilo visual:
-            </p>
-            <span className="text-[11px] font-semibold text-foreground bg-muted rounded-full px-2 py-0.5">
-              {post.estiloVisual}
-            </span>
-          </div>
-        )}
-
-        {/* Story */}
+        {/* Story complementar */}
         {post.storyComplementar && (
-          <div className="rounded-xl bg-muted/60 px-3 py-2">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1">
-              Story complementar
-            </p>
-            <p className="text-xs text-foreground leading-relaxed">
-              {post.storyComplementar}
-            </p>
-          </div>
-        )}
-
-        {/* Prompt visual (collapsible) */}
-        {post.promptVisual && (
           <div className="rounded-xl border border-border overflow-hidden">
             <button
               onClick={() => setPromptExpanded((v) => !v)}
               className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted/50 transition"
             >
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                Prompt visual
+                Story complementar
               </p>
               {promptExpanded ? (
                 <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" />
@@ -215,8 +176,8 @@ function PostCard({
             </button>
             {promptExpanded && (
               <div className="px-3 pb-3">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {post.promptVisual}
+                <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                  {post.storyComplementar}
                 </p>
               </div>
             )}
@@ -226,13 +187,6 @@ function PostCard({
 
       {/* Action buttons */}
       <div className="px-5 pb-5 flex flex-wrap gap-2 border-t border-border pt-4">
-        <button
-          onClick={copyLegenda}
-          className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition"
-        >
-          <Copy className="w-3.5 h-3.5" />
-          Copiar legenda
-        </button>
         {post.imageUrl && (
           <button
             onClick={downloadImage}
