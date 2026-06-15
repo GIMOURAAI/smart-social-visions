@@ -1,6 +1,5 @@
-import { useRef, useState } from "react";
-import { Upload, X, Loader2, Sparkles, CheckCircle2, User, Image as ImageIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useRef } from "react";
+import { X, User, Image as ImageIcon } from "lucide-react";
 import type { WizardData } from "@/pages/Create";
 
 interface Props {
@@ -9,8 +8,6 @@ interface Props {
 }
 
 export function StepPersonalizar({ data, onChange }: Props) {
-  const [analyzingModel, setAnalyzingModel] = useState(false);
-  const [modelError, setModelError] = useState<string | null>(null);
   const logoRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
 
@@ -24,29 +21,8 @@ export function StepPersonalizar({ data, onChange }: Props) {
   const handleModelPhoto = (files: FileList | null) => {
     if (!files?.[0]) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
-      onChange({ modelPhoto: e.target?.result as string, modelDescription: undefined });
-      setModelError(null);
-    };
+    reader.onload = (e) => onChange({ modelPhoto: e.target?.result as string });
     reader.readAsDataURL(files[0]);
-  };
-
-  const analyzeModel = async () => {
-    if (!data.modelPhoto) return;
-    setAnalyzingModel(true);
-    setModelError(null);
-    try {
-      const { data: result, error } = await supabase.functions.invoke("analyze-model", {
-        body: { imageBase64: data.modelPhoto },
-      });
-      if (error) throw error;
-      if (!result?.description) throw new Error("Análise não retornou dados.");
-      onChange({ modelDescription: result.description });
-    } catch (err: any) {
-      setModelError(err?.message ?? "Erro ao analisar a foto.");
-    } finally {
-      setAnalyzingModel(false);
-    }
   };
 
   return (
@@ -128,70 +104,32 @@ export function StepPersonalizar({ data, onChange }: Props) {
               <User className="w-5 h-5 text-violet-600" />
             </div>
             <p className="text-sm font-semibold text-foreground mb-0.5">Enviar foto da profissional</p>
-            <p className="text-xs text-muted-foreground">JPG ou PNG · foto com boa iluminação</p>
+            <p className="text-xs text-muted-foreground">JPG ou PNG · foto com boa iluminação · traços mantidos</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
-              <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
-                <img src={data.modelPhoto} alt="Modelo" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-1 min-w-0">
-                {data.modelDescription ? (
-                  <>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0" />
-                      <p className="text-sm font-semibold text-green-700">Aparência analisada</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                      {data.modelDescription}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-semibold text-foreground mb-1">Foto carregada</p>
-                    <button
-                      onClick={analyzeModel}
-                      disabled={analyzingModel}
-                      className="flex items-center gap-1.5 text-xs font-bold text-white px-3 py-1.5 rounded-full transition-all disabled:opacity-70"
-                      style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" }}
-                    >
-                      {analyzingModel ? (
-                        <><Loader2 className="w-3 h-3 animate-spin" /> Analisando...</>
-                      ) : (
-                        <><Sparkles className="w-3 h-3" /> Analisar aparência com IA</>
-                      )}
-                    </button>
-                  </>
-                )}
-              </div>
-              <button
-                onClick={() => onChange({ modelPhoto: undefined, modelDescription: undefined })}
-                className="w-7 h-7 rounded-full bg-muted flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition shrink-0"
-              >
-                <X className="w-4 h-4" />
-              </button>
+          <div className="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 dark:border-violet-800/40 dark:bg-violet-950/20 p-3">
+            <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border-2 border-violet-300">
+              <img src={data.modelPhoto} alt="Modelo" className="w-full h-full object-cover" />
             </div>
-
-            {modelError && (
-              <p className="text-xs text-red-500">{modelError}</p>
-            )}
-
-            {data.modelDescription && (
-              <button
-                onClick={() => onChange({ modelDescription: undefined })}
-                className="text-xs text-muted-foreground underline hover:text-foreground transition"
-              >
-                Reanalisar foto
-              </button>
-            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-violet-700">Foto de referência pronta</p>
+              <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                Os traços da profissional serão mantidos nas imagens geradas.
+              </p>
+            </div>
+            <button
+              onClick={() => onChange({ modelPhoto: undefined })}
+              className="w-7 h-7 rounded-full bg-white/60 flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>
 
       <div className="rounded-2xl bg-muted/60 p-4">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          <strong className="text-foreground">Dica:</strong> Quanto mais informações você fornecer, mais personalizada será a arte. A foto da profissional é usada como referência de aparência — não é copiada diretamente.
+          <strong className="text-foreground">Dica:</strong> A foto da profissional é enviada diretamente como referência para a IA gerar as imagens mantendo os traços exatos — rosto, cabelo, tom de pele. Quanto mais clara e bem iluminada a foto, melhor o resultado.
         </p>
       </div>
     </div>

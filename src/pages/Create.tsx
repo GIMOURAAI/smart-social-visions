@@ -239,7 +239,7 @@ export default function Create() {
             postsForImage: batch,
             customStylePrompt: wizardData.styleAnalysis?.promptDalle,
             brandLogo: wizardData.brandLogo,
-            modelDescription: wizardData.modelDescription,
+            modelPhoto: wizardData.modelPhoto,
           },
         });
 

@@ -31,6 +31,7 @@ interface SmartPostRequest {
   postsForImage?: GeneratedPost[];
   // Personalization
   brandLogo?: string;
+  modelPhoto?: string;
   modelDescription?: string;
 }
 
@@ -301,8 +302,44 @@ function buildTextOverlayPrompt(post: GeneratedPost, modelDescription?: string, 
   return `${post.promptVisual} | ${overlay}`;
 }
 
-async function generatePostImage(promptVisual: string, openaiKey: string): Promise<string | undefined> {
+async function generatePostImage(
+  promptVisual: string,
+  openaiKey: string,
+  modelPhotoBase64?: string
+): Promise<string | undefined> {
   try {
+    // When a model photo is provided, use the edits endpoint to preserve the person's exact appearance
+    if (modelPhotoBase64) {
+      const base64Data = modelPhotoBase64.includes(",")
+        ? modelPhotoBase64.split(",")[1]
+        : modelPhotoBase64;
+      const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+      const imageBlob = new Blob([imageBytes], { type: "image/png" });
+
+      const formData = new FormData();
+      formData.append("image", imageBlob, "model.png");
+      formData.append("prompt", promptVisual);
+      formData.append("n", "1");
+      formData.append("size", "1024x1024");
+      formData.append("model", "gpt-image-1");
+
+      const resp = await fetch("https://api.openai.com/v1/images/edits", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${openaiKey}` },
+        body: formData,
+      });
+      if (!resp.ok) {
+        // Fallback to standard generation if edit fails
+        console.error("Image edit failed, falling back to generation");
+      } else {
+        const data = await resp.json();
+        const b64 = data.data?.[0]?.b64_json;
+        if (b64) return `data:image/png;base64,${b64}`;
+        if (data.data?.[0]?.url) return data.data[0].url;
+      }
+    }
+
+    // Standard DALL-E 3 generation (no model photo or fallback)
     const resp = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
@@ -346,7 +383,7 @@ serve(async (req) => {
       brandImages, blockIndex = 0, feedPattern = "", brandName = "",
       customStylePrompt, customStyleMeta,
       textOnly = false, totalPosts, postsForImage,
-      modelDescription, brandLogo,
+      modelDescription, brandLogo, modelPhoto,
     } = body;
 
     // Mode: generate images for already-approved posts
@@ -355,7 +392,7 @@ serve(async (req) => {
       await Promise.all(
         postsWithImages.map(async (post, i) => {
           const richPrompt = buildTextOverlayPrompt(post, modelDescription, brandName);
-          const url = await generatePostImage(richPrompt, openaiKey);
+          const url = await generatePostImage(richPrompt, openaiKey, modelPhoto);
           if (url) postsWithImages[i] = { ...postsWithImages[i], imageUrl: url };
         })
       );
@@ -491,7 +528,7 @@ Cada post deve ter hook viral único e aplicar o framework do bloco ${blockName}
       await Promise.all(
         toImage.map(async (post, i) => {
           const richPrompt = buildTextOverlayPrompt(post, modelDescription, brandName);
-          const url = await generatePostImage(richPrompt, openaiKey);
+          const url = await generatePostImage(richPrompt, openaiKey, modelPhoto);
           if (url) posts[i].imageUrl = url;
         })
       );
