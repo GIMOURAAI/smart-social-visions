@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
 import {
   Briefcase, Shirt, Zap, Trophy, Heart, Stethoscope,
-  Building2, Scale, Sparkles,
+  Building2, Scale, Sparkles, Upload, Loader2, CheckCircle2, X,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import type { WizardData } from "@/pages/Create";
 
 const TEMAS = [
@@ -86,32 +87,59 @@ interface Props {
 }
 
 export function StepVisualStyle({ data, onChange }: Props) {
-  const [activeTab, setActiveTab] = useState<"presets" | "custom">("presets");
+  const [activeTab, setActiveTab] = useState<"presets" | "custom">(
+    data.styleAnalysis ? "custom" : "presets"
+  );
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFiles = (files: FileList | null) => {
-    if (!files) return;
-    const current = data.brandImages ?? [];
-    const remaining = 3 - current.length;
-    const toAdd = Array.from(files).slice(0, remaining);
-    const readers = toAdd.map(
-      (file) =>
-        new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target?.result as string);
-          reader.readAsDataURL(file);
-        })
-    );
-    Promise.all(readers).then((urls) => {
-      const newImages = [...current, ...urls].slice(0, 3);
-      onChange({ brandImages: newImages, visualStyle: "custom" });
-    });
+  const handleReferenceImage = (files: FileList | null) => {
+    if (!files || !files[0]) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      onChange({
+        styleReferenceImage: base64,
+        styleAnalysis: undefined,
+        visualStyle: "custom-analyzed",
+      });
+      setAnalyzeError(null);
+    };
+    reader.readAsDataURL(files[0]);
   };
 
-  const removeImage = (index: number) => {
-    const newImages = (data.brandImages ?? []).filter((_, i) => i !== index);
-    onChange({ brandImages: newImages, visualStyle: newImages.length > 0 ? "custom" : data.visualStyle });
+  const handleAnalyze = async () => {
+    if (!data.styleReferenceImage) return;
+    setAnalyzing(true);
+    setAnalyzeError(null);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("copy-style", {
+        body: { imageBase64: data.styleReferenceImage, analyzeOnly: true },
+      });
+      if (error) throw error;
+      if (!result?.styleAnalysis) throw new Error("Análise não retornou dados.");
+      onChange({
+        styleAnalysis: result.styleAnalysis,
+        visualStyle: "custom-analyzed",
+      });
+    } catch (err: any) {
+      setAnalyzeError(err?.message ?? "Erro ao analisar a imagem.");
+    } finally {
+      setAnalyzing(false);
+    }
   };
+
+  const clearReference = () => {
+    onChange({
+      styleReferenceImage: undefined,
+      styleAnalysis: undefined,
+      visualStyle: "",
+    });
+    setAnalyzeError(null);
+  };
+
+  const hasAnalysis = !!data.styleAnalysis;
 
   return (
     <div className="space-y-5">
@@ -142,7 +170,7 @@ export function StepVisualStyle({ data, onChange }: Props) {
             return (
               <button
                 key={tema.id}
-                onClick={() => onChange({ visualStyle: tema.id })}
+                onClick={() => onChange({ visualStyle: tema.id, styleAnalysis: undefined, styleReferenceImage: undefined })}
                 className={`w-full flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 ${
                   isSelected
                     ? "border-transparent shadow-glow"
@@ -150,12 +178,9 @@ export function StepVisualStyle({ data, onChange }: Props) {
                 }`}
                 style={isSelected ? { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" } : {}}
               >
-                {/* Icon */}
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? "bg-white/20" : "bg-muted"}`}>
                   <tema.Icon className={`w-5 h-5 ${isSelected ? "text-white" : "text-muted-foreground"}`} />
                 </div>
-
-                {/* Text */}
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-bold mb-0.5 truncate ${isSelected ? "text-white" : "text-foreground"}`}>
                     {tema.name}
@@ -164,8 +189,6 @@ export function StepVisualStyle({ data, onChange }: Props) {
                     {tema.desc}
                   </p>
                 </div>
-
-                {/* Color palette — large strips */}
                 <div className="flex gap-1 shrink-0">
                   {tema.colors.map((color, i) => (
                     <div
@@ -175,7 +198,6 @@ export function StepVisualStyle({ data, onChange }: Props) {
                     />
                   ))}
                 </div>
-
                 {isSelected && (
                   <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center shrink-0">
                     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -191,58 +213,130 @@ export function StepVisualStyle({ data, onChange }: Props) {
 
       {activeTab === "custom" && (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <p className="text-sm text-foreground font-semibold mb-1">Copiar estilo visual</p>
+          {/* Info */}
+          <div className="rounded-2xl border border-violet-200 bg-violet-50 dark:border-violet-800/40 dark:bg-violet-950/20 p-4">
+            <p className="text-sm font-semibold text-foreground mb-1">Replicar estilo visual de referência</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Envie uma arte da sua marca como referência. O SmartPostAI criará posts com estética similar — cores, tipografia e atmosfera — sem copiar o design original.
+              Envie uma arte como referência. A IA vai escanear a imagem e criar um prompt visual rico em detalhes — paleta, iluminação, tipografia, atmosfera — que será aplicado em todos os posts da sua linha editorial.
             </p>
           </div>
 
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
-            className="relative rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all cursor-pointer p-8 text-center"
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => handleFiles(e.target.files)}
-            />
-            <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+          {/* Upload area */}
+          {!data.styleReferenceImage ? (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => { e.preventDefault(); handleReferenceImage(e.dataTransfer.files); }}
+              className="relative rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all cursor-pointer p-10 text-center"
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleReferenceImage(e.target.files)}
+              />
+              <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-3">
+                <Upload className="w-7 h-7 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-foreground mb-1">Clique ou arraste a imagem aqui</p>
+              <p className="text-xs text-muted-foreground">PNG, JPG, WEBP · 1 imagem de referência</p>
             </div>
-            <p className="text-sm font-semibold text-foreground mb-1">Clique ou arraste imagens aqui</p>
-            <p className="text-xs text-muted-foreground">Até 3 imagens · PNG, JPG, WEBP</p>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Preview + remove */}
+              <div className="relative rounded-2xl overflow-hidden border border-border">
+                <img
+                  src={data.styleReferenceImage}
+                  alt="Referência"
+                  className="w-full max-h-56 object-cover"
+                />
+                <button
+                  onClick={clearReference}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                {hasAnalysis && (
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-green-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Estilo analisado
+                  </div>
+                )}
+              </div>
 
-          {(data.brandImages ?? []).length > 0 && (
-            <div className="flex gap-3 flex-wrap">
-              {(data.brandImages ?? []).map((url, i) => (
-                <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border border-border">
-                  <img src={url} alt={`Referência ${i + 1}`} className="w-full h-full object-cover" />
+              {/* Analyze button */}
+              {!hasAnalysis && (
+                <button
+                  onClick={handleAnalyze}
+                  disabled={analyzing}
+                  className="w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-white transition-all disabled:opacity-70"
+                  style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)" }}
+                >
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Analisando estilo com IA...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Analisar estilo com IA
+                    </>
+                  )}
+                </button>
+              )}
+
+              {analyzeError && (
+                <p className="text-xs text-red-500 text-center">{analyzeError}</p>
+              )}
+
+              {/* Analysis result */}
+              {hasAnalysis && data.styleAnalysis && (
+                <div className="rounded-2xl border border-green-200 bg-green-50 dark:border-green-800/40 dark:bg-green-950/20 p-4 space-y-3">
+                  <p className="text-sm font-bold text-foreground">Estilo extraído da imagem</p>
+
+                  {/* Color palette */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5 font-medium">Paleta de cores</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {data.styleAnalysis.paletaCores.map((hex, i) => (
+                        <div key={i} className="flex items-center gap-1.5">
+                          <div
+                            className="w-7 h-7 rounded-lg border border-black/10 shadow-sm"
+                            style={{ backgroundColor: hex }}
+                          />
+                          <span className="text-[10px] font-mono text-muted-foreground">{hex}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Atmosphere */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1 font-medium">Atmosfera</p>
+                    <p className="text-xs text-foreground leading-relaxed">{data.styleAnalysis.atmosfera}</p>
+                  </div>
+
+                  {/* Typography */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1 font-medium">Tipografia</p>
+                    <p className="text-xs text-foreground leading-relaxed">{data.styleAnalysis.tipografia}</p>
+                  </div>
+
+                  {/* Composition */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1 font-medium">Composição</p>
+                    <p className="text-xs text-foreground leading-relaxed">{data.styleAnalysis.composicao}</p>
+                  </div>
+
                   <button
-                    onClick={(e) => { e.stopPropagation(); removeImage(i); }}
-                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition"
+                    onClick={() => { onChange({ styleAnalysis: undefined }); }}
+                    className="text-xs text-muted-foreground underline hover:text-foreground transition"
                   >
-                    ×
+                    Reanalisar imagem
                   </button>
                 </div>
-              ))}
-              {(data.brandImages ?? []).length < 3 && (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-24 h-24 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition"
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
               )}
             </div>
           )}

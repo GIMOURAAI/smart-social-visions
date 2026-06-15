@@ -47,6 +47,15 @@ export interface WizardData {
   // Step 3
   visualStyle: string;
   brandImages: string[];
+  styleReferenceImage?: string;
+  styleAnalysis?: {
+    paletaCores: string[];
+    estiloFoto: string;
+    tipografia: string;
+    atmosfera: string;
+    composicao: string;
+    promptDalle: string;
+  };
   // Step 4
   feedPattern: string;
   // Step 5
@@ -155,6 +164,15 @@ export default function Create() {
           imageQuantity: count,
           brandImages: wizardData.brandImages,
           blockIndex,
+          customStylePrompt: wizardData.styleAnalysis?.promptDalle,
+          customStyleMeta: wizardData.styleAnalysis
+            ? {
+                paletaCores: wizardData.styleAnalysis.paletaCores,
+                atmosfera: wizardData.styleAnalysis.atmosfera,
+                tipografia: wizardData.styleAnalysis.tipografia,
+                composicao: wizardData.styleAnalysis.composicao,
+              }
+            : undefined,
         },
       });
 
@@ -244,6 +262,7 @@ export default function Create() {
       ...prev,
       forClient: false, brandName: "", niche: "", theme: "",
       objective: "", tone: "", visualStyle: "", brandImages: [], feedPattern: "",
+      styleReferenceImage: undefined, styleAnalysis: undefined,
       posts: [], allPosts: [], currentPostIndex: 0, currentBlock: 0, phase: "pilot",
     }));
     setShowFeedPreview(false);

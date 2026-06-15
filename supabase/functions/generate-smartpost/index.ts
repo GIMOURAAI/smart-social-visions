@@ -18,6 +18,13 @@ interface SmartPostRequest {
   imageQuantity: number;
   brandImages?: string[];
   blockIndex?: number;
+  customStylePrompt?: string;
+  customStyleMeta?: {
+    paletaCores: string[];
+    atmosfera: string;
+    tipografia: string;
+    composicao: string;
+  };
 }
 
 interface GeneratedPost {
@@ -139,6 +146,20 @@ function buildSystemPrompt(req: SmartPostRequest, blockIndex: number): string {
   const temaInfo = getTemaForNiche(req.niche, req.visualStyle);
   const postsInBlock = Math.min(req.quantity, 3);
 
+  const hasCustomStyle = !!req.customStylePrompt;
+  const visualSection = hasCustomStyle
+    ? `## ESTILO VISUAL — Estilo personalizado extraído da imagem de referência
+Paleta de cores: ${req.customStyleMeta?.paletaCores?.join(", ") ?? "extraída da referência"}
+Atmosfera: ${req.customStyleMeta?.atmosfera ?? ""}
+Tipografia: ${req.customStyleMeta?.tipografia ?? ""}
+Composição: ${req.customStyleMeta?.composicao ?? ""}
+
+BASE DO PROMPT VISUAL (adapte para cada post mantendo o estilo):
+${req.customStylePrompt}`
+    : `## ESTILO VISUAL — ${temaInfo.name}
+Template base para prompts visuais:
+${temaInfo.prompt}`;
+
   return `Você é o POSTLAB AI — motor estratégico de conteúdo premium para redes sociais. Combina copywriting avançado, psicologia do consumidor e direção de arte cinematográfica.
 
 ## METODOLOGIA POSTLAB
@@ -159,9 +180,7 @@ Intenções emocionais: ${block.intencoes.join(", ")}
 - Formato visual: ${req.format}
 - Padrão de cores do feed: ${req.feedPattern}
 
-## ESTILO VISUAL — ${temaInfo.name}
-Template base para prompts visuais:
-${temaInfo.prompt}
+${visualSection}
 
 ## VIRAL HOOKS — escolha padrões diferentes para cada post
 1. "Eu nunca imaginei que [situação] poderia [resultado surpreendente]..."
@@ -238,7 +257,7 @@ serve(async (req) => {
 
   try {
     const body: SmartPostRequest = await req.json();
-    const { niche, theme, objective, tone, format, quantity, imageQuantity = 0, brandImages, blockIndex = 0, feedPattern = "", brandName = "" } = body;
+    const { niche, theme, objective, tone, format, quantity, imageQuantity = 0, brandImages, blockIndex = 0, feedPattern = "", brandName = "", customStylePrompt, customStyleMeta } = body;
 
     const systemPrompt = buildSystemPrompt(body, blockIndex);
     const postsToGenerate = Math.min(quantity, 3);

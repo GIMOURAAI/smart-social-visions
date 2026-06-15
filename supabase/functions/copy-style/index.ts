@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, brandName, niche, quantity } = await req.json();
+    const { imageBase64, brandName, niche, quantity, analyzeOnly } = await req.json();
 
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiKey) throw new Error("OPENAI_API_KEY não configurada");
@@ -57,6 +57,14 @@ serve(async (req) => {
 
     const visionData = await visionResponse.json();
     const styleAnalysis = JSON.parse(visionData.choices[0].message.content);
+
+    // If analyzeOnly — return just the style analysis without generating posts
+    if (analyzeOnly) {
+      return new Response(
+        JSON.stringify({ styleAnalysis }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Step 2: GPT-4o generates posts in PostLab format using the analyzed style
     const count = quantity === 3 ? 3 : 1;
