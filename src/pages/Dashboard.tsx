@@ -227,7 +227,7 @@ export default function Dashboard() {
 
           {/* Copiar estilo de imagem */}
           <button
-            onClick={() => navigate("/create-style")}
+            onClick={() => navigate("/create?style=custom")}
             className="group relative w-full overflow-hidden rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/5 hover:bg-fuchsia-500/10 p-5 text-left transition-all hover:-translate-y-0.5"
           >
             <div className="flex items-center gap-4">

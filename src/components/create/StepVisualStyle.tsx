@@ -84,11 +84,12 @@ const TEMAS = [
 interface Props {
   data: WizardData;
   onChange: (d: Partial<WizardData>) => void;
+  defaultTab?: "presets" | "custom";
 }
 
-export function StepVisualStyle({ data, onChange }: Props) {
+export function StepVisualStyle({ data, onChange, defaultTab }: Props) {
   const [activeTab, setActiveTab] = useState<"presets" | "custom">(
-    data.styleAnalysis ? "custom" : "presets"
+    defaultTab ?? (data.styleAnalysis ? "custom" : "presets")
   );
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);

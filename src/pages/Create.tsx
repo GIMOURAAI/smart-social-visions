@@ -137,7 +137,11 @@ export default function Create() {
     switch (step) {
       case 1: return (wizardData.brandName?.trim().length ?? 0) > 0 && wizardData.niche.trim().length > 0 && wizardData.theme.trim().length >= 5;
       case 2: return wizardData.objective.trim().length > 0 && wizardData.tone.trim().length > 0;
-      case 3: return wizardData.visualStyle.trim().length > 0 || (wizardData.brandImages ?? []).length > 0;
+      case 3: {
+        // Custom style: require analysis complete; TEMA: require selection
+        if (wizardData.visualStyle === "custom-analyzed") return !!wizardData.styleAnalysis;
+        return wizardData.visualStyle.trim().length > 0;
+      }
       case 4: return (wizardData.feedPattern ?? "").trim().length > 0;
       case 5: return wizardData.format.length > 0 && wizardData.daysQuantity > 0;
       case 6: return true;
@@ -318,7 +322,7 @@ export default function Create() {
                 <div className="min-h-[400px] flex flex-col">
                   {step === 1 && <StepBriefing data={wizardData} onChange={update} />}
                   {step === 2 && <StepObjective data={wizardData} onChange={update} />}
-                  {step === 3 && <StepVisualStyle data={wizardData} onChange={update} />}
+                  {step === 3 && <StepVisualStyle data={wizardData} onChange={update} defaultTab={searchParams.get("style") === "custom" ? "custom" : undefined} />}
                   {step === 4 && <StepFeedPattern data={wizardData} onChange={update} />}
                   {step === 5 && <StepFormatQuantity data={wizardData} onChange={update} />}
                   {step === 6 && <StepConfirm data={wizardData} onEdit={(s) => setStep(s)} />}
