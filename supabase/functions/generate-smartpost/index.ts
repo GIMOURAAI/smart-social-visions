@@ -25,6 +25,10 @@ interface SmartPostRequest {
     tipografia: string;
     composicao: string;
   };
+  // Two-phase editorial flow
+  textOnly?: boolean;
+  totalPosts?: number;
+  postsForImage?: GeneratedPost[];
 }
 
 interface GeneratedPost {
@@ -217,6 +221,77 @@ A: Ação — CTA claro e específico
 {"posts":[{"tema":"string","bloco":"${block.name}","objetivo":"string","tipoConteudo":"string","intencaoEmocional":"string","gancho":"string impactante","tituloArte":"string bold para design","subtituloArte":"string complemento","textoArte":"string linhas separadas por \\n","legenda":"string completa e envolvente","cta":"string persuasivo","hashtags":"string hashtags separadas por espaço","estiloVisual":"${temaInfo.name}","promptVisual":"string ultra-detailed English cinematic prompt","storyComplementar":"string story completo","creditoCusto":1}]}`;
 }
 
+function buildTextOnlySystemPrompt(req: SmartPostRequest, totalPosts: number): string {
+  const temaInfo = getTemaForNiche(req.niche, req.visualStyle);
+  const hasCustomStyle = !!req.customStylePrompt;
+
+  const visualSection = hasCustomStyle
+    ? `## ESTILO VISUAL — Estilo personalizado extraído da imagem de referência
+Paleta de cores: ${req.customStyleMeta?.paletaCores?.join(", ") ?? "extraída da referência"}
+Atmosfera: ${req.customStyleMeta?.atmosfera ?? ""}
+Tipografia: ${req.customStyleMeta?.tipografia ?? ""}
+Composição: ${req.customStyleMeta?.composicao ?? ""}`
+    : `## ESTILO VISUAL — ${temaInfo.name}`;
+
+  return `Você é o POSTLAB AI — motor estratégico de conteúdo premium para redes sociais. Combina copywriting avançado, psicologia do consumidor e direção de arte cinematográfica.
+
+## METODOLOGIA POSTLAB
+4 blocos estratégicos: Dor → Autoridade → Valor → Venda. Cada bloco tem 3 posts. Resultado: máquina de conteúdo que transforma seguidores em clientes.
+
+## CONTEXTO DO CLIENTE
+- Marca/Negócio: ${req.brandName}
+- Nicho: ${req.niche}
+- Tema/Assunto: ${req.theme}
+- Objetivo: ${req.objective}
+- Tom de voz: ${req.tone}
+- Formato visual: ${req.format}
+- Padrão de cores do feed: ${req.feedPattern}
+
+${visualSection}
+
+## TAREFA: GERAR TODOS OS ${totalPosts} POSTS — APENAS TEXTO, SEM IMAGENS
+Distribua os posts entre os 4 blocos estratégicos na sequência: Dor → Autoridade → Valor → Venda (repetindo o ciclo se necessário).
+
+Para ${totalPosts} posts, distribua assim:
+- Bloco Dor: posts 1, 5, 9, 13... (1ª, 5ª, 9ª posição)
+- Bloco Autoridade: posts 2, 6, 10, 14...
+- Bloco Valor: posts 3, 7, 11, 15...
+- Bloco Venda: posts 4, 8, 12, 16...
+
+## VIRAL HOOKS — escolha padrões diferentes para cada post
+1. "Eu nunca imaginei que [situação] poderia [resultado surpreendente]..."
+2. "O erro que [avatar] comete todo dia (e como parar agora)"
+3. "Ninguém fala isso sobre [tema], mas precisa ser dito:"
+4. "[N] coisas que mudaram tudo na minha [área] — a #[X] me surpreendeu"
+5. "Se você está lutando com [dor], leia isso antes de desistir"
+6. "A verdade incômoda sobre [tema] que ninguém quer ouvir"
+7. "Você está [ação] errado. Veja o que o top 1% faz"
+8. "Isso não deveria funcionar. Funcionou. [resultado]"
+
+## REGRAS DE PRODUÇÃO
+- Exatamente ${totalPosts} posts distintos cobrindo todos os 4 blocos
+- Cada post: tipo diferente, ângulo diferente, hook diferente
+- gancho: frase de impacto que para o scroll
+- tituloArte: título bold e impactante para o design visual
+- subtituloArte: complementa o título com contexto ou benefício
+- textoArte: 3-6 linhas para compor o design — cada linha em novo parágrafo
+- legenda: legendas completas, ricas e envolventes
+- cta: chamada para ação específica e persuasiva
+- hashtags: 10-15 hashtags relevantes em português e inglês
+- storyComplementar: story completo e detalhado
+- promptVisual: SEMPRE em inglês, ultra-detalhado, cinematográfico (será usado depois para gerar imagem)
+- Use o nome da marca "${req.brandName}" nas legendas, CTAs e onde fizer sentido
+
+## FORMATO DE SAÍDA — JSON VÁLIDO APENAS
+{"posts":[{"tema":"string","bloco":"Dor|Autoridade|Valor|Venda","objetivo":"string","tipoConteudo":"string","intencaoEmocional":"string","gancho":"string impactante","tituloArte":"string bold para design","subtituloArte":"string complemento","textoArte":"string linhas separadas por \\n","legenda":"string completa e envolvente","cta":"string persuasivo","hashtags":"string hashtags separadas por espaço","estiloVisual":"string","promptVisual":"string ultra-detailed English cinematic prompt","storyComplementar":"string story completo","creditoCusto":1}]}`;
+}
+
+function buildTextOverlayPrompt(post: GeneratedPost): string {
+  const firstLine = post.textoArte ? post.textoArte.split("\n")[0] : "";
+  const overlay = `CRITICAL TEXT OVERLAY — the following text MUST appear visibly in the image, positioned on the LEFT SIDE with generous padding: Large bold white Poppins Black title: "${post.tituloArte}". Below it in purple/violet (#7c3aed) accent: "${post.subtituloArte}". A thin 2px horizontal gradient line (purple to cyan, 40px wide). Below that medium white font: "${firstLine}". Bottom left small element with CTA icon. Text occupies left 45% of image. Right 55%: the visual scene. Dark or appropriate background ensuring text is fully legible. This must look like a professional Instagram post card.`;
+  return `${post.promptVisual} | ${overlay}`;
+}
+
 async function generatePostImage(promptVisual: string, openaiKey: string): Promise<string | undefined> {
   try {
     const resp = await fetch("https://api.openai.com/v1/images/generations", {
@@ -257,8 +332,89 @@ serve(async (req) => {
 
   try {
     const body: SmartPostRequest = await req.json();
-    const { niche, theme, objective, tone, format, quantity, imageQuantity = 0, brandImages, blockIndex = 0, feedPattern = "", brandName = "", customStylePrompt, customStyleMeta } = body;
+    const {
+      niche, theme, objective, tone, format, quantity, imageQuantity = 0,
+      brandImages, blockIndex = 0, feedPattern = "", brandName = "",
+      customStylePrompt, customStyleMeta,
+      textOnly = false, totalPosts, postsForImage,
+    } = body;
 
+    // Mode: generate images for already-approved posts
+    if (postsForImage && postsForImage.length > 0) {
+      const postsWithImages = [...postsForImage];
+      await Promise.all(
+        postsWithImages.map(async (post, i) => {
+          const richPrompt = buildTextOverlayPrompt(post);
+          const url = await generatePostImage(richPrompt, openaiKey);
+          if (url) postsWithImages[i] = { ...postsWithImages[i], imageUrl: url };
+        })
+      );
+      return new Response(
+        JSON.stringify({ posts: postsWithImages }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Mode: text-only — generate ALL posts text without images
+    if (textOnly) {
+      const count = totalPosts ?? quantity;
+      const systemPrompt = buildTextOnlySystemPrompt(body, count);
+      const userText = `Crie exatamente ${count} posts estratégicos para ${brandName} no nicho ${niche}, tema: ${theme}, objetivo: ${objective}, tom: ${tone}. Distribua pelos 4 blocos Dor/Autoridade/Valor/Venda em sequência. Retorne JSON com array "posts" contendo todos os ${count} posts.`;
+
+      const messages: any[] = [{ role: "system", content: systemPrompt }];
+      if (brandImages && brandImages.length > 0) {
+        messages.push({
+          role: "user",
+          content: [
+            { type: "text", text: userText + "\n\nAnalise as imagens de referência e adapte o estilo visual." },
+            ...brandImages.slice(0, 3).map((img: string) => ({
+              type: "image_url",
+              image_url: { url: img, detail: "low" },
+            })),
+          ],
+        });
+      } else {
+        messages.push({ role: "user", content: userText });
+      }
+
+      const openaiResp = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openaiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages,
+          response_format: { type: "json_object" },
+          temperature: 0.85,
+          max_tokens: 8000,
+        }),
+      });
+
+      if (!openaiResp.ok) {
+        const err = await openaiResp.json().catch(() => ({}));
+        const status = openaiResp.status;
+        if (status === 401) throw new Error("Chave OpenAI inválida ou expirada.");
+        if (status === 429) throw new Error("Limite de uso OpenAI atingido. Tente em instantes.");
+        throw new Error(err?.error?.message ?? `OpenAI error ${status}`);
+      }
+
+      const openaiData = await openaiResp.json();
+      const rawContent = openaiData.choices?.[0]?.message?.content;
+      if (!rawContent) throw new Error("OpenAI retornou resposta vazia.");
+
+      const parsed = JSON.parse(rawContent);
+      const posts: GeneratedPost[] = Array.isArray(parsed.posts) ? parsed.posts : [];
+      if (posts.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
+
+      return new Response(
+        JSON.stringify({ posts, totalPosts: posts.length }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Mode: original — generate text + images for a single block
     const systemPrompt = buildSystemPrompt(body, blockIndex);
     const postsToGenerate = Math.min(quantity, 3);
     const blockName = POSTLAB_BLOCKS[blockIndex % 4].name;
@@ -319,12 +475,13 @@ Cada post deve ter hook viral único e aplicar o framework do bloco ${blockName}
     const posts: GeneratedPost[] = Array.isArray(parsed.posts) ? parsed.posts : [];
     if (posts.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
 
-    // Generate images for specified number of posts
+    // Generate images with text overlay embedded in the prompt
     if (imageQuantity > 0) {
       const toImage = posts.slice(0, Math.min(imageQuantity, posts.length));
       await Promise.all(
         toImage.map(async (post, i) => {
-          const url = await generatePostImage(post.promptVisual, openaiKey);
+          const richPrompt = buildTextOverlayPrompt(post);
+          const url = await generatePostImage(richPrompt, openaiKey);
           if (url) posts[i].imageUrl = url;
         })
       );

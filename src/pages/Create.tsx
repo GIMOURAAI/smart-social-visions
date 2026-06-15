@@ -10,9 +10,10 @@ import { StepFeedPattern } from "@/components/create/StepFeedPattern";
 import { StepFormatQuantity } from "@/components/create/StepFormatQuantity";
 import { StepConfirm } from "@/components/create/StepConfirm";
 import { StepResult } from "@/components/create/StepResult";
+import { StepEditorial } from "@/components/create/StepEditorial";
 import { FeedPreview } from "@/components/create/FeedPreview";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Sparkles, Plus, ChevronRight, FileDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Plus, ChevronRight, FileDown, CheckCircle2 } from "lucide-react";
 import { downloadPDF } from "@/lib/downloadPDF";
 
 export interface GeneratedPost {
@@ -70,6 +71,9 @@ export interface WizardData {
   currentBlock: number;
   allPosts: GeneratedPost[];
   phase: "pilot" | "blocks" | "complete";
+  // Editorial phase
+  editorialPhase: boolean;
+  editorialPosts: GeneratedPost[];
 }
 
 const TOTAL_WIZARD_STEPS = 6;
@@ -95,6 +99,7 @@ export default function Create() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showFeedPreview, setShowFeedPreview] = useState(false);
+  const [imageGenProgress, setImageGenProgress] = useState(0);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -121,6 +126,8 @@ export default function Create() {
     currentBlock: 0,
     allPosts: [],
     phase: "pilot",
+    editorialPhase: false,
+    editorialPosts: [],
   });
 
   useEffect(() => {
@@ -138,7 +145,6 @@ export default function Create() {
       case 1: return (wizardData.brandName?.trim().length ?? 0) > 0 && wizardData.niche.trim().length > 0 && wizardData.theme.trim().length >= 5;
       case 2: return wizardData.objective.trim().length > 0 && wizardData.tone.trim().length > 0;
       case 3: {
-        // Custom style: require analysis complete; TEMA: require selection
         if (wizardData.visualStyle === "custom-analyzed") return !!wizardData.styleAnalysis;
         return wizardData.visualStyle.trim().length > 0;
       }
@@ -151,6 +157,113 @@ export default function Create() {
 
   const totalBlocks = Math.ceil(wizardData.quantity / 3);
 
+  // Phase 1: Generate all text content for all posts
+  const generateAllText = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-smartpost", {
+        body: {
+          niche: wizardData.niche,
+          theme: wizardData.theme,
+          objective: wizardData.objective,
+          tone: wizardData.tone,
+          visualStyle: wizardData.visualStyle,
+          feedPattern: wizardData.feedPattern,
+          brandName: wizardData.brandName,
+          format: wizardData.format,
+          quantity: wizardData.quantity,
+          imageQuantity: 0,
+          brandImages: wizardData.brandImages,
+          customStylePrompt: wizardData.styleAnalysis?.promptDalle,
+          customStyleMeta: wizardData.styleAnalysis
+            ? {
+                paletaCores: wizardData.styleAnalysis.paletaCores,
+                atmosfera: wizardData.styleAnalysis.atmosfera,
+                tipografia: wizardData.styleAnalysis.tipografia,
+                composicao: wizardData.styleAnalysis.composicao,
+              }
+            : undefined,
+          textOnly: true,
+          totalPosts: wizardData.quantity,
+        },
+      });
+
+      if (error) throw error;
+
+      const generatedPosts: GeneratedPost[] = Array.isArray(data?.posts) ? data.posts : [];
+      if (generatedPosts.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
+
+      update({
+        editorialPhase: true,
+        editorialPosts: generatedPosts,
+      });
+      setStep(7);
+    } catch (err: any) {
+      toast({
+        title: "Erro ao gerar textos",
+        description: err?.message ?? "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Phase 2: Generate images for approved posts in batches of 3
+  const generateImagesForPosts = async (approvedPosts: GeneratedPost[]) => {
+    setLoading(true);
+    setImageGenProgress(0);
+    const batchSize = 3;
+    const result: GeneratedPost[] = [...approvedPosts];
+
+    try {
+      for (let i = 0; i < approvedPosts.length; i += batchSize) {
+        const batch = approvedPosts.slice(i, i + batchSize);
+        const { data, error } = await supabase.functions.invoke("generate-smartpost", {
+          body: {
+            niche: wizardData.niche,
+            theme: wizardData.theme,
+            objective: wizardData.objective,
+            tone: wizardData.tone,
+            visualStyle: wizardData.visualStyle,
+            feedPattern: wizardData.feedPattern,
+            brandName: wizardData.brandName,
+            format: wizardData.format,
+            quantity: batch.length,
+            imageQuantity: batch.length,
+            postsForImage: batch,
+          },
+        });
+
+        if (error) throw error;
+
+        const batchWithImages: GeneratedPost[] = Array.isArray(data?.posts) ? data.posts : batch;
+        for (let j = 0; j < batchWithImages.length; j++) {
+          result[i + j] = batchWithImages[j];
+        }
+
+        setImageGenProgress(Math.round(((i + batch.length) / approvedPosts.length) * 100));
+      }
+
+      update({
+        allPosts: result,
+        posts: result,
+        phase: "complete",
+      });
+      setStep(8);
+    } catch (err: any) {
+      toast({
+        title: "Erro ao gerar imagens",
+        description: err?.message ?? "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      setImageGenProgress(0);
+    }
+  };
+
+  // Legacy block-by-block generation (kept for compatibility)
   const generatePosts = async (blockIndex: number, count: number) => {
     setLoading(true);
     try {
@@ -195,7 +308,7 @@ export default function Create() {
         currentBlock: blockIndex,
         phase: isComplete ? "complete" : blockIndex === 0 && wizardData.phase === "pilot" ? "blocks" : wizardData.phase,
       });
-      setStep(7);
+      setStep(8);
     } catch (err: any) {
       toast({
         title: "Erro ao gerar posts",
@@ -209,8 +322,8 @@ export default function Create() {
 
   const handleNext = () => {
     if (step === 6) {
-      // Start with pilot
-      generatePosts(0, wizardData.pilotQuantity);
+      // New two-phase flow: generate all text first
+      generateAllText();
     } else {
       setStep((s) => Math.min(TOTAL_WIZARD_STEPS, s + 1));
     }
@@ -219,13 +332,14 @@ export default function Create() {
   const handleBack = () => {
     if (step === 7) {
       setStep(6);
+    } else if (step === 8) {
+      setStep(7);
     } else {
       setStep((s) => Math.max(1, s - 1));
     }
   };
 
   const handleNextBlock = () => {
-    // Quantos posts já existem no bloco atual
     const postsInCurrentBlock = wizardData.allPosts.filter(
       (_, i) => Math.floor(i / 3) === wizardData.currentBlock
     ).length;
@@ -233,11 +347,9 @@ export default function Create() {
     const postsLeft = wizardData.quantity - wizardData.allPosts.length;
 
     if (remainingInBlock > 0 && postsLeft > 0) {
-      // Completa o bloco atual antes de avançar
       const count = Math.min(remainingInBlock, postsLeft);
       generatePosts(wizardData.currentBlock, count);
     } else {
-      // Bloco atual completo — vai para o próximo
       const nextBlock = wizardData.currentBlock + 1;
       const count = Math.min(3, postsLeft);
       if (count > 0) generatePosts(nextBlock, count);
@@ -268,6 +380,7 @@ export default function Create() {
       objective: "", tone: "", visualStyle: "", brandImages: [], feedPattern: "",
       styleReferenceImage: undefined, styleAnalysis: undefined,
       posts: [], allPosts: [], currentPostIndex: 0, currentBlock: 0, phase: "pilot",
+      editorialPhase: false, editorialPosts: [],
     }));
     setShowFeedPreview(false);
     setStep(1);
@@ -340,12 +453,12 @@ export default function Create() {
                       disabled={!canProceed() || loading}
                       className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
                     >
-                      {loading ? "Gerando..." : step === 6 ? `Gerar piloto (${wizardData.pilotQuantity} post${wizardData.pilotQuantity > 1 ? "s" : ""})` : "Próximo"}
+                      {loading ? "Gerando textos..." : step === 6 ? `Gerar linha editorial (${wizardData.quantity} posts)` : "Próximo"}
                       {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
                     </Button>
                     {step === 6 && !loading && (
                       <p className="text-[10px] text-muted-foreground">
-                        {wizardData.pilotQuantity} crédito{wizardData.pilotQuantity > 1 ? "s" : ""} agora · resto após aprovação
+                        Primeiro geraremos todos os textos para revisão
                       </p>
                     )}
                   </div>
@@ -354,44 +467,87 @@ export default function Create() {
             </>
           )}
 
-          {/* Result step (7) */}
+          {/* Step 7: Editorial review */}
           {step === 7 && (
+            <div className="mt-2">
+              <div className="flex items-start justify-between mb-5">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 bg-violet-500/15 text-violet-600 rounded-full px-3 py-1 text-xs font-bold mb-2">
+                    Fase 1 de 2 — Revisão editorial
+                  </div>
+                  <h2 className="text-xl font-bold text-foreground tracking-tight">
+                    Revise e edite seus posts
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Todos os textos foram gerados. Edite o que quiser antes de gerar as imagens.
+                  </p>
+                </div>
+                <Button onClick={resetWizard} variant="outline" className="rounded-full shrink-0">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo
+                </Button>
+              </div>
+
+              <StepEditorial
+                posts={wizardData.editorialPosts}
+                onChange={(posts) => update({ editorialPosts: posts })}
+              />
+
+              <div className="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-border">
+                <Button variant="outline" onClick={handleBack} className="rounded-full">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Configurações
+                </Button>
+
+                <div className="flex flex-col items-end gap-1">
+                  <Button
+                    onClick={() => generateImagesForPosts(wizardData.editorialPosts)}
+                    disabled={loading || wizardData.editorialPosts.length === 0}
+                    className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
+                  >
+                    {loading ? (
+                      imageGenProgress > 0
+                        ? `Gerando imagens... ${imageGenProgress}%`
+                        : "Iniciando geração..."
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Aprovar e gerar imagens
+                      </>
+                    )}
+                    {!loading && <ChevronRight className="w-4 h-4 ml-1" />}
+                  </Button>
+                  {!loading && (
+                    <p className="text-[10px] text-muted-foreground">
+                      {wizardData.editorialPosts.length} imagens serão geradas em lotes de 3
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 8: Results with images */}
+          {step === 8 && (
             <div className="mt-2">
               {/* Header */}
               <div className="flex items-start justify-between mb-5">
                 <div>
-                  {isPilotPhase ? (
-                    <>
-                      <div className="inline-flex items-center gap-1.5 bg-amber-500/15 text-amber-600 rounded-full px-3 py-1 text-xs font-bold mb-2">
-                        🔍 Post piloto — aprovação de estilo
-                      </div>
-                      <h2 className="text-xl font-bold text-foreground tracking-tight">
-                        O estilo visual ficou bom?
-                      </h2>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        Aprove para continuar gerando os demais posts
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-xl font-bold text-foreground tracking-tight">
-                        Bloco {wizardData.currentBlock + 1}/{totalBlocks}: {BLOCK_NAMES[wizardData.currentBlock % 4]} 🎯
-                      </h2>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {BLOCK_DESCRIPTIONS[wizardData.currentBlock % 4]}
-                      </p>
-                    </>
-                  )}
+                  <div className="inline-flex items-center gap-1.5 bg-green-500/15 text-green-600 rounded-full px-3 py-1 text-xs font-bold mb-2">
+                    Fase 2 de 2 — Posts com imagens
+                  </div>
+                  <h2 className="text-xl font-bold text-foreground tracking-tight">
+                    Sua linha editorial está pronta!
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {wizardData.allPosts.length} posts gerados com imagens
+                  </p>
 
                   {/* Progress bar */}
-                  {totalBlocks > 1 && !isPilotPhase && (
+                  {totalBlocks > 1 && (
                     <div className="flex gap-1.5 mt-3">
                       {Array.from({ length: totalBlocks }).map((_, i) => (
-                        <div key={i} className={`h-1.5 rounded-full transition-all ${
-                          i < wizardData.currentBlock ? "bg-primary w-8"
-                          : i === wizardData.currentBlock ? "bg-primary w-12"
-                          : "bg-muted w-8"
-                        }`} />
+                        <div key={i} className={`h-1.5 rounded-full transition-all bg-primary w-8`} />
                       ))}
                     </div>
                   )}
@@ -404,7 +560,7 @@ export default function Create() {
               </div>
 
               <StepResult
-                posts={wizardData.posts}
+                posts={wizardData.allPosts}
                 onRegenerate={handleRegenerate}
                 onRegenerateImage={handleRegenerateImage}
                 onEnhance={() => toast({ title: "Em breve", description: "Melhoria de qualidade será liberada em breve." })}
@@ -414,56 +570,24 @@ export default function Create() {
               <div className="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-border">
                 <Button variant="outline" onClick={handleBack} className="rounded-full">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Configurações
+                  Revisar textos
                 </Button>
 
                 <div className="flex flex-wrap gap-2 justify-end">
-                  {isComplete ? (
-                    <>
-                      <Button
-                        onClick={() => setShowFeedPreview(true)}
-                        variant="outline"
-                        className="rounded-full"
-                      >
-                        Ver feed completo
-                      </Button>
-                      <Button
-                        onClick={handleDownloadPDF}
-                        className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
-                      >
-                        <FileDown className="w-4 h-4 mr-2" />
-                        Baixar PDF
-                      </Button>
-                    </>
-                  ) : isPilotPhase ? (
-                    <div className="flex flex-col items-end gap-1">
-                      <Button
-                        onClick={handleNextBlock}
-                        disabled={loading}
-                        className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
-                      >
-                        {loading ? "Gerando..." : "Aprovei — continuar gerando"}
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
-                      <p className="text-[10px] text-muted-foreground">
-                        {Math.min(3, wizardData.quantity - wizardData.allPosts.length)} créditos agora
-                      </p>
-                    </div>
-                  ) : hasMoreBlocks ? (
-                    <div className="flex flex-col items-end gap-1">
-                      <Button
-                        onClick={handleNextBlock}
-                        disabled={loading}
-                        className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
-                      >
-                        {loading ? "Gerando..." : `Próximo: ${BLOCK_NAMES[(wizardData.currentBlock + 1) % 4]}`}
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
-                      <p className="text-[10px] text-muted-foreground">
-                        {Math.min(3, wizardData.quantity - wizardData.allPosts.length)} créditos
-                      </p>
-                    </div>
-                  ) : null}
+                  <Button
+                    onClick={() => setShowFeedPreview(true)}
+                    variant="outline"
+                    className="rounded-full"
+                  >
+                    Ver feed completo
+                  </Button>
+                  <Button
+                    onClick={handleDownloadPDF}
+                    className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
+                  >
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Baixar PDF
+                  </Button>
                 </div>
               </div>
             </div>
