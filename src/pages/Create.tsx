@@ -77,8 +77,10 @@ export interface WizardData {
   editorialPosts: GeneratedPost[];
   // Personalization
   brandLogo?: string;
+  brandLogoDescription?: string;
   modelPhoto?: string;
   modelDescription?: string;
+  styleDescriptionText?: string;
 }
 
 const TOTAL_WIZARD_STEPS = 6;
@@ -222,8 +224,8 @@ export default function Create() {
     const result: GeneratedPost[] = [...approvedPosts];
 
     try {
-      // If user uploaded a style reference image in Step 8 but it wasn't analyzed yet, analyze it now
-      let stylePrompt = wizardData.styleAnalysis?.promptDalle;
+      // Resolve style prompt: image analysis > text description > previous analysis
+      let stylePrompt = wizardData.styleAnalysis?.promptDalle ?? wizardData.styleDescriptionText;
       if (wizardData.styleReferenceImage && !wizardData.styleAnalysis) {
         const { data: styleData } = await supabase.functions.invoke("copy-style", {
           body: { imageBase64: wizardData.styleReferenceImage, analyzeOnly: true },
@@ -251,7 +253,9 @@ export default function Create() {
             postsForImage: batch,
             customStylePrompt: stylePrompt,
             brandLogo: wizardData.brandLogo,
+            brandLogoDescription: wizardData.brandLogoDescription,
             modelPhoto: wizardData.modelPhoto,
+            modelDescription: wizardData.modelDescription,
           },
         });
 
