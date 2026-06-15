@@ -29,6 +29,9 @@ interface SmartPostRequest {
   textOnly?: boolean;
   totalPosts?: number;
   postsForImage?: GeneratedPost[];
+  // Personalization
+  brandLogo?: string;
+  modelDescription?: string;
 }
 
 interface GeneratedPost {
@@ -286,9 +289,15 @@ Para ${totalPosts} posts, distribua assim:
 {"posts":[{"tema":"string","bloco":"Dor|Autoridade|Valor|Venda","objetivo":"string","tipoConteudo":"string","intencaoEmocional":"string","gancho":"string impactante","tituloArte":"string bold para design","subtituloArte":"string complemento","textoArte":"string linhas separadas por \\n","legenda":"string completa e envolvente","cta":"string persuasivo","hashtags":"string hashtags separadas por espaço","estiloVisual":"string","promptVisual":"string ultra-detailed English cinematic prompt","storyComplementar":"string story completo","creditoCusto":1}]}`;
 }
 
-function buildTextOverlayPrompt(post: GeneratedPost): string {
+function buildTextOverlayPrompt(post: GeneratedPost, modelDescription?: string, brandName?: string): string {
   const firstLine = post.textoArte ? post.textoArte.split("\n")[0] : "";
-  const overlay = `CRITICAL TEXT OVERLAY — the following text MUST appear visibly in the image, positioned on the LEFT SIDE with generous padding: Large bold white Poppins Black title: "${post.tituloArte}". Below it in purple/violet (#7c3aed) accent: "${post.subtituloArte}". A thin 2px horizontal gradient line (purple to cyan, 40px wide). Below that medium white font: "${firstLine}". Bottom left small element with CTA icon. Text occupies left 45% of image. Right 55%: the visual scene. Dark or appropriate background ensuring text is fully legible. This must look like a professional Instagram post card.`;
+  const modelClause = modelDescription
+    ? `Subject appearance: ${modelDescription}. `
+    : "";
+  const brandClause = brandName
+    ? `Bottom right corner: small brand name "${brandName}" in clean white font. `
+    : "";
+  const overlay = `CRITICAL TEXT OVERLAY — the following text MUST appear visibly in the image, positioned on the LEFT SIDE with generous padding: Large bold white Poppins Black title: "${post.tituloArte}". Below it in purple/violet (#7c3aed) accent: "${post.subtituloArte}". A thin 2px horizontal gradient line (purple to cyan, 40px wide). Below that medium white font: "${firstLine}". Text occupies left 45% of image. Right 55%: the visual scene. ${modelClause}${brandClause}Dark or appropriate background ensuring text is fully legible. Professional Instagram post card, magazine quality.`;
   return `${post.promptVisual} | ${overlay}`;
 }
 
@@ -337,6 +346,7 @@ serve(async (req) => {
       brandImages, blockIndex = 0, feedPattern = "", brandName = "",
       customStylePrompt, customStyleMeta,
       textOnly = false, totalPosts, postsForImage,
+      modelDescription, brandLogo,
     } = body;
 
     // Mode: generate images for already-approved posts
@@ -344,7 +354,7 @@ serve(async (req) => {
       const postsWithImages = [...postsForImage];
       await Promise.all(
         postsWithImages.map(async (post, i) => {
-          const richPrompt = buildTextOverlayPrompt(post);
+          const richPrompt = buildTextOverlayPrompt(post, modelDescription, brandName);
           const url = await generatePostImage(richPrompt, openaiKey);
           if (url) postsWithImages[i] = { ...postsWithImages[i], imageUrl: url };
         })
@@ -480,7 +490,7 @@ Cada post deve ter hook viral único e aplicar o framework do bloco ${blockName}
       const toImage = posts.slice(0, Math.min(imageQuantity, posts.length));
       await Promise.all(
         toImage.map(async (post, i) => {
-          const richPrompt = buildTextOverlayPrompt(post);
+          const richPrompt = buildTextOverlayPrompt(post, modelDescription, brandName);
           const url = await generatePostImage(richPrompt, openaiKey);
           if (url) posts[i].imageUrl = url;
         })

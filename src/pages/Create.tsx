@@ -11,6 +11,7 @@ import { StepFormatQuantity } from "@/components/create/StepFormatQuantity";
 import { StepConfirm } from "@/components/create/StepConfirm";
 import { StepResult } from "@/components/create/StepResult";
 import { StepEditorial } from "@/components/create/StepEditorial";
+import { StepPersonalizar } from "@/components/create/StepPersonalizar";
 import { FeedPreview } from "@/components/create/FeedPreview";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Sparkles, Plus, ChevronRight, FileDown, CheckCircle2 } from "lucide-react";
@@ -74,6 +75,10 @@ export interface WizardData {
   // Editorial phase
   editorialPhase: boolean;
   editorialPosts: GeneratedPost[];
+  // Personalization
+  brandLogo?: string;
+  modelPhoto?: string;
+  modelDescription?: string;
 }
 
 const TOTAL_WIZARD_STEPS = 6;
@@ -232,6 +237,9 @@ export default function Create() {
             quantity: batch.length,
             imageQuantity: batch.length,
             postsForImage: batch,
+            customStylePrompt: wizardData.styleAnalysis?.promptDalle,
+            brandLogo: wizardData.brandLogo,
+            modelDescription: wizardData.modelDescription,
           },
         });
 
@@ -250,7 +258,7 @@ export default function Create() {
         posts: result,
         phase: "complete",
       });
-      setStep(8);
+      setStep(9);
     } catch (err: any) {
       toast({
         title: "Erro ao gerar imagens",
@@ -334,6 +342,8 @@ export default function Create() {
       setStep(6);
     } else if (step === 8) {
       setStep(7);
+    } else if (step === 9) {
+      setStep(8);
     } else {
       setStep((s) => Math.max(1, s - 1));
     }
@@ -501,8 +511,54 @@ export default function Create() {
 
                 <div className="flex flex-col items-end gap-1">
                   <Button
+                    onClick={() => setStep(8)}
+                    disabled={wizardData.editorialPosts.length === 0}
+                    className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Aprovar e personalizar artes
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                  <p className="text-[10px] text-muted-foreground">
+                    Próximo: logo, foto da profissional e marca
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 8: Personalizar artes */}
+          {step === 8 && (
+            <div className="mt-2">
+              <div className="flex items-start justify-between mb-5">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 bg-fuchsia-500/15 text-fuchsia-600 rounded-full px-3 py-1 text-xs font-bold mb-2">
+                    Fase 2 de 3 — Personalizar artes
+                  </div>
+                  <h2 className="text-xl font-bold text-foreground tracking-tight">
+                    Personalize as artes
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Adicione logo, foto da profissional e confirme o nome da marca.
+                  </p>
+                </div>
+                <Button onClick={resetWizard} variant="outline" className="rounded-full shrink-0">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo
+                </Button>
+              </div>
+
+              <StepPersonalizar data={wizardData} onChange={update} />
+
+              <div className="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-border">
+                <Button variant="outline" onClick={handleBack} className="rounded-full">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Voltar
+                </Button>
+                <div className="flex flex-col items-end gap-1">
+                  <Button
                     onClick={() => generateImagesForPosts(wizardData.editorialPosts)}
-                    disabled={loading || wizardData.editorialPosts.length === 0}
+                    disabled={loading}
                     className="rounded-full bg-gradient-primary hover:opacity-90 shadow-glow border-0"
                   >
                     {loading ? (
@@ -511,15 +567,15 @@ export default function Create() {
                         : "Iniciando geração..."
                     ) : (
                       <>
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Aprovar e gerar imagens
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Gerar todas as imagens
                       </>
                     )}
                     {!loading && <ChevronRight className="w-4 h-4 ml-1" />}
                   </Button>
                   {!loading && (
                     <p className="text-[10px] text-muted-foreground">
-                      {wizardData.editorialPosts.length} imagens serão geradas em lotes de 3
+                      {wizardData.editorialPosts.length} imagens · geradas em lotes de 3
                     </p>
                   )}
                 </div>
@@ -527,8 +583,8 @@ export default function Create() {
             </div>
           )}
 
-          {/* Step 8: Results with images */}
-          {step === 8 && (
+          {/* Step 9: Results with images */}
+          {step === 9 && (
             <div className="mt-2">
               {/* Header */}
               <div className="flex items-start justify-between mb-5">
