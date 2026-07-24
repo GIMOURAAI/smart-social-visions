@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Image, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Menu, Sparkles } from "lucide-react";
 import heroCreator from "@/assets/hero-creator.jpg";
 import heroHologram from "@/assets/hero-hologram.jpg";
 import cloneAi from "@/assets/clone-ai.jpg";
@@ -17,7 +17,7 @@ const gallery = [
   { image: heroHologram, label: "POLÍTICA", caption: "Comunicação clara e estratégica." },
 ];
 
-const niches = ["Dentistas", "Médicos", "Advogados", "Corretores", "Academias", "Joalherias", "Políticos", "Minimalistas"];
+const niches = ["Dentistas", "Médicos", "Advogados", "Corretores", "Academias", "Joalherias", "Políticos", "Moda"];
 
 const plans = [
   { name: "Solo", price: "49,90", credits: "15 posts", description: "Para quem está começando", features: ["Posts completos", "Imagem + copy + legenda", "CTA e hashtags"] },
@@ -29,143 +29,106 @@ export default function Index() {
   const navigate = useNavigate();
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050608] text-white selection:bg-violet-500/40">
-      <div className="ambient-orb orb-one" />
-      <div className="ambient-orb orb-two" />
-      <div className="ambient-orb orb-three" />
-      <div className="noise-overlay" />
-
-      <header className="glass-header relative z-30 mx-auto mt-4 flex h-20 w-[min(1400px,calc(100%-24px))] items-center justify-between px-5 md:px-7">
-        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-3">
-          <span className="glass-icon"><Sparkles className="h-4 w-4" /></span>
-          <span className="text-lg font-semibold tracking-[-0.03em]">Smart Post AI</span>
-        </button>
-        <nav className="hidden items-center gap-9 text-sm text-white/55 md:flex">
-          <a href="#segmentos" className="transition hover:text-white">Segmentos</a>
-          <a href="#exemplos" className="transition hover:text-white">Exemplos</a>
-          <a href="#planos" className="transition hover:text-white">Planos</a>
-        </nav>
-        <button onClick={() => navigate("/auth")} className="glass-button">Começar agora <ArrowRight className="h-4 w-4" /></button>
-      </header>
-
-      <section className="relative z-10 mx-auto grid min-h-[860px] w-[min(1400px,calc(100%-40px))] items-center gap-20 py-14 lg:grid-cols-[.82fr_1.18fr] lg:py-24">
-        <div className="reveal-up max-w-[620px]">
-          <div className="glass-label">IA para social media</div>
-          <h1 className="mt-8 text-[clamp(56px,6.4vw,96px)] font-[420] leading-[.98] tracking-[-.066em]">
-            Crie posts que parecem feitos <span className="text-violet-400">por uma agência.</span>
-          </h1>
-          <p className="mt-8 max-w-[460px] text-lg leading-relaxed text-white/46 md:text-xl">Do briefing ao post final. Estratégia, imagem e legenda em poucos segundos.</p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <button onClick={() => navigate("/auth")} className="primary-cta">Começar gratuitamente <ArrowRight className="h-4 w-4" /></button>
-            <a href="#exemplos" className="glass-button">Ver exemplos</a>
-          </div>
-          <button onClick={() => document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" })} className="price-teaser mt-7">
-            <span>Planos a partir de</span><strong>R$ 49,90</strong><ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="relative min-h-[720px]">
-          <div className="hero-orbit absolute inset-0 grid grid-cols-3 grid-rows-3 gap-3 [transform:perspective(1400px)_rotateY(-4deg)_rotateX(1deg)]">
-            {gallery.map((item, index) => (
-              <article key={item.label} style={{ animationDelay: `${index * 430}ms` }} className={`gallery-card float-card ${index === 2 || index === 4 ? "row-span-2" : ""}`}>
-                <img src={item.image} alt="" className="h-full w-full object-cover opacity-72 saturate-[.76] transition duration-700 group-hover:scale-[1.06] group-hover:opacity-95" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/5 to-white/[.04]" />
-                <div className="glass-caption absolute inset-x-3 bottom-3 p-3">
-                  <div className="text-[10px] tracking-[.18em] text-white/45">{item.label}</div>
-                  <div className="mt-1 max-w-[180px] text-sm leading-snug text-white/78">{item.caption}</div>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="prompt-glass">
-            <div className="glass-reflection" />
-            <p className="text-sm text-white/58">Descreva o tipo de post que deseja criar...</p>
-            <div className="mt-10 flex items-center justify-between gap-3">
-              <div className="flex gap-2">
-                <button className="glass-chip"><Image className="h-4 w-4" /> Imagem</button>
-                <button className="glass-chip"><Sparkles className="h-4 w-4" /> Estilo</button>
-              </div>
-              <button onClick={() => navigate("/auth")} className="primary-cta !rounded-xl !px-5 !py-3 text-sm"><Sparkles className="h-4 w-4" /> Gerar post</button>
+    <main className="min-h-screen overflow-hidden bg-[#060708] text-white selection:bg-violet-500/40">
+      <section className="axis-hero">
+        <div className="axis-mosaic" aria-hidden="true">
+          {gallery.concat(gallery.slice(0, 4)).map((item, index) => (
+            <div key={`${item.label}-${index}`} className={`axis-tile axis-tile-${index + 1}`}>
+              <img src={item.image} alt="" />
             </div>
-          </div>
+          ))}
+        </div>
+        <div className="axis-hero-shade" />
+        <div className="axis-grain" />
+
+        <button className="axis-menu" aria-label="Abrir menu">
+          <Menu className="h-6 w-6" />
+        </button>
+
+        <button onClick={() => navigate("/auth")} className="axis-avatar" aria-label="Entrar">
+          GI
+        </button>
+
+        <p className="axis-side-copy">Crie seu post<br />Organize sua marca<br />Explore novas ideias</p>
+
+        <div className="axis-brand">
+          <div className="axis-wordmark">SMART<br className="md:hidden" />POST</div>
+          <div className="axis-powered"><span>POWERED BY</span><strong>AI</strong></div>
+        </div>
+
+        <div className="axis-bottom-cta">
+          <button onClick={() => navigate("/auth")} className="axis-glass-cta">
+            <span>Começar agora</span>
+            <span className="axis-arrow"><ArrowRight className="h-6 w-6" /></span>
+          </button>
+          <p>Planos a partir de R$ 49,90</p>
         </div>
       </section>
 
-      <div className="marquee-shell relative z-10">
-        <div className="marquee-track">
-          {[...niches, ...niches].map((niche, index) => <span key={`${niche}-${index}`}>{niche}<i>✦</i></span>)}
+      <section className="axis-section" id="segmentos">
+        <div className="axis-section-head">
+          <h2>Feito para todos os negócios.</h2>
+          <span>Ver todos</span>
         </div>
-      </div>
-
-      <section id="segmentos" className="relative z-10 border-t border-white/[.055] py-40">
-        <div className="mx-auto w-[min(1400px,calc(100%-40px))]">
-          <div className="mb-16 flex items-end justify-between gap-10">
-            <h2 className="text-[clamp(44px,5vw,72px)] font-[430] leading-[1.02] tracking-[-.055em]">Para qualquer<br /><span className="text-violet-400">tipo de negócio.</span></h2>
-            <span className="hidden text-sm text-white/32 md:block">Conteúdo com aparência profissional.</span>
-          </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {niches.map((niche, index) => (
-              <article key={niche} className="segment-glass drift-card" style={{ animationDelay: `${index * 350}ms` }}>
-                <img src={gallery[index].image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-42 saturate-[.58] transition duration-700 group-hover:scale-105 group-hover:opacity-68" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/15 to-white/[.03]" />
-                <span className="glass-caption absolute bottom-4 left-4 right-4 px-4 py-3 text-sm text-white/82">{niche}</span>
-              </article>
-            ))}
-          </div>
+        <div className="axis-horizontal-scroll">
+          {niches.map((niche, index) => (
+            <article key={niche} className="axis-app-card">
+              <img src={gallery[index].image} alt="" />
+              <button onClick={() => navigate("/auth")}>Criar para {niche}</button>
+              <div className="axis-app-info">
+                <span className="axis-mini-icon"><Sparkles className="h-5 w-5" /></span>
+                <div><strong>{niche}</strong><p>Imagem, copy e legenda em poucos segundos.</p></div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section id="exemplos" className="relative z-10 border-t border-white/[.055] py-40">
-        <div className="mx-auto grid w-[min(1400px,calc(100%-40px))] gap-20 lg:grid-cols-[.3fr_.7fr]">
-          <div className="lg:pt-8">
-            <p className="mb-4 text-xs uppercase tracking-[.16em] text-violet-400">Exemplos</p>
-            <h2 className="text-[clamp(44px,4.5vw,68px)] font-[430] leading-[1.02] tracking-[-.055em]">Pouco texto.<br />Muito <span className="text-violet-400">impacto.</span></h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {gallery.map((item, index) => (
-              <article key={`${item.label}-example`} className="gallery-card drift-card aspect-[4/5]" style={{ animationDelay: `${index * 280}ms` }}>
-                <img src={item.image} alt="" className="h-full w-full object-cover opacity-66 saturate-[.72] transition duration-700 group-hover:scale-105 group-hover:opacity-92" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-white/[.025]" />
-                <div className="glass-caption absolute bottom-3 left-3 right-3 p-3 text-sm text-white/65">{item.caption}</div>
-              </article>
-            ))}
-          </div>
+      <section className="axis-section axis-projects">
+        <div className="axis-section-head"><h2>Projetos</h2><span>Ver todos</span></div>
+        <button onClick={() => navigate("/auth")} className="axis-new-project">
+          <span>+</span><strong>Novo projeto</strong><p>Comece uma nova criação</p>
+        </button>
+      </section>
+
+      <section className="axis-section" id="exemplos">
+        <div className="axis-section-head"><h2>Explore</h2><span>Ver todos</span></div>
+        <div className="axis-explore-grid">
+          {gallery.map((item) => <img key={item.label} src={item.image} alt={item.caption} />)}
         </div>
       </section>
 
-      <section id="planos" className="relative z-10 border-t border-white/[.055] py-40">
-        <div className="mx-auto w-[min(1200px,calc(100%-40px))]">
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-xs uppercase tracking-[.16em] text-violet-400">Planos</p>
-            <h2 className="text-[clamp(44px,5vw,72px)] font-[430] tracking-[-.055em]">Conteúdo profissional<br /><span className="text-violet-400">sem equipe cara.</span></h2>
-          </div>
-          <div className="grid gap-5 md:grid-cols-3">
-            {plans.map((plan, index) => (
-              <article key={plan.name} className={`price-glass drift-card ${plan.popular ? "price-popular" : ""}`} style={{ animationDelay: `${index * 420}ms` }}>
-                <div className="glass-reflection" />
-                {plan.popular && <div className="popular-badge">MAIS ESCOLHIDO</div>}
-                <p className="text-sm text-white/48">{plan.description}</p>
-                <h3 className="mt-4 text-2xl font-semibold">{plan.name}</h3>
-                <div className="mt-7 flex items-end gap-2"><span className="text-5xl font-medium tracking-[-.05em]">R$ {plan.price}</span><span className="pb-1 text-sm text-white/35">/mês</span></div>
-                <p className="mt-3 text-sm font-medium text-violet-300">{plan.credits} completos por mês</p>
-                <ul className="mt-8 space-y-3 text-sm text-white/58">
-                  {plan.features.map((feature) => <li key={feature} className="flex items-center gap-3"><Check className="h-4 w-4 text-violet-400" />{feature}</li>)}
-                </ul>
-                <button onClick={() => navigate("/pricing")} className={plan.popular ? "primary-cta mt-10 w-full justify-center" : "glass-button mt-10 w-full justify-center"}>Escolher plano <ArrowRight className="h-4 w-4" /></button>
-              </article>
-            ))}
-          </div>
+      <section className="axis-statement">
+        <span className="axis-mark">✦</span>
+        <h2>O conteúdo criado para quem sabe a diferença.</h2>
+      </section>
+
+      <section id="planos" className="axis-pricing">
+        <div className="axis-pricing-intro">
+          <span>SMART POST AI</span>
+          <h2>Conteúdo profissional, sem equipe cara.</h2>
+          <p>Escolha o volume ideal para sua rotina e crie posts completos com IA.</p>
+        </div>
+        <div className="axis-price-grid">
+          {plans.map((plan) => (
+            <article key={plan.name} className={`axis-price-card ${plan.popular ? "is-popular" : ""}`}>
+              {plan.popular && <div className="axis-popular">MAIS ESCOLHIDO</div>}
+              <p>{plan.description}</p>
+              <h3>{plan.name}</h3>
+              <div className="axis-price"><strong>R$ {plan.price}</strong><span>/mês</span></div>
+              <b>{plan.credits} completos por mês</b>
+              <ul>{plan.features.map((feature) => <li key={feature}><Check className="h-4 w-4" />{feature}</li>)}</ul>
+              <button onClick={() => navigate("/pricing")}>Escolher plano <ArrowRight className="h-4 w-4" /></button>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section className="relative z-10 pb-24 pt-10">
-        <div className="cta-glass mx-auto w-[min(1400px,calc(100%-40px))]">
-          <div className="glass-reflection" />
-          <h2 className="text-[clamp(42px,5vw,68px)] font-[420] leading-[1.02] tracking-[-.055em]">Seu próximo post<br />começa <span className="text-violet-400">aqui.</span></h2>
-          <button onClick={() => navigate("/auth")} className="primary-cta">Começar gratuitamente <ArrowRight className="h-4 w-4" /></button>
-        </div>
-      </section>
+      <footer className="axis-footer">
+        <div><span>POWERED BY</span><strong>SMART POST AI</strong></div>
+        <p>Estratégia, imagem e legenda em um único fluxo.</p>
+        <button onClick={() => navigate("/auth")} className="axis-glass-cta"><span>Começar agora</span><span className="axis-arrow"><ArrowRight className="h-6 w-6" /></span></button>
+      </footer>
     </main>
   );
 }
