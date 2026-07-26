@@ -162,6 +162,10 @@ main .axis-horizontal-scroll .axis-app-card {
     text-align: center !important;
   }
 
+  .axis-wordmark > span {
+    display: block !important;
+  }
+
   .axis-wordmark br,
   .axis-wordmark br.md\\:hidden {
     display: block !important;
