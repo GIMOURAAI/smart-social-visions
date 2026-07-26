@@ -1,12 +1,12 @@
 :root {
-  --motion-ease: cubic-bezier(.2,.82,.24,1);
+  --motion-ease: cubic-bezier(.16,.86,.24,1);
 }
 
 .motion-reveal {
   opacity: 0;
   transition:
-    transform 520ms var(--motion-ease) var(--motion-delay, 0ms),
-    opacity 260ms ease-out var(--motion-delay, 0ms);
+    transform 280ms var(--motion-ease) var(--motion-delay, 0ms),
+    opacity 150ms ease-out var(--motion-delay, 0ms);
   will-change: transform, opacity;
 }
 
@@ -17,8 +17,8 @@
 .motion-hero-entry {
   opacity: 0;
   transition:
-    transform 460ms var(--motion-ease) var(--motion-delay, 0ms),
-    opacity 220ms ease-out var(--motion-delay, 0ms);
+    transform 300ms var(--motion-ease) var(--motion-delay, 0ms),
+    opacity 150ms ease-out var(--motion-delay, 0ms);
   will-change: transform, opacity;
 }
 
@@ -30,7 +30,6 @@
 .motion-hero-entry.motion-visible { opacity: 1; transform: translate3d(0, 0, 0); }
 .axis-bottom-cta.motion-hero-entry.motion-visible { transform: translate3d(-50%, 0, 0); }
 
-/* Overrides the original horizontal carousel layout. */
 main .axis-section .axis-horizontal-scroll {
   display: grid !important;
   grid-auto-flow: row !important;
@@ -56,34 +55,32 @@ main .axis-horizontal-scroll .axis-app-card {
 .axis-price-card > button,
 .axis-app-card > button {
   transition:
-    transform 180ms var(--motion-ease),
-    border-color 180ms ease,
-    background-color 180ms ease,
-    box-shadow 180ms ease;
+    transform 160ms var(--motion-ease),
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .axis-app-card:hover,
 .axis-new-project:hover,
 .axis-price-card:hover,
 .axis-explore-grid img:hover { transform: translate3d(0, -10px, 0); }
-
 .axis-glass-cta:hover,
 .axis-price-card > button:hover,
 .axis-app-card > button:hover { transform: translate3d(8px, 0, 0); }
-
 .axis-glass-cta:active,
 .axis-price-card > button:active,
 .axis-app-card > button:active,
 .axis-menu:active,
 .axis-avatar:active {
   transform: translate3d(0, 3px, 0);
-  transition-duration: 80ms;
+  transition-duration: 70ms;
 }
 
 .axis-section,
 .axis-pricing,
 .axis-statement,
-.axis-footer { transition: background-color 280ms ease, color 180ms ease; }
+.axis-footer { transition: background-color 240ms ease, color 150ms ease; }
 
 @media (max-width: 1100px) {
   main .axis-section .axis-horizontal-scroll {
@@ -92,9 +89,9 @@ main .axis-horizontal-scroll .axis-app-card {
 }
 
 @media (max-width: 900px) {
-  .motion-from-left { transform: translate3d(-42px, 0, 0); }
-  .motion-from-right { transform: translate3d(42px, 0, 0); }
-  .motion-reveal { transition-duration: 430ms, 220ms; }
+  .motion-from-left { transform: translate3d(-48px, 0, 0); }
+  .motion-from-right { transform: translate3d(48px, 0, 0); }
+  .motion-reveal { transition-duration: 240ms, 130ms; }
   .axis-app-card:hover,
   .axis-new-project:hover,
   .axis-price-card:hover,
