@@ -176,3 +176,16 @@ main .axis-horizontal-scroll .axis-app-card {
     margin-top: 16px !important;
   }
 }
+
+
+/* Stack the SMART POST wordmark at every viewport size. */
+.axis-wordmark {
+  font-size: clamp(80px, 12vw, 160px) !important;
+  line-height: .78 !important;
+  white-space: normal !important;
+  text-align: center !important;
+}
+
+.axis-wordmark > span {
+  display: block !important;
+}
