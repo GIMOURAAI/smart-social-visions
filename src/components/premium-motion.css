@@ -58,12 +58,17 @@
 }
 
 .axis-horizontal-scroll {
-  scroll-snap-type: x proximity;
-  scroll-behavior: smooth;
+  display: grid;
+  grid-auto-flow: initial;
+  grid-auto-columns: initial;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  overflow: visible;
+  padding-bottom: 0;
 }
 
 .axis-app-card {
-  scroll-snap-align: start;
+  min-width: 0;
 }
 
 .axis-app-card,
@@ -109,6 +114,12 @@
   transition: background-color 280ms ease, color 180ms ease;
 }
 
+@media (max-width: 1100px) {
+  .axis-horizontal-scroll {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .motion-from-left { transform: translate3d(-42px, 0, 0); }
   .motion-from-right { transform: translate3d(42px, 0, 0); }
@@ -126,6 +137,13 @@
   }
 }
 
+@media (max-width: 620px) {
+  .axis-horizontal-scroll {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .motion-reveal,
   .motion-hero-entry {
@@ -136,8 +154,5 @@
   .axis-bottom-cta.motion-hero-entry,
   .axis-bottom-cta.motion-hero-entry.motion-visible {
     transform: translateX(-50%) !important;
-  }
-  .axis-horizontal-scroll {
-    scroll-behavior: auto;
   }
 }
