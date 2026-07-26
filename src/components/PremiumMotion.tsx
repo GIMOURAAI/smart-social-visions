@@ -63,42 +63,6 @@ export default function PremiumMotion() {
       heroElements.forEach((element) => element.classList.add("motion-visible"));
     });
 
-    const rail = document.querySelector<HTMLElement>(".axis-horizontal-scroll");
-    let railTimer: number | undefined;
-    let direction = 1;
-
-    if (rail) {
-      const moveRail = () => {
-        const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 12;
-        const atStart = rail.scrollLeft <= 12;
-        if (atEnd) direction = -1;
-        if (atStart) direction = 1;
-        rail.scrollBy({ left: direction * Math.min(rail.clientWidth * 0.72, 390), behavior: "smooth" });
-      };
-
-      const startRail = () => {
-        if (!railTimer) railTimer = window.setInterval(moveRail, 2100);
-      };
-      const stopRail = () => {
-        if (railTimer) window.clearInterval(railTimer);
-        railTimer = undefined;
-      };
-
-      startRail();
-      rail.addEventListener("pointerenter", stopRail);
-      rail.addEventListener("pointerleave", startRail);
-      rail.addEventListener("touchstart", stopRail, { passive: true });
-
-      return () => {
-        observer.disconnect();
-        cancelAnimationFrame(heroFrame);
-        stopRail();
-        rail.removeEventListener("pointerenter", stopRail);
-        rail.removeEventListener("pointerleave", startRail);
-        rail.removeEventListener("touchstart", stopRail);
-      };
-    }
-
     return () => {
       observer.disconnect();
       cancelAnimationFrame(heroFrame);
