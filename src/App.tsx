@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Create from "./pages/Create";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
+import AdminLanding from "./pages/AdminLanding";
 
 const queryClient = new QueryClient();
 
