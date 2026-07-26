@@ -38,7 +38,7 @@ export default function Index() {
         </p>
 
         <div className="axis-brand">
-          <div className="axis-wordmark">{hero.wordmark}</div>
+          <div className="axis-wordmark"><span>SMART</span><span>POST</span></div>
           <div className="axis-powered"><span>{hero.poweredBy}</span><strong>AI</strong></div>
         </div>
 
