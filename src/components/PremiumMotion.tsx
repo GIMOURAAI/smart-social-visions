@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import "./premium-motion.css";
+import "./mobile-touch-hero-fix.css";
 
 const revealGroups = [
   ".axis-section-head",
