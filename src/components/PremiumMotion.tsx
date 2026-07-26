@@ -33,7 +33,7 @@ export default function PremiumMotion() {
     staggerGroups.forEach((selector) => {
       document.querySelectorAll(selector).forEach((element, index) => {
         element.classList.add("motion-reveal", index % 2 === 0 ? "motion-from-left" : "motion-from-right");
-        (element as HTMLElement).style.setProperty("--motion-delay", `${Math.min(index * 55, 330)}ms`);
+        (element as HTMLElement).style.setProperty("--motion-delay", `${Math.min(index * 25, 150)}ms`);
         observed.push(element);
       });
     });
@@ -47,7 +47,7 @@ export default function PremiumMotion() {
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -7% 0px" },
+      { threshold: 0.1, rootMargin: "0px 0px -4% 0px" },
     );
 
     observed.forEach((element) => observer.observe(element));
@@ -57,7 +57,7 @@ export default function PremiumMotion() {
     );
     heroElements.forEach((element, index) => {
       element.classList.add("motion-hero-entry");
-      (element as HTMLElement).style.setProperty("--motion-delay", `${80 + index * 80}ms`);
+      (element as HTMLElement).style.setProperty("--motion-delay", `${60 + index * 55}ms`);
     });
     const heroFrame = requestAnimationFrame(() => {
       heroElements.forEach((element) => element.classList.add("motion-visible"));
