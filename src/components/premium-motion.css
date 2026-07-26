@@ -1,0 +1,143 @@
+:root {
+  --motion-ease: cubic-bezier(.2,.82,.24,1);
+}
+
+.motion-reveal {
+  opacity: 0;
+  transition:
+    transform 520ms var(--motion-ease) var(--motion-delay, 0ms),
+    opacity 260ms ease-out var(--motion-delay, 0ms);
+  will-change: transform, opacity;
+}
+
+.motion-from-left {
+  transform: translate3d(-72px, 0, 0);
+}
+
+.motion-from-right {
+  transform: translate3d(72px, 0, 0);
+}
+
+.motion-reveal.motion-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.motion-hero-entry {
+  opacity: 0;
+  transition:
+    transform 460ms var(--motion-ease) var(--motion-delay, 0ms),
+    opacity 220ms ease-out var(--motion-delay, 0ms);
+  will-change: transform, opacity;
+}
+
+.axis-menu.motion-hero-entry,
+.axis-side-copy.motion-hero-entry {
+  transform: translate3d(-64px, 0, 0);
+}
+
+.axis-avatar.motion-hero-entry {
+  transform: translate3d(64px, 0, 0);
+}
+
+.axis-brand.motion-hero-entry {
+  transform: translate3d(0, 52px, 0);
+}
+
+.axis-bottom-cta.motion-hero-entry {
+  transform: translate3d(-50%, 64px, 0);
+}
+
+.motion-hero-entry.motion-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.axis-bottom-cta.motion-hero-entry.motion-visible {
+  transform: translate3d(-50%, 0, 0);
+}
+
+.axis-horizontal-scroll {
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+}
+
+.axis-app-card {
+  scroll-snap-align: start;
+}
+
+.axis-app-card,
+.axis-new-project,
+.axis-price-card,
+.axis-explore-grid img,
+.axis-glass-cta,
+.axis-price-card > button,
+.axis-app-card > button {
+  transition:
+    transform 180ms var(--motion-ease),
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.axis-app-card:hover,
+.axis-new-project:hover,
+.axis-price-card:hover,
+.axis-explore-grid img:hover {
+  transform: translate3d(0, -10px, 0);
+}
+
+.axis-glass-cta:hover,
+.axis-price-card > button:hover,
+.axis-app-card > button:hover {
+  transform: translate3d(8px, 0, 0);
+}
+
+.axis-glass-cta:active,
+.axis-price-card > button:active,
+.axis-app-card > button:active,
+.axis-menu:active,
+.axis-avatar:active {
+  transform: translate3d(0, 3px, 0);
+  transition-duration: 80ms;
+}
+
+.axis-section,
+.axis-pricing,
+.axis-statement,
+.axis-footer {
+  transition: background-color 280ms ease, color 180ms ease;
+}
+
+@media (max-width: 900px) {
+  .motion-from-left { transform: translate3d(-42px, 0, 0); }
+  .motion-from-right { transform: translate3d(42px, 0, 0); }
+  .motion-reveal {
+    transition-duration: 430ms, 220ms;
+  }
+  .axis-app-card:hover,
+  .axis-new-project:hover,
+  .axis-price-card:hover,
+  .axis-explore-grid img:hover,
+  .axis-glass-cta:hover,
+  .axis-price-card > button:hover,
+  .axis-app-card > button:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-reveal,
+  .motion-hero-entry {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .axis-bottom-cta.motion-hero-entry,
+  .axis-bottom-cta.motion-hero-entry.motion-visible {
+    transform: translateX(-50%) !important;
+  }
+  .axis-horizontal-scroll {
+    scroll-behavior: auto;
+  }
+}
