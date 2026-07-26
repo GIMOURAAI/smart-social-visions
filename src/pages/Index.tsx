@@ -1,32 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Check, Menu, Sparkles } from "lucide-react";
-import heroCreator from "@/assets/hero-creator.jpg";
-import heroHologram from "@/assets/hero-hologram.jpg";
-import cloneAi from "@/assets/clone-ai.jpg";
-import customServices from "@/assets/custom-services.jpg";
-import postFormats from "@/assets/post-formats.jpg";
-
-const gallery = [
-  { image: customServices, label: "JOIAS", caption: "Elegância em cada detalhe." },
-  { image: heroHologram, label: "IMÓVEIS", caption: "O lugar perfeito para chamar de seu." },
-  { image: heroCreator, label: "ACADEMIA", caption: "Foco que gera resultados." },
-  { image: cloneAi, label: "ADVOCACIA", caption: "Posicionamento com autoridade." },
-  { image: postFormats, label: "SAÚDE", caption: "Conteúdo que gera confiança." },
-  { image: customServices, label: "GASTRONOMIA", caption: "Visual que desperta desejo." },
-  { image: heroCreator, label: "MODA", caption: "Presença que chama atenção." },
-  { image: heroHologram, label: "POLÍTICA", caption: "Comunicação clara e estratégica." },
-];
-
-const niches = ["Dentistas", "Médicos", "Advogados", "Corretores", "Academias", "Joalherias", "Políticos", "Moda"];
-
-const plans = [
-  { name: "Solo", price: "49,90", credits: "15 posts", description: "Para quem está começando", features: ["Posts completos", "Imagem + copy + legenda", "CTA e hashtags"] },
-  { name: "Pro", price: "89,90", credits: "30 posts", description: "Um mês inteiro de conteúdo", popular: true, features: ["Tudo do Solo", "Padrão de feed", "Mais estilos visuais"] },
-  { name: "Studio", price: "169,90", credits: "60 posts", description: "Para designers e social medias", features: ["Tudo do Pro", "Múltiplas marcas", "Uso profissional"] },
-];
+import { useLandingContent } from "@/hooks/useLandingContent";
 
 export default function Index() {
   const navigate = useNavigate();
+  const { content } = useLandingContent();
+  const { hero, segments, projects, explore, statement, pricing, footer, gallery } = content;
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#060708] text-white selection:bg-violet-500/40">
@@ -49,35 +28,42 @@ export default function Index() {
           GI
         </button>
 
-        <p className="axis-side-copy">Crie seu post<br />Organize sua marca<br />Explore novas ideias</p>
+        <p className="axis-side-copy">
+          {hero.sideCopy.split("\n").map((line, index) => (
+            <span key={index}>
+              {line}
+              <br />
+            </span>
+          ))}
+        </p>
 
         <div className="axis-brand">
-          <div className="axis-wordmark">SMART<br className="md:hidden" />POST</div>
-          <div className="axis-powered"><span>POWERED BY</span><strong>AI</strong></div>
+          <div className="axis-wordmark">{hero.wordmark}</div>
+          <div className="axis-powered"><span>{hero.poweredBy}</span><strong>AI</strong></div>
         </div>
 
         <div className="axis-bottom-cta">
           <button onClick={() => navigate("/auth")} className="axis-glass-cta">
-            <span>Começar agora</span>
+            <span>{hero.ctaLabel}</span>
             <span className="axis-arrow"><ArrowRight className="h-6 w-6" /></span>
           </button>
-          <p>Planos a partir de R$ 49,90</p>
+          <p>{hero.ctaNote}</p>
         </div>
       </section>
 
       <section className="axis-section" id="segmentos">
         <div className="axis-section-head">
-          <h2>Feito para todos os negócios.</h2>
-          <span>Ver todos</span>
+          <h2>{segments.title}</h2>
+          <span>{segments.linkLabel}</span>
         </div>
         <div className="axis-horizontal-scroll">
-          {niches.map((niche, index) => (
-            <article key={niche} className="axis-app-card">
-              <img src={gallery[index].image} alt="" />
+          {segments.niches.map((niche, index) => (
+            <article key={`${niche}-${index}`} className="axis-app-card">
+              <img src={gallery[index % gallery.length].image} alt="" />
               <button onClick={() => navigate("/auth")}>Criar para {niche}</button>
               <div className="axis-app-info">
                 <span className="axis-mini-icon"><Sparkles className="h-5 w-5" /></span>
-                <div><strong>{niche}</strong><p>Imagem, copy e legenda em poucos segundos.</p></div>
+                <div><strong>{niche}</strong><p>{segments.cardSubtitle}</p></div>
               </div>
             </article>
           ))}
@@ -85,32 +71,32 @@ export default function Index() {
       </section>
 
       <section className="axis-section axis-projects">
-        <div className="axis-section-head"><h2>Projetos</h2><span>Ver todos</span></div>
+        <div className="axis-section-head"><h2>{projects.title}</h2><span>{segments.linkLabel}</span></div>
         <button onClick={() => navigate("/auth")} className="axis-new-project">
-          <span>+</span><strong>Novo projeto</strong><p>Comece uma nova criação</p>
+          <span>+</span><strong>{projects.ctaTitle}</strong><p>{projects.ctaSubtitle}</p>
         </button>
       </section>
 
       <section className="axis-section" id="exemplos">
-        <div className="axis-section-head"><h2>Explore</h2><span>Ver todos</span></div>
+        <div className="axis-section-head"><h2>{explore.title}</h2><span>{segments.linkLabel}</span></div>
         <div className="axis-explore-grid">
-          {gallery.map((item) => <img key={item.label} src={item.image} alt={item.caption} />)}
+          {gallery.map((item, index) => <img key={`${item.label}-${index}`} src={item.image} alt={item.caption} />)}
         </div>
       </section>
 
       <section className="axis-statement">
         <span className="axis-mark">✦</span>
-        <h2>O conteúdo criado para quem sabe a diferença.</h2>
+        <h2>{statement.text}</h2>
       </section>
 
       <section id="planos" className="axis-pricing">
         <div className="axis-pricing-intro">
-          <span>SMART POST AI</span>
-          <h2>Conteúdo profissional, sem equipe cara.</h2>
-          <p>Escolha o volume ideal para sua rotina e crie posts completos com IA.</p>
+          <span>{pricing.eyebrow}</span>
+          <h2>{pricing.title}</h2>
+          <p>{pricing.subtitle}</p>
         </div>
         <div className="axis-price-grid">
-          {plans.map((plan) => (
+          {pricing.plans.map((plan) => (
             <article key={plan.name} className={`axis-price-card ${plan.popular ? "is-popular" : ""}`}>
               {plan.popular && <div className="axis-popular">MAIS ESCOLHIDO</div>}
               <p>{plan.description}</p>
@@ -125,9 +111,9 @@ export default function Index() {
       </section>
 
       <footer className="axis-footer">
-        <div><span>POWERED BY</span><strong>SMART POST AI</strong></div>
-        <p>Estratégia, imagem e legenda em um único fluxo.</p>
-        <button onClick={() => navigate("/auth")} className="axis-glass-cta"><span>Começar agora</span><span className="axis-arrow"><ArrowRight className="h-6 w-6" /></span></button>
+        <div><span>POWERED BY</span><strong>{footer.brand}</strong></div>
+        <p>{footer.tagline}</p>
+        <button onClick={() => navigate("/auth")} className="axis-glass-cta"><span>{footer.ctaLabel}</span><span className="axis-arrow"><ArrowRight className="h-6 w-6" /></span></button>
       </footer>
     </main>
   );
