@@ -123,3 +123,52 @@ main .axis-horizontal-scroll .axis-app-card {
     transform: translateX(-50%) !important;
   }
 }
+
+
+/* Mobile hero: preserve the approved centered SMART / POST composition.
+   Hero motion must never replace the layout transform. */
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .axis-menu.motion-hero-entry,
+  .axis-menu.motion-hero-entry.motion-visible,
+  .axis-avatar.motion-hero-entry,
+  .axis-avatar.motion-hero-entry.motion-visible {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .axis-brand,
+  .axis-brand.motion-hero-entry,
+  .axis-brand.motion-hero-entry.motion-visible {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 0 20px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .axis-wordmark {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: clamp(72px, 23vw, 104px) !important;
+    line-height: .78 !important;
+    letter-spacing: -.08em !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-align: center !important;
+  }
+
+  .axis-wordmark br,
+  .axis-wordmark br.md\\:hidden {
+    display: block !important;
+  }
+
+  .axis-powered {
+    width: 100% !important;
+    margin-top: 16px !important;
+  }
+}
