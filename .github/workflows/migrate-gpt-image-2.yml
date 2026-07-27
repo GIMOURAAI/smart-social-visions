@@ -1,0 +1,78 @@
+name: Migrate image generation to GPT Image 2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/migrate-gpt-image-2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update image generation model
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("supabase/functions/generate-post-batch/index.ts")
+          text = path.read_text()
+
+          text = text.replace(
+              'const SIZE_MAP: Record<string, "1024x1024" | "1024x1792" | "1792x1024"> = {\n  "1:1": "1024x1024",\n  "4:5": "1024x1792",\n  "9:16": "1024x1792",\n  "16:9": "1792x1024",\n};',
+              'const SIZE_MAP: Record<string, "1024x1024" | "1024x1536" | "1536x1024"> = {\n  "1:1": "1024x1024",\n  "4:5": "1024x1536",\n  "9:16": "1024x1536",\n  "16:9": "1536x1024",\n};'
+          )
+
+          text = text.replace("// === DALL·E 3 + upload + persist + crédito ===", "// === GPT Image 2 + upload + persist + crédito ===")
+
+          old = '''          body: JSON.stringify({
+            model: "dall-e-3",
+            prompt: p.promptVisual,
+            n: 1,
+            size,
+            quality: "standard",
+            style: "vivid",
+          }),
+        });
+        if (imgResp.ok) {
+          const imgData = await imgResp.json();
+          const url = imgData.data[0].url;
+          const imgBin = await fetch(url).then((r) => r.arrayBuffer());
+          const path = `${user.id}/${batch.id}/${blockKey}-${Date.now()}-${i}.png`;
+'''
+
+          new = '''          body: JSON.stringify({
+            model: "gpt-image-2",
+            prompt: p.promptVisual,
+            n: 1,
+            size,
+            quality: "medium",
+            output_format: "png",
+          }),
+        });
+        if (imgResp.ok) {
+          const imgData = await imgResp.json();
+          const b64 = imgData.data?.[0]?.b64_json;
+          if (!b64) throw new Error("GPT Image 2 não retornou a imagem");
+          const binary = Uint8Array.from(atob(b64), (char) => char.charCodeAt(0));
+          const imgBin = binary.buffer;
+          const path = `${user.id}/${batch.id}/${blockKey}-${Date.now()}-${i}.png`;
+'''
+
+          if old not in text:
+              raise SystemExit("Image generation block not found")
+
+          text = text.replace(old, new)
+          text = text.replace('console.error("DALL-E error", await imgResp.text());', 'console.error("GPT Image 2 error", await imgResp.text());')
+          path.write_text(text)
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/functions/generate-post-batch/index.ts
+          git commit -m "feat: use GPT Image 2 with medium quality"
+          git push
