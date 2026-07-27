@@ -11,7 +11,7 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const SIZE_MAP: Record<string, "1024x1024" | "1024x1792" | "1792x1024"> = {
   "1:1": "1024x1024",
-  "4:5": "1024x1024",
+  "4:5": "1024x1792",
   "9:16": "1024x1792",
   "16:9": "1792x1024",
 };
@@ -164,9 +164,9 @@ A: Ação — CTA claro e específico mencionando a marca ${batch.brand_name}
 - cta: chamada para ação específica e persuasiva, citando "${batch.brand_name}" quando fizer sentido
 - hashtags: array com 10-15 hashtags relevantes (PT+EN, SEM o caractere #)
 - storyComplementar: story que complementa o post (máx 150 chars)
-- promptVisual: SEMPRE em INGLÊS, ultra-detalhado, baseado no TEMA acima, aplicando padrão de feed "${batch.feed_pattern}". OBRIGATÓRIO terminar com: "no text, no letters, no words, no typography, professional editorial photography"
+- promptVisual: SEMPRE em INGLÊS, ultra-detalhado, baseado no TEMA acima, aplicando padrão de cores do cliente de forma clara na cena
 
-## FORMATO DE SAÍDA — JSON VÁLIDO APENAS
+- Responda SOMENTE em JSON válido neste formato exato:
 {"posts":[{"gancho":"","tituloArte":"","subtitulo":"","textoArte":"","legenda":"","cta":"","hashtags":[],"storyComplementar":"","promptVisual":""}]}`;
 }
 
@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
             prompt: p.promptVisual,
             n: 1,
             size,
-            quality: "hd",
+            quality: "standard",
             style: "vivid",
           }),
         });
