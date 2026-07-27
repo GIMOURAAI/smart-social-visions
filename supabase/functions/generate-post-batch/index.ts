@@ -9,11 +9,11 @@ const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const SIZE_MAP: Record<string, "1024x1024" | "1024x1792" | "1792x1024"> = {
+const SIZE_MAP: Record<string, "1024x1024" | "1024x1536" | "1536x1024"> = {
   "1:1": "1024x1024",
-  "4:5": "1024x1792",
-  "9:16": "1024x1792",
-  "16:9": "1792x1024",
+  "4:5": "1024x1536",
+  "9:16": "1024x1536",
+  "16:9": "1536x1024",
 };
 
 // === 9 TEMAs visuais PostLab (prompts cinematográficos por nicho) ===
@@ -244,7 +244,7 @@ Deno.serve(async (req) => {
     const size = SIZE_MAP[batch.format] ?? "1024x1024";
     const results: any[] = [];
 
-    // === DALL·E 3 + upload + persist + crédito ===
+    // === GPT Image 2 + upload + persist + crédito ===
     for (let i = 0; i < posts.length; i++) {
       const p = posts[i];
       let imageUrl: string | null = null;
@@ -254,18 +254,20 @@ Deno.serve(async (req) => {
           method: "POST",
           headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "dall-e-3",
+            model: "gpt-image-2",
             prompt: p.promptVisual,
             n: 1,
             size,
-            quality: "standard",
-            style: "vivid",
+            quality: "medium",
+            output_format: "png",
           }),
         });
         if (imgResp.ok) {
           const imgData = await imgResp.json();
-          const url = imgData.data[0].url;
-          const imgBin = await fetch(url).then((r) => r.arrayBuffer());
+          const b64 = imgData.data?.[0]?.b64_json;
+          if (!b64) throw new Error("GPT Image 2 não retornou a imagem");
+          const binary = Uint8Array.from(atob(b64), (char) => char.charCodeAt(0));
+          const imgBin = binary.buffer;
           const path = `${user.id}/${batch.id}/${blockKey}-${Date.now()}-${i}.png`;
           const { error: upErr } = await admin.storage.from("post-images").upload(path, imgBin, {
             contentType: "image/png", upsert: true,
@@ -275,7 +277,7 @@ Deno.serve(async (req) => {
             imageUrl = pub.publicUrl;
           }
         } else {
-          console.error("DALL-E error", await imgResp.text());
+          console.error("GPT Image 2 error", await imgResp.text());
         }
       } catch (e) {
         console.error("Image gen failed", e);
