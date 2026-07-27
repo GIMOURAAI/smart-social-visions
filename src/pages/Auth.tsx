@@ -24,35 +24,38 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
-        
+
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo de volta.",
         });
-        navigate("/dashboard");
+
+        const completed = data.user?.user_metadata?.onboarding_completed === true;
+        navigate(completed ? "/dashboard" : "/onboarding");
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/onboarding`,
             data: {
               full_name: fullName,
+              onboarding_completed: false,
             },
           },
         });
         if (error) throw error;
-        
+
         toast({
           title: "Conta criada com sucesso!",
-          description: "Você já pode fazer login.",
+          description: "Agora escolha como você vai usar o Smart Post AI.",
         });
-        navigate("/dashboard");
+        navigate("/onboarding");
       }
     } catch (error: any) {
       const msg = error.message || "";
