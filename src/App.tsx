@@ -12,6 +12,7 @@ import Create from "./pages/Create";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import AdminLanding from "./pages/AdminLanding";
+import GiPrivateLanding from "./pages/GiPrivateLanding";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/create" element={<Create />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/admin/landing" element={<AdminLanding />} />
+          <Route path="/gi-checkout-7f4c9e" element={<GiPrivateLanding />} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
