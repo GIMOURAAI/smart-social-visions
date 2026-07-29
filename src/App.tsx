@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import AdminLanding from "./pages/AdminLanding";
 import GiPrivateLanding from "./pages/GiPrivateLanding";
+import ClientWorkspace from "./pages/ClientWorkspace";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,10 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/admin/landing" element={<AdminLanding />} />
           <Route path="/gi-checkout-7f4c9e" element={<GiPrivateLanding />} />
+          <Route path="/portfolio" element={<ClientWorkspace />} />
+          <Route path="/branding" element={<ClientWorkspace />} />
+          <Route path="/reels-clientes" element={<ClientWorkspace />} />
+          <Route path="/apresentacao-marca" element={<ClientWorkspace />} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
