@@ -21,152 +21,25 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-
-        toast({
-          title: "Login realizado com sucesso!",
-          description: "Bem-vindo de volta.",
-        });
-
+        toast({ title: "Login realizado com sucesso!", description: "Bem-vindo de volta." });
         const completed = data.user?.user_metadata?.onboarding_completed === true;
         navigate(completed ? "/dashboard" : "/onboarding");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
-            data: {
-              full_name: fullName,
-              onboarding_completed: false,
-            },
-          },
-        });
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/onboarding`, data: { full_name: fullName, onboarding_completed: false } } });
         if (error) throw error;
-
-        toast({
-          title: "Conta criada com sucesso!",
-          description: "Agora escolha como você vai usar o Smart Post AI.",
-        });
+        toast({ title: "Conta criada com sucesso!", description: "Agora escolha como você vai usar o Smart Post AI." });
         navigate("/onboarding");
       }
     } catch (error: any) {
       const msg = error.message || "";
-      if (msg.toLowerCase().includes("already registered")) {
-        toast({
-          title: "Conta já existe",
-          description: "Esse email já está cadastrado. Faça login.",
-        });
-        setIsLogin(true);
-      } else {
-        toast({
-          title: "Erro",
-          description: msg,
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
+      if (msg.toLowerCase().includes("already registered")) { toast({ title: "Conta já existe", description: "Esse email já está cadastrado. Faça login." }); setIsLogin(true); }
+      else toast({ title: "Erro", description: msg, variant: "destructive" });
+    } finally { setLoading(false); }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-secondary/20 p-4">
-      <Card className="w-full max-w-md p-8 bg-card border-border">
-        <div className="flex items-center justify-center mb-8">
-          <Sparkles className="w-8 h-8 text-primary mr-2" />
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-lime bg-clip-text text-transparent">
-            Smart Social Media
-          </h1>
-        </div>
-
-        <h2 className="text-2xl font-bold text-center mb-6 text-foreground">
-          {isLogin ? "Entrar" : "Criar Conta"}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <div>
-              <Label htmlFor="fullName">Nome Completo</Label>
-              <Input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required={!isLogin}
-                placeholder="Seu nome"
-                className="mt-1"
-              />
-            </div>
-          )}
-
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="seu@email.com"
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="password">Senha</Label>
-            <div className="relative mt-1">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                minLength={6}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Carregando..." : isLogin ? "Entrar" : "Criar Conta"}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            {isLogin ? "Não tem conta? Criar uma" : "Já tem conta? Fazer login"}
-          </button>
-        </div>
-
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => navigate("/")}
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            ← Voltar para o site
-          </button>
-        </div>
-      </Card>
-    </div>
-  );
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-secondary/20 p-4"><Card className="w-full max-w-md p-8 bg-card border-border"><div className="flex items-center justify-center mb-8"><Sparkles className="w-8 h-8 text-primary mr-2" /><h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-lime bg-clip-text text-transparent">Smart Social Media</h1></div><h2 className="text-2xl font-bold text-center mb-6 text-foreground">{isLogin ? "Entrar" : "Criar Conta"}</h2><form onSubmit={handleSubmit} className="space-y-4">{!isLogin && <div><Label htmlFor="fullName">Nome Completo</Label><Input id="fullName" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Seu nome" className="mt-1" /></div>}<div><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="seu@email.com" className="mt-1" /></div><div><Label htmlFor="password">Senha</Label><div className="relative mt-1"><Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" minLength={6} className="pr-10" /><button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button></div></div><Button type="submit" className="w-full" disabled={loading}>{loading ? "Carregando..." : isLogin ? "Entrar" : "Criar Conta"}</Button></form><div className="mt-6 text-center"><button onClick={() => setIsLogin(!isLogin)} className="text-sm text-muted-foreground hover:text-primary transition-colors">{isLogin ? "Não tem conta? Criar uma" : "Já tem conta? Fazer login"}</button></div><div className="mt-6 text-center"><button onClick={() => navigate("/")} className="text-sm text-muted-foreground hover:text-primary transition-colors">← Voltar para o site</button></div></Card></div>;
 }
