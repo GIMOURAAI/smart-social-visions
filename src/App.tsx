@@ -33,12 +33,14 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/admin/landing" element={<AdminLanding />} />
           <Route path="/gi-checkout-7f4c9e" element={<GiPrivateLanding />} />
+
+          {/* Public client portfolio routes: these never require Supabase login. */}
           <Route path="/portfolio" element={<ClientWorkspace />} />
+          <Route path="/app/portfolio" element={<ClientWorkspace />} />
           <Route path="/branding" element={<ClientWorkspace />} />
           <Route path="/reels-clientes" element={<ClientWorkspace />} />
           <Route path="/apresentacao-marca" element={<ClientWorkspace />} />
 
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
