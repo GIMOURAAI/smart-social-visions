@@ -51,7 +51,7 @@ export function StepFormatQuantity({ data, onChange }: Props) {
       <div>
         <h3 className="text-sm font-semibold text-foreground mb-1">Formato do post</h3>
         <p className="text-xs text-muted-foreground mb-3">Proporção ideal para o seu canal</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {FORMATS.map((fmt) => {
             const isSelected = data.format === fmt.value;
             return (
