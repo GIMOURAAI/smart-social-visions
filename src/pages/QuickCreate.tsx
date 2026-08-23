@@ -312,6 +312,8 @@ export default function QuickCreate() {
       const rows = Array.isArray(data?.posts) ? data.posts : [];
       if (rows.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
       setPosts(rows.map((r: any) => mapRow(r, obj)));
+      setTab("resultado");
+
       if (useKit) {
         const next = { ...kit, niche, visualStyle: primaryStyle, colors: effectiveColors };
         saveBrandKit(next);
