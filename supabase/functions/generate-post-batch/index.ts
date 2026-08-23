@@ -294,6 +294,9 @@ Deno.serve(async (req) => {
 
     const size = SIZE_MAP[batch.format] ?? "1024x1024";
     const results: any[] = [];
+    const assets = parseBrandAssets(batch.brand_images);
+    const refImages = [assets.model, assets.logo, ...assets.refs].filter(Boolean).slice(0, 4) as string[];
+    const promptSuffix = ` Composition system (mandatory): base 1080x1350 grid adapted to ${batch.format}; side breathing room 80-100px, top margin 90-120px, bottom margin 90-120px; all text, icons, CTA, logo and faces strictly inside the safe area, never touching the edges; headline 70-90px max 2 lines, subtitle 28-36px, icons 24-30px, CTA 24-30px; strong hierarchy, clean alignment, generous negative space, no clutter, no artificial borders, full bleed imagery, editorial premium realistic finishing with depth.${assets.colors.length ? ` Brand palette: ${assets.colors.join(", ")}.` : ""}${assets.logo ? " Place the provided brand logo discreetly in a corner inside the safe margins, never dominating the composition." : ""}${assets.model ? " Preserve faithfully the facial identity and features of the person in the provided reference photo." : ""}${assets.refs.length ? " Use the additional reference images only as inspiration for composition, atmosphere, typography and finishing — never copy them." : ""}`;
 
     // === GPT Image 2 + upload + persist + crédito ===
     for (let i = 0; i < posts.length; i++) {
@@ -301,18 +304,33 @@ Deno.serve(async (req) => {
       let imageUrl: string | null = null;
 
       try {
-        const imgResp = await fetch("https://api.openai.com/v1/images/generations", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "gpt-image-2",
-            prompt: p.promptVisual,
-            n: 1,
-            size,
-            quality: "medium",
-            output_format: "png",
-          }),
-        });
+        const fullPrompt = `${p.promptVisual}${promptSuffix}`;
+        let imgResp: Response;
+
+        if (refImages.length > 0) {
+          // Com logo / foto do modelo / referências → images/edits (multipart)
+          const form = new FormData();
+          form.append("model", "gpt-image-2");
+          form.append("prompt", fullPrompt);
+          form.append("size", size);
+          form.append("quality", "medium");
+          for (let r = 0; r < refImages.length; r++) {
+            const blob = await toBlob(refImages[r]);
+            if (blob) form.append("image[]", blob, `ref-${r}.png`);
+          }
+          imgResp = await fetch("https://api.openai.com/v1/images/edits", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
+            body: form,
+          });
+          if (!imgResp.ok) {
+            console.error("images/edits falhou, caindo para generations", await imgResp.text());
+            imgResp = await generateImage(fullPrompt, size);
+          }
+        } else {
+          imgResp = await generateImage(fullPrompt, size);
+        }
+
         if (imgResp.ok) {
           const imgData = await imgResp.json();
           const b64 = imgData.data?.[0]?.b64_json;
