@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { CreditsBadge } from "@/components/CreditsBadge";
 import { useCredits } from "@/hooks/useCredits";
 import { StepResult } from "@/components/create/StepResult";
+import { StyleGallery, STYLE_PRESETS } from "@/components/create/StyleGallery";
 import type { GeneratedPost } from "@/pages/Create";
 import {
   BrandKit, EMPTY_KIT, compressImage, encodeBrandAssets, hasBrandKit, loadBrandKit, saveBrandKit,
 } from "@/lib/brandKit";
 import {
   ArrowLeft, Sparkles, Zap, ImagePlus, X, RefreshCw, Wand2, ChevronDown, SlidersHorizontal,
+  User, Palette, KeyRound, Images,
 } from "lucide-react";
 
 const NICHOS = [
@@ -30,18 +32,6 @@ const OBJETIVOS: { id: string; label: string; block: string; theme: string }[] =
   { id: "prova", label: "Prova social", block: "autoridade", theme: "Post de prova social com resultado real e depoimento." },
 ];
 
-const ESTILOS = [
-  { id: "tema-01-saas", label: "Clean Premium", icon: "💼" },
-  { id: "tema-02-moda", label: "Luxo Editorial", icon: "👗" },
-  { id: "tema-03-tech", label: "Dark Neon", icon: "⚡" },
-  { id: "tema-04-resultado", label: "Resultados", icon: "🏆" },
-  { id: "tema-05-emocional", label: "Emocional", icon: "💛" },
-  { id: "tema-06-saude", label: "Saúde", icon: "🩺" },
-  { id: "tema-07-imoveis", label: "Imóveis", icon: "🏛️" },
-  { id: "tema-08-juridico", label: "Jurídico", icon: "⚖️" },
-  { id: "tema-09-influencer", label: "Personal Brand", icon: "✨" },
-];
-
 const PALETAS: { label: string; colors: string[] }[] = [
   { label: "Roxo premium", colors: ["#0f0a1f", "#7c3aed", "#e9d5ff"] },
   { label: "Nude luxo", colors: ["#fdf4ec", "#c9a84c", "#1a1a2e"] },
@@ -51,11 +41,14 @@ const PALETAS: { label: string; colors: string[] }[] = [
   { label: "Vibrante pop", colors: ["#ff6b9d", "#c4a7e7", "#f5d020"] },
 ];
 
-const FORMATOS: { id: "4:5" | "1:1" | "9:16" | "16:9"; label: string }[] = [
-  { id: "4:5", label: "4:5 Feed" },
-  { id: "1:1", label: "1:1 Quadrado" },
-  { id: "9:16", label: "9:16 Story" },
-  { id: "16:9", label: "16:9 Wide" },
+type Format = "4:5" | "3:4" | "1:1" | "9:16" | "16:9";
+
+const FORMATOS: { id: Format; label: string; sub: string }[] = [
+  { id: "4:5", label: "4:5", sub: "Feed" },
+  { id: "3:4", label: "3:4", sub: "Retrato" },
+  { id: "1:1", label: "1:1", sub: "Quadrado" },
+  { id: "9:16", label: "9:16", sub: "Story" },
+  { id: "16:9", label: "16:9", sub: "Wide" },
 ];
 
 function chipClass(active: boolean) {
@@ -66,6 +59,29 @@ function chipClass(active: boolean) {
   }`;
 }
 
+function ModeToggle({
+  aiLabel = "IA cria",
+  value,
+  onChange,
+}: { aiLabel?: string; value: "ai" | "manual"; onChange: (v: "ai" | "manual") => void }) {
+  return (
+    <div className="inline-flex rounded-full border border-border bg-muted/60 p-0.5">
+      {(["ai", "manual"] as const).map((m) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => onChange(m)}
+          className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
+            value === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          {m === "ai" ? aiLabel : "Eu escrevo"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function QuickCreate() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -73,12 +89,25 @@ export default function QuickCreate() {
 
   const [niche, setNiche] = useState("");
   const [objective, setObjective] = useState("valor");
-  const [style, setStyle] = useState("");
-  const [format, setFormat] = useState<"4:5" | "1:1" | "9:16" | "16:9">("4:5");
+  const [styleMix, setStyleMix] = useState<string[]>([]);
+  const [format, setFormat] = useState<Format>("4:5");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [useKit, setUseKit] = useState(false);
   const [kit, setKit] = useState<BrandKit>({ ...EMPTY_KIT });
   const [savedKit, setSavedKit] = useState<BrandKit>({ ...EMPTY_KIT });
+
+  // Textos: IA cria ou usuário escreve
+  const [titleMode, setTitleMode] = useState<"ai" | "manual">("ai");
+  const [title, setTitle] = useState("");
+  const [subtitleMode, setSubtitleMode] = useState<"ai" | "manual">("ai");
+  const [subtitle, setSubtitle] = useState("");
+  const [ctaMode, setCtaMode] = useState<"ai" | "manual">("ai");
+  const [cta, setCta] = useState("");
+
+  // Cores: automático ou manual
+  const [colorMode, setColorMode] = useState<"auto" | "manual">("auto");
+  // Referências visuais enviadas pelo usuário (máx 3) — só estilo, não personagem
+  const [styleRefs, setStyleRefs] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<GeneratedPost[]>([]);
@@ -86,6 +115,7 @@ export default function QuickCreate() {
 
   const logoRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
+  const refsRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -98,7 +128,10 @@ export default function QuickCreate() {
       setUseKit(true);
       setKit(stored);
       if (stored.niche) setNiche(stored.niche);
-      if (stored.visualStyle) setStyle(stored.visualStyle);
+      if (stored.visualStyle && STYLE_PRESETS.some((s) => s.id === stored.visualStyle)) {
+        setStyleMix([stored.visualStyle]);
+      }
+      if (stored.colors.length) setColorMode("manual");
     }
   }, [navigate]);
 
@@ -107,9 +140,10 @@ export default function QuickCreate() {
     if (on) {
       setKit(savedKit);
       if (savedKit.niche) setNiche(savedKit.niche);
-      if (savedKit.visualStyle) setStyle(savedKit.visualStyle);
+      if (savedKit.colors.length) setColorMode("manual");
     } else {
       setKit({ ...EMPTY_KIT });
+      setColorMode("auto");
     }
   };
 
@@ -124,6 +158,36 @@ export default function QuickCreate() {
     }
   };
 
+  const uploadRefs = async (files: FileList | null) => {
+    if (!files?.length) return;
+    const remaining = 3 - styleRefs.length;
+    if (remaining <= 0) return;
+    try {
+      const urls = await Promise.all(
+        Array.from(files).slice(0, remaining).map((f) => compressImage(f, 768))
+      );
+      setStyleRefs((r) => [...r, ...urls].slice(0, 3));
+    } catch (e: any) {
+      toast({ title: "Falha na referência", description: e?.message, variant: "destructive" });
+    }
+  };
+
+  const effectiveColors = colorMode === "manual" ? kit.colors : [];
+  const primaryStyle = styleMix[0] ?? "auto";
+  const styleMixLabels = styleMix
+    .map((id) => STYLE_PRESETS.find((s) => s.id === id)?.label)
+    .filter(Boolean) as string[];
+
+  const brandAssets = () =>
+    encodeBrandAssets({ logo: kit.logo, model: kit.model, colors: effectiveColors, refs: styleRefs });
+
+  const overrides = () => ({
+    tituloArte: titleMode === "manual" && title.trim() ? title.trim() : null,
+    subtitulo: subtitleMode === "manual" && subtitle.trim() ? subtitle.trim() : null,
+    cta: ctaMode === "manual" && cta.trim() ? cta.trim() : null,
+    styleMix: styleMixLabels,
+  });
+
   const mapRow = (r: any, obj: typeof OBJETIVOS[number]): GeneratedPost => ({
     tema: obj.theme,
     bloco: r.block ? r.block.charAt(0).toUpperCase() + r.block.slice(1) : "",
@@ -137,7 +201,7 @@ export default function QuickCreate() {
     legenda: r.legenda ?? r.content ?? "",
     cta: r.cta ?? "",
     hashtags: Array.isArray(r.hashtags) ? r.hashtags.map((h: string) => `#${h}`).join(" ") : (r.hashtags ?? ""),
-    estiloVisual: style,
+    estiloVisual: primaryStyle,
     promptVisual: r.image_prompt ?? "",
     storyComplementar: r.story_complementar ?? "",
     imageUrl: r.image_url ?? undefined,
@@ -159,8 +223,9 @@ export default function QuickCreate() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
-      const chosenStyle = style || "auto";
-      const paletteLabel = kit.colors.length ? kit.colors.join(", ") : "definido pela IA conforme nicho e estilo";
+      const paletteLabel = effectiveColors.length
+        ? effectiveColors.join(", ")
+        : "definido pela IA conforme nicho e estilo";
 
       const { data: batch, error: batchErr } = await supabase.from("post_batches").insert({
         user_id: user.id,
@@ -169,8 +234,8 @@ export default function QuickCreate() {
         theme: obj.theme,
         objective: obj.label,
         tone: "profissional e próximo",
-        visual_style: chosenStyle,
-        brand_images: encodeBrandAssets({ logo: kit.logo, model: kit.model, colors: kit.colors }),
+        visual_style: primaryStyle,
+        brand_images: brandAssets(),
         feed_pattern: paletteLabel,
         format,
         days: 1,
@@ -181,7 +246,7 @@ export default function QuickCreate() {
       setBatchId(batch.id);
 
       const { data, error } = await supabase.functions.invoke("generate-post-batch", {
-        body: { batchId: batch.id, block: obj.block, count: 1 },
+        body: { batchId: batch.id, block: obj.block, count: 1, overrides: overrides() },
       });
       if (error) {
         const ctx = (error as any).context;
@@ -196,7 +261,7 @@ export default function QuickCreate() {
       if (rows.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
       setPosts(rows.map((r: any) => mapRow(r, obj)));
       if (useKit) {
-        const next = { ...kit, niche, visualStyle: chosenStyle };
+        const next = { ...kit, niche, visualStyle: primaryStyle, colors: effectiveColors };
         saveBrandKit(next);
         setSavedKit(next);
       }
@@ -219,12 +284,12 @@ export default function QuickCreate() {
         theme: obj.theme,
         objective: [obj.label],
         tone: "profissional e próximo",
-        visualStyle: style || "auto",
-        brandImages: encodeBrandAssets({ logo: kit.logo, model: kit.model, colors: kit.colors }),
-        feedPattern: kit.colors.length ? kit.colors.join(", ") : "definido pela IA",
+        visualStyle: primaryStyle,
+        brandImages: brandAssets(),
+        feedPattern: effectiveColors.length ? effectiveColors.join(", ") : "definido pela IA",
         format,
       },
-      currentBlock: OBJETIVOS.findIndex((o) => o.id === objective) >= 0 ? 0 : 0,
+      currentBlock: 0,
     }));
     navigate("/create?from=quick");
   };
@@ -253,11 +318,11 @@ export default function QuickCreate() {
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         {posts.length === 0 ? (
-          <div className="glass rounded-3xl p-6 md:p-8 shadow-card space-y-7">
+          <div className="glass rounded-3xl p-5 sm:p-8 shadow-card space-y-8">
             <div>
               <h1 className="text-2xl font-bold text-foreground tracking-tight">O que vamos publicar hoje?</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Só o essencial — as regras profissionais de design (margens, respiro, hierarquia) já vão aplicadas.
+                Só o essencial — direção de arte, hierarquia, margens e respiro já vão aplicados automaticamente.
               </p>
             </div>
 
@@ -280,14 +345,21 @@ export default function QuickCreate() {
             </section>
 
             <section>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">3. Estilo visual</p>
-                <span className="text-[11px] text-muted-foreground">opcional — a IA escolhe</span>
+              <div className="flex items-center justify-between mb-3 gap-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Images className="w-3.5 h-3.5 text-primary" /> 3. Galeria de estilos
+                </p>
+                <span className="text-[11px] text-muted-foreground">opcional · mix de até 3</span>
               </div>
+              <StyleGallery value={styleMix} onChange={setStyleMix} max={3} />
+            </section>
+
+            <section>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">4. Formato</p>
               <div className="flex flex-wrap gap-2">
-                {ESTILOS.map((e) => (
-                  <button key={e.id} onClick={() => setStyle(style === e.id ? "" : e.id)} className={chipClass(style === e.id)}>
-                    <span className="mr-1">{e.icon}</span>{e.label}
+                {FORMATOS.map((f) => (
+                  <button key={f.id} onClick={() => setFormat(f.id)} className={chipClass(format === f.id)}>
+                    {f.label} <span className="font-normal opacity-70">{f.sub}</span>
                   </button>
                 ))}
               </div>
@@ -297,17 +369,20 @@ export default function QuickCreate() {
             <section className="rounded-2xl border border-border bg-card/60 overflow-hidden">
               <button
                 onClick={() => setShowAdvanced((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left"
+                className="w-full flex items-center justify-between px-4 py-3 text-left gap-3"
               >
                 <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <SlidersHorizontal className="w-4 h-4 text-primary" />
-                  Marca, logo, foto e cores (opcional)
+                  Marca, foto, textos e CTA
                 </span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground transition ${showAdvanced ? "rotate-180" : ""}`} />
+                <span className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">opcional</span>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition ${showAdvanced ? "rotate-180" : ""}`} />
+                </span>
               </button>
 
               {showAdvanced && (
-                <div className="px-4 pb-5 space-y-5 border-t border-border pt-4">
+                <div className="px-4 pb-5 space-y-6 border-t border-border pt-4">
                   <label className="flex items-center gap-3 text-sm font-medium text-foreground">
                     <input
                       type="checkbox"
@@ -328,15 +403,22 @@ export default function QuickCreate() {
                     />
                   </div>
 
+                  {/* Foto principal x Logo */}
                   <div className="grid grid-cols-2 gap-3">
-                    {(["logo", "model"] as const).map((t) => (
+                    {(["model", "logo"] as const).map((t) => (
                       <div key={t}>
-                        <p className="text-xs font-semibold text-muted-foreground mb-1.5">
-                          {t === "logo" ? "Logo" : "Sua foto / modelo"}
+                        <p className="text-xs font-semibold text-foreground mb-0.5 flex items-center gap-1.5">
+                          {t === "model" ? <User className="w-3.5 h-3.5 text-primary" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />}
+                          {t === "model" ? "Foto principal" : "Logo"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mb-1.5 leading-tight">
+                          {t === "model"
+                            ? "Personagem, modelo ou produto — o rosto/produto é preservado."
+                            : "Aplicada sem redesenhar, discreta e dentro das margens."}
                         </p>
                         {kit[t] ? (
                           <div className="relative rounded-xl overflow-hidden border border-border aspect-square bg-muted">
-                            <img src={kit[t] as string} alt={t} className="w-full h-full object-cover" />
+                            <img src={kit[t] as string} alt={t === "model" ? "Foto principal" : "Logo"} className="w-full h-full object-cover" />
                             <button
                               onClick={() => setKit((k) => ({ ...k, [t]: null }))}
                               className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 flex items-center justify-center"
@@ -360,66 +442,184 @@ export default function QuickCreate() {
                     <input ref={modelRef} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0], "model")} />
                   </div>
 
+                  {/* Referências de estilo (não são a foto principal) */}
                   <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-2">Paleta da marca</p>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {PALETAS.map((p) => {
-                        const active = p.colors.join() === kit.colors.join();
-                        return (
+                    <p className="text-xs font-semibold text-foreground mb-0.5">Referências de estilo (até 3)</p>
+                    <p className="text-[10px] text-muted-foreground mb-2 leading-tight">
+                      Diferente da foto principal: servem só de inspiração de estética, composição, luz, paleta e atmosfera — o layout nunca é copiado.
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {styleRefs.map((url, i) => (
+                        <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
+                          <img src={url} alt={`Referência ${i + 1}`} className="w-full h-full object-cover" />
                           <button
-                            key={p.label}
-                            onClick={() => setKit((k) => ({ ...k, colors: active ? [] : p.colors }))}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-semibold transition ${
-                              active ? "border-primary bg-primary/10 text-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                            onClick={() => setStyleRefs((r) => r.filter((_, idx) => idx !== i))}
+                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center"
+                            aria-label="Remover referência"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                      {styleRefs.length < 3 && (
+                        <button
+                          onClick={() => refsRef.current?.click()}
+                          className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/60 flex items-center justify-center text-muted-foreground"
+                          aria-label="Adicionar referência"
+                        >
+                          <ImagePlus className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                    <input ref={refsRef} type="file" accept="image/*" multiple hidden onChange={(e) => uploadRefs(e.target.files)} />
+                  </div>
+
+                  {/* Cores da marca */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2 gap-3">
+                      <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <Palette className="w-3.5 h-3.5 text-primary" /> Cores da marca
+                      </p>
+                      <div className="inline-flex rounded-full border border-border bg-muted/60 p-0.5">
+                        {(["auto", "manual"] as const).map((m) => (
+                          <button
+                            key={m}
+                            type="button"
+                            onClick={() => setColorMode(m)}
+                            className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
+                              colorMode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
                             }`}
                           >
-                            <span className="flex">
-                              {p.colors.map((c) => (
-                                <span key={c} className="w-3.5 h-3.5 rounded-full -ml-1 first:ml-0 border border-white/60" style={{ background: c }} />
-                              ))}
-                            </span>
-                            {p.label}
+                            {m === "auto" ? "Automático" : "Escolher"}
                           </button>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {[0, 1, 2].map((i) => (
-                        <input
-                          key={i}
-                          type="color"
-                          value={kit.colors[i] ?? "#7c3aed"}
-                          onChange={(e) => {
-                            const next = [...kit.colors];
-                            while (next.length < 3) next.push("#7c3aed");
-                            next[i] = e.target.value;
-                            setKit((k) => ({ ...k, colors: next }));
-                          }}
-                          className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer"
-                          aria-label={`Cor ${i + 1}`}
+
+                    {colorMode === "auto" ? (
+                      <p className="text-[11px] text-muted-foreground">
+                        A IA define a paleta ideal a partir do nicho e dos estilos selecionados.
+                      </p>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {PALETAS.map((p) => {
+                            const active = p.colors.join() === kit.colors.join();
+                            return (
+                              <button
+                                key={p.label}
+                                onClick={() => setKit((k) => ({ ...k, colors: active ? [] : p.colors }))}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-semibold transition ${
+                                  active ? "border-primary bg-primary/10 text-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                                }`}
+                              >
+                                <span className="flex">
+                                  {p.colors.map((c) => (
+                                    <span key={c} className="w-3.5 h-3.5 rounded-full -ml-1 first:ml-0 border border-white/60" style={{ background: c }} />
+                                  ))}
+                                </span>
+                                {p.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {[0, 1, 2].map((i) => (
+                            <input
+                              key={i}
+                              type="color"
+                              value={kit.colors[i] ?? "#7c3aed"}
+                              onChange={(e) => {
+                                const next = [...kit.colors];
+                                while (next.length < 3) next.push("#7c3aed");
+                                next[i] = e.target.value;
+                                setKit((k) => ({ ...k, colors: next }));
+                              }}
+                              className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer"
+                              aria-label={`Cor ${i + 1}`}
+                            />
+                          ))}
+                          {kit.colors.length > 0 && (
+                            <button onClick={() => setKit((k) => ({ ...k, colors: [] }))} className="text-xs text-muted-foreground underline">
+                              limpar cores
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Textos */}
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2 gap-3">
+                        <p className="text-xs font-semibold text-foreground">Título da arte</p>
+                        <ModeToggle value={titleMode} onChange={setTitleMode} />
+                      </div>
+                      {titleMode === "manual" ? (
+                        <Input
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="Máx. 6 palavras — 2 linhas na arte"
+                          className="rounded-xl"
                         />
-                      ))}
-                      {kit.colors.length > 0 && (
-                        <button onClick={() => setKit((k) => ({ ...k, colors: [] }))} className="text-xs text-muted-foreground underline">
-                          limpar cores
-                        </button>
+                      ) : (
+                        <p className="text-[11px] text-muted-foreground">A IA escreve o título com hierarquia e no máximo 2 linhas.</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2 gap-3">
+                        <p className="text-xs font-semibold text-foreground">Subtítulo</p>
+                        <ModeToggle value={subtitleMode} onChange={setSubtitleMode} />
+                      </div>
+                      {subtitleMode === "manual" ? (
+                        <Input
+                          value={subtitle}
+                          onChange={(e) => setSubtitle(e.target.value)}
+                          placeholder="Complemento curto — até 2 linhas"
+                          className="rounded-xl"
+                        />
+                      ) : (
+                        <p className="text-[11px] text-muted-foreground">A IA cria o apoio complementando o título.</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2 gap-3">
+                        <p className="text-xs font-semibold text-foreground">CTA (opcional)</p>
+                        <ModeToggle value={ctaMode} onChange={setCtaMode} />
+                      </div>
+                      {ctaMode === "manual" ? (
+                        <Input
+                          value={cta}
+                          onChange={(e) => setCta(e.target.value)}
+                          placeholder="Ex.: Agende sua avaliação"
+                          className="rounded-xl"
+                        />
+                      ) : (
+                        <p className="text-[11px] text-muted-foreground">A IA escolhe a chamada mais adequada ao objetivo.</p>
                       )}
                     </div>
                   </div>
 
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-2">Formato</p>
-                    <div className="flex flex-wrap gap-2">
-                      {FORMATOS.map((f) => (
-                        <button key={f.id} onClick={() => setFormat(f.id)} className={chipClass(format === f.id)}>{f.label}</button>
-                      ))}
+                  {/* Preparado para o futuro: chave própria de API */}
+                  <div className="rounded-xl border border-dashed border-border bg-muted/40 px-3.5 py-3 flex items-start gap-2.5">
+                    <KeyRound className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">
+                        Usar minha API <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-primary">em breve</span>
+                      </p>
+                      <p className="text-[11px] text-muted-foreground leading-tight">
+                        A opção “Minha própria chave de API” ficará disponível em Configurações. Hoje a geração usa a infraestrutura do Smart Post AI.
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
             </section>
 
-            <div className="pt-2 flex flex-col gap-2">
+            <div className="pt-1 flex flex-col gap-2">
               <Button
                 onClick={generate}
                 disabled={loading}
@@ -441,7 +641,7 @@ export default function QuickCreate() {
             </div>
           </div>
         ) : (
-          <div className="glass rounded-3xl p-6 md:p-8 shadow-card">
+          <div className="glass rounded-3xl p-5 sm:p-8 shadow-card">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h1 className="text-xl font-bold text-foreground tracking-tight">Seu post está pronto ✨</h1>
