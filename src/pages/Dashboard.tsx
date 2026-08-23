@@ -197,25 +197,45 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Main action: criar novo post */}
+          {/* Porta 1: Criação Rápida */}
           <button
-            onClick={() => navigate("/create")}
+            onClick={() => navigate("/rapido")}
             className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[hsl(258_70%_45%)] to-[hsl(275_75%_60%)] p-5 text-left text-white shadow-glow hover:shadow-[0_0_40px_hsl(258_70%_45%/0.5)] transition-all hover:-translate-y-0.5"
           >
             <div className="pointer-events-none absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10 blur-2xl" />
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shrink-0">
-                <Sparkles className="w-6 h-6" />
+                <Zap className="w-6 h-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-base">Criar novo post</p>
+                <p className="font-bold text-base">Criação Rápida</p>
                 <p className="text-xs text-white/75 mt-0.5">
-                  Wizard completo com IA — briefing, estilo e legenda
+                  3 escolhas e o post sai pronto — design profissional automático
                 </p>
               </div>
               <ArrowRight className="w-5 h-5 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
             </div>
           </button>
+
+          {/* Porta 2: Studio completo */}
+          <button
+            onClick={() => navigate("/create")}
+            className="group relative w-full overflow-hidden rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 p-5 text-left transition-all hover:-translate-y-0.5"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0">
+                <Sparkles className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-base text-foreground">Smart Post Studio</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Wizard completo com IA — briefing, estilo, blocos e legenda
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-primary opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            </div>
+          </button>
+
 
           {/* Secondary action: 7 days */}
           <button
