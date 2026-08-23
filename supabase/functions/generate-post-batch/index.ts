@@ -185,6 +185,9 @@ Intenções emocionais: ${block.intencoes.join(", ")}
 Template base obrigatório para o campo promptVisual (adapte ao nicho e substitua [PALETA DO CLIENTE] pelo padrão "${batch.feed_pattern}"):
 ${tema.prompt}
 
+${designRules}
+
+
 ## VIRAL HOOKS — escolha um padrão DIFERENTE para cada post
 1. "Eu nunca imaginei que [situação] poderia [resultado surpreendente]..."
 2. "O erro que [avatar] comete todo dia (e como parar agora)"
