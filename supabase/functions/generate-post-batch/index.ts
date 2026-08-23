@@ -402,3 +402,39 @@ function json(obj: unknown, status = 200) {
     status, headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+function generateImage(prompt: string, size: string) {
+  return fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "gpt-image-2",
+      prompt,
+      n: 1,
+      size,
+      quality: "medium",
+      output_format: "png",
+    }),
+  });
+}
+
+// Converte data URL ou URL pública em Blob para enviar ao images/edits
+async function toBlob(src: string): Promise<Blob | null> {
+  try {
+    if (src.startsWith("data:")) {
+      const [meta, b64] = src.split(",");
+      const mime = meta.match(/data:([^;]+)/)?.[1] ?? "image/png";
+      const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      return new Blob([bytes], { type: mime });
+    }
+    if (src.startsWith("http")) {
+      const r = await fetch(src);
+      if (!r.ok) return null;
+      return await r.blob();
+    }
+    return null;
+  } catch (e) {
+    console.error("toBlob failed", e);
+    return null;
+  }
+}
