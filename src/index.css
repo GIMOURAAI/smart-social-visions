@@ -86,7 +86,8 @@
   .spa-hairline { border-color: hsl(0 0% 100% / .1); }
   .spa-glow-ring { box-shadow: 0 0 0 1.5px hsl(var(--primary) / .55), 0 14px 40px -16px hsl(var(--primary) / .35); }
   .spa-ambient {
-    background:
+    background-color: hsl(var(--background));
+    background-image:
       radial-gradient(1100px 520px at 12% -10%, hsl(172 62% 45% / .14), transparent 65%),
       radial-gradient(900px 480px at 100% 0%, hsl(190 55% 45% / .1), transparent 62%),
       radial-gradient(900px 600px at 50% 115%, hsl(178 50% 40% / .09), transparent 66%);
