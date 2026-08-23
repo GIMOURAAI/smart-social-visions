@@ -67,7 +67,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20 px-4 py-10 flex items-center justify-center">
+    <div className="spa-dark spa-ambient min-h-screen bg-background text-foreground px-4 py-10 flex items-center justify-center">
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <p className="text-sm font-medium text-primary mb-2">Primeiro acesso</p>

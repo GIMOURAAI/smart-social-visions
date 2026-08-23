@@ -111,7 +111,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-soft">
+      <div className="spa-dark min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse text-primary font-semibold">
           Carregando...
         </div>
@@ -125,7 +125,7 @@ export default function Dashboard() {
   const planLabel = credits.planSlug ? credits.planSlug.charAt(0).toUpperCase() + credits.planSlug.slice(1) : "Free";
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
+    <div className="spa-dark spa-ambient min-h-screen bg-background text-foreground">
       {/* HERO escuro roxo */}
       <section className="relative overflow-hidden bg-gradient-hero text-white rounded-b-[2.5rem] shadow-glow">
         {/* glows decorativos */}

@@ -345,7 +345,7 @@ export default function Create() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-soft relative overflow-hidden">
+    <div className="spa-dark spa-ambient min-h-screen bg-background text-foreground relative overflow-hidden">
       <div className="pointer-events-none absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/20 blur-3xl" />
       <div className="pointer-events-none absolute top-1/2 -left-40 w-96 h-96 rounded-full bg-secondary/20 blur-3xl" />
 
