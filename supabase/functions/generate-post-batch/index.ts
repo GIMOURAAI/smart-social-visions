@@ -12,6 +12,7 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const SIZE_MAP: Record<string, "1024x1024" | "1024x1536" | "1536x1024"> = {
   "1:1": "1024x1024",
   "4:5": "1024x1536",
+  "3:4": "1024x1536",
   "9:16": "1024x1536",
   "16:9": "1536x1024",
 };
@@ -128,6 +129,7 @@ function parseBrandAssets(brandImages: unknown) {
 // === DESIGN SYSTEM obrigatório para toda arte gerada (modo rápido e Studio) ===
 const RATIO_BASE: Record<string, string> = {
   "4:5": "1080x1350 (base canvas)",
+  "3:4": "1080x1440 (proportionally adapted from the 1080x1350 base)",
   "1:1": "1080x1080 (proportionally adapted from the 1080x1350 base)",
   "9:16": "1080x1920 (proportionally adapted from the 1080x1350 base)",
   "16:9": "1920x1080 (proportionally adapted from the 1080x1350 base)",
@@ -153,7 +155,26 @@ ${assets.refs.length ? `- Style references provided by the user must be used ONL
 `;
 }
 
-function buildSystemPrompt(batch: any, blockKey: string, postCount: number): string {
+interface Overrides {
+  tituloArte?: string | null;
+  subtitulo?: string | null;
+  cta?: string | null;
+  styleMix?: string[];
+}
+
+function overrideRules(ov: Overrides): string {
+  const lines: string[] = [];
+  if (ov.tituloArte) lines.push(`- tituloArte: use EXATAMENTE este texto do usuário, sem reescrever: "${ov.tituloArte}"`);
+  if (ov.subtitulo) lines.push(`- subtitulo: use EXATAMENTE este texto do usuário, sem reescrever: "${ov.subtitulo}"`);
+  if (ov.cta) lines.push(`- cta: use EXATAMENTE esta chamada do usuário: "${ov.cta}"`);
+  if (ov.styleMix?.length) {
+    lines.push(`- Mix de referências de estilo escolhidas pelo usuário (${ov.styleMix.join(" + ")}): combine a estética, composição, iluminação, paleta e atmosfera destes estilos no promptVisual — sem copiar layout de nenhuma peça.`);
+  }
+  if (lines.length === 0) return "";
+  return `\n## ENTRADAS DO USUÁRIO (prioridade máxima)\n${lines.join("\n")}\nOs textos fornecidos pelo usuário são definitivos: o promptVisual deve compor a arte em torno deles respeitando a hierarquia e o limite de 2 linhas.\n`;
+}
+
+function buildSystemPrompt(batch: any, blockKey: string, postCount: number, ov: Overrides = {}): string {
   const block = POSTLAB_BLOCKS[blockKey] ?? POSTLAB_BLOCKS.dor;
   const tema = getTemaForNiche(batch.niche, batch.visual_style);
   const assets = parseBrandAssets(batch.brand_images);
@@ -186,7 +207,7 @@ Template base obrigatório para o campo promptVisual (adapte ao nicho e substitu
 ${tema.prompt}
 
 ${designRules}
-
+${overrideRules(ov)}
 
 ## VIRAL HOOKS — escolha um padrão DIFERENTE para cada post
 1. "Eu nunca imaginei que [situação] poderia [resultado surpreendente]..."
@@ -247,7 +268,10 @@ Deno.serve(async (req) => {
     if (!user) return json({ error: "Not authenticated" }, 401);
 
     const body = await req.json();
-    const { batchId, block, count } = body as { batchId: string; block: string; count: number };
+    const { batchId, block, count, overrides } = body as {
+      batchId: string; block: string; count: number; overrides?: Overrides;
+    };
+    const ov: Overrides = overrides ?? {};
     const blockKey = (block || "dor").toLowerCase();
     const postCount = Math.min(3, Math.max(1, Number(count) || 1));
 
@@ -264,7 +288,7 @@ Deno.serve(async (req) => {
     }
 
     // === GPT-4o com prompt PostLab completo ===
-    const systemPrompt = buildSystemPrompt(batch, blockKey, postCount);
+    const systemPrompt = buildSystemPrompt(batch, blockKey, postCount, ov);
     const blockName = (POSTLAB_BLOCKS[blockKey] ?? POSTLAB_BLOCKS.dor).name;
 
     const gptResp = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -291,6 +315,12 @@ Deno.serve(async (req) => {
     const parsed = JSON.parse(gptData.choices[0].message.content);
     const posts: PostJSON[] = parsed.posts ?? [];
     if (posts.length === 0) return json({ error: "No posts generated" }, 500);
+
+    for (const p of posts) {
+      if (ov.tituloArte) p.tituloArte = ov.tituloArte;
+      if (ov.subtitulo) p.subtitulo = ov.subtitulo;
+      if (ov.cta) p.cta = ov.cta;
+    }
 
     const size = SIZE_MAP[batch.format] ?? "1024x1024";
     const results: any[] = [];
