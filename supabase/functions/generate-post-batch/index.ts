@@ -108,9 +108,57 @@ function getTemaForNiche(niche: string, visualStyle: string) {
   return TEMAS["tema-01-saas"];
 }
 
+// === Assets da marca codificados em post_batches.brand_images ===
+// Convenção: "logo::<url|dataURL>", "model::<url|dataURL>", "color::#hex",
+// qualquer entrada sem prefixo é tratada como imagem de referência de estilo.
+function parseBrandAssets(brandImages: unknown) {
+  const list = Array.isArray(brandImages) ? (brandImages as string[]) : [];
+  const assets = { logo: null as string | null, model: null as string | null, colors: [] as string[], refs: [] as string[] };
+  for (const raw of list) {
+    if (typeof raw !== "string" || !raw) continue;
+    if (raw.startsWith("logo::")) assets.logo = raw.slice(6);
+    else if (raw.startsWith("model::")) assets.model = raw.slice(7);
+    else if (raw.startsWith("color::")) assets.colors.push(raw.slice(7));
+    else if (raw.startsWith("ref::")) assets.refs.push(raw.slice(5));
+    else assets.refs.push(raw);
+  }
+  return assets;
+}
+
+// === DESIGN SYSTEM obrigatório para toda arte gerada (modo rápido e Studio) ===
+const RATIO_BASE: Record<string, string> = {
+  "4:5": "1080x1350 (base canvas)",
+  "1:1": "1080x1080 (proportionally adapted from the 1080x1350 base)",
+  "9:16": "1080x1920 (proportionally adapted from the 1080x1350 base)",
+  "16:9": "1920x1080 (proportionally adapted from the 1080x1350 base)",
+};
+
+function designSystemRules(format: string, assets: ReturnType<typeof parseBrandAssets>, palette: string) {
+  const canvas = RATIO_BASE[format] ?? RATIO_BASE["4:5"];
+  const colorLine = assets.colors.length
+    ? `Brand palette (must dominate accents, typography highlights and light): ${assets.colors.join(", ")}.`
+    : `Color direction: ${palette || "choose a sophisticated palette coherent with the niche"}.`;
+  return `## DESIGN SYSTEM OBRIGATÓRIO (aplicar SEMPRE dentro de promptVisual, em inglês)
+Escreva o promptVisual já incorporando estas regras de composição — o usuário não configura pixels:
+- Canvas: ${canvas}. Reference grid based on 1080x1350.
+- Side breathing room: minimum 80–100 px. Top margin 90–120 px. Bottom margin 90–120 px.
+- Every essential element (headline, support text, icons, CTA, logo, important faces) strictly inside the safe area — nothing touching or bleeding off the edges.
+- Main headline: 70–90 px equivalent, max 2 lines. Support text/subtitle: 28–36 px, up to 2 lines. Icons/bullets: 24–30 px. CTA/badge: 24–30 px.
+- Preserve hierarchy, alignment, legibility and generous negative space. No visual clutter, no artificial frames or borders; full bleed imagery when the composition asks for it.
+- Editorial premium aesthetic: realistic, sophisticated, with depth, dimensional lighting and professional finishing.
+- ${colorLine}
+${assets.logo ? `- A brand logo will be composed into the art: reserve a clean, uncluttered corner area for it inside the safe margins. The logo must never dominate the composition (max ~10% of the canvas width).` : ""}
+${assets.model ? `- A reference photo of the brand's person/model is provided: preserve their facial identity, features and skin tone faithfully; place the face fully inside the safe area, never cropped by edges or covered by text.` : ""}
+${assets.refs.length ? `- Style references provided by the user must be used ONLY as inspiration for composition, hierarchy, atmosphere, typography, contrast, depth and finishing — never as a copy of the reference piece. The margin/safe-area system above always prevails over the reference.` : ""}
+`;
+}
+
 function buildSystemPrompt(batch: any, blockKey: string, postCount: number): string {
   const block = POSTLAB_BLOCKS[blockKey] ?? POSTLAB_BLOCKS.dor;
   const tema = getTemaForNiche(batch.niche, batch.visual_style);
+  const assets = parseBrandAssets(batch.brand_images);
+  const designRules = designSystemRules(batch.format, assets, batch.feed_pattern);
+
 
   return `Você é o POSTLAB AI — motor estratégico de conteúdo premium para Instagram brasileiro.
 Combina copywriting avançado, psicologia do consumidor e direção de arte cinematográfica.
