@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
-import model01 from "@/assets/entrepreneur/model01.jpg";
-import model02 from "@/assets/entrepreneur/model02.jpg";
-import model03 from "@/assets/entrepreneur/model03.jpg";
-import model04 from "@/assets/entrepreneur/model04.jpg";
-import model05 from "@/assets/entrepreneur/model05.jpg";
-import model06 from "@/assets/entrepreneur/model06.jpg";
-import model07 from "@/assets/entrepreneur/model07.jpg";
-import model08 from "@/assets/entrepreneur/model08.jpg";
-import model09 from "@/assets/entrepreneur/model09.jpg";
-import model10 from "@/assets/entrepreneur/model10.jpg";
+import ref01 from "@/assets/styles/ref01.webp.asset.json";
+import ref02 from "@/assets/styles/ref02.webp.asset.json";
+import ref03 from "@/assets/styles/ref03.webp.asset.json";
+import ref04 from "@/assets/styles/ref04.webp.asset.json";
+import ref05 from "@/assets/styles/ref05.webp.asset.json";
+import ref06 from "@/assets/styles/ref06.webp.asset.json";
+import ref07 from "@/assets/styles/ref07.webp.asset.json";
+import ref08 from "@/assets/styles/ref08.webp.asset.json";
+import ref09 from "@/assets/styles/ref09.webp.asset.json";
 
 export type StyleCategory = "empreendedorismo" | "esteticas";
 
@@ -27,23 +26,23 @@ export interface StylePreset {
 
 /**
  * Galeria de estilos premium.
- * - `Empreendedorismo`: os 10 modelos oficiais (imagens reais, sem gradiente abstrato).
+ * - `Empreendedorismo`: os modelos oficiais (imagens reais, sem gradiente abstrato).
  * - `Estéticas`: os TEMAs PostLab e direções de arte complementares (ids reconhecidos
  *   pela edge function `generate-post-batch`).
  * Seleção múltipla: até 3 referências que a IA mistura (estética, composição,
  * iluminação, paleta, atmosfera) — nunca copia layout.
  */
 export const STYLE_PRESETS: StylePreset[] = [
-  { id: "emp-01-glass-authority", label: "Glass Authority", desc: "Autoridade em vidro, luz difusa", category: "empreendedorismo", image: model01 },
-  { id: "emp-02-executive-orange", label: "Executive Orange", desc: "Executivo, âmbar quente", category: "empreendedorismo", image: model02 },
-  { id: "emp-03-blue-presence", label: "Blue Presence", desc: "Presença corporativa em azul", category: "empreendedorismo", image: model03 },
-  { id: "emp-04-golden-growth", label: "Golden Growth", desc: "Crescimento, hora dourada", category: "empreendedorismo", image: model04 },
-  { id: "emp-05-red-authority", label: "Red Authority", desc: "Contraste forte, decisão", category: "empreendedorismo", image: model05 },
-  { id: "emp-06-time-editorial", label: "Time Editorial", desc: "Capa de revista, sobriedade", category: "empreendedorismo", image: model06 },
-  { id: "emp-07-lifestyle-impact", label: "Lifestyle Impact", desc: "Rotina real, movimento", category: "empreendedorismo", image: model07 },
-  { id: "emp-08-swiss-personal-brand", label: "Swiss Personal Brand", desc: "Grid suíço, tipografia limpa", category: "empreendedorismo", image: model08 },
-  { id: "emp-09-black-gold-luxury", label: "Black Gold Luxury", desc: "Preto e ouro, prestígio", category: "empreendedorismo", image: model09 },
-  { id: "emp-10-cinematic-value", label: "Cinematic Value", desc: "Cinema, profundidade, drama", category: "empreendedorismo", image: model10 },
+  { id: "emp-01-glass-authority", label: "Glass Authority", desc: "Vidro azul, tipografia gigante ao fundo, luz difusa", category: "empreendedorismo", image: ref01.url },
+  { id: "emp-02-black-gold", label: "Black & Gold", desc: "Preto profundo, âmbar dourado, destaque em bloco", category: "empreendedorismo", image: ref02.url },
+  { id: "emp-03-blue-presence", label: "Blue Presence", desc: "Cidade noturna, azul cinematográfico, presença", category: "empreendedorismo", image: ref03.url },
+  { id: "emp-04-golden-growth", label: "Golden Growth", desc: "Escada dourada, hora azul, crescimento", category: "empreendedorismo", image: ref04.url },
+  { id: "emp-05-red-authority", label: "Red Authority", desc: "Laranja/vermelho, bullets, autoridade e decisão", category: "empreendedorismo", image: ref05.url },
+  { id: "emp-06-lifestyle-impact", label: "Lifestyle Impact", desc: "Luz natural, hora dourada, headline no topo", category: "empreendedorismo", image: ref06.url },
+  { id: "emp-07-swiss-personal-brand", label: "Swiss Personal Brand", desc: "Fundo claro, grid suíço, acento laranja", category: "empreendedorismo", image: ref07.url },
+  { id: "emp-08-black-gold-luxury", label: "Black Gold Luxury", desc: "Serifada dourada, prestígio, fundo preto", category: "empreendedorismo", image: ref08.url },
+  { id: "emp-09-cinematic-value", label: "Cinematic Value", desc: "Cena cinematográfica, profundidade e drama", category: "empreendedorismo", image: ref09.url },
+
 
   { id: "tema-01-saas", label: "Clean Premium", desc: "Minimalismo sofisticado, luz de janela, vidro", category: "esteticas", colors: ["#0f172a", "#7c3aed", "#e9d5ff"], icon: "💼" },
   { id: "tema-02-moda", label: "Luxo Editorial", desc: "Editorial fashion, dourado, mármore", category: "esteticas", colors: ["#fdf4ec", "#c9a84c", "#1a1a2e"], icon: "👗" },
