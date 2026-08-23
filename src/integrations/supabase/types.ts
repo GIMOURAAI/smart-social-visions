@@ -208,6 +208,39 @@ export type Database = {
         }
         Relationships: []
       }
+      style_references: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_path: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_path: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_path?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           created_at: string
