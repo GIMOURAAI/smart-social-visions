@@ -160,6 +160,8 @@ export default function QuickCreate() {
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<GeneratedPost[]>([]);
   const [batchId, setBatchId] = useState<string | null>(null);
+  const [tab, setTab] = useState<"galeria" | "resultado">("galeria");
+
 
   const logoRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
