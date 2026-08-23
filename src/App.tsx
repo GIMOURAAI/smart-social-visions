@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Create from "./pages/Create";
+import QuickCreate from "./pages/QuickCreate";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import AdminLanding from "./pages/AdminLanding";
