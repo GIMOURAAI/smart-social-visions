@@ -1,32 +1,67 @@
+import { useState } from "react";
 import { Check } from "lucide-react";
+import model01 from "@/assets/entrepreneur/model01.jpg";
+import model02 from "@/assets/entrepreneur/model02.jpg";
+import model03 from "@/assets/entrepreneur/model03.jpg";
+import model04 from "@/assets/entrepreneur/model04.jpg";
+import model05 from "@/assets/entrepreneur/model05.jpg";
+import model06 from "@/assets/entrepreneur/model06.jpg";
+import model07 from "@/assets/entrepreneur/model07.jpg";
+import model08 from "@/assets/entrepreneur/model08.jpg";
+import model09 from "@/assets/entrepreneur/model09.jpg";
+import model10 from "@/assets/entrepreneur/model10.jpg";
+
+export type StyleCategory = "empreendedorismo" | "esteticas";
 
 export interface StylePreset {
   id: string;
   label: string;
   desc: string;
-  colors: string[];
-  icon: string;
+  category: StyleCategory;
+  /** Imagem real do modelo (categoria Empreendedorismo) */
+  image?: string;
+  /** Fallback visual para estéticas sem imagem de referência */
+  colors?: string[];
+  icon?: string;
 }
 
 /**
- * Galeria de estilos premium. Os 9 TEMAs PostLab (mesmos ids reconhecidos pela
- * edge function `generate-post-batch`) + estéticas complementares usadas apenas
- * como direção de arte. Seleção múltipla: até 3 referências que a IA mistura
- * (estética, composição, iluminação, paleta, atmosfera) — nunca copia layout.
+ * Galeria de estilos premium.
+ * - `Empreendedorismo`: os 10 modelos oficiais (imagens reais, sem gradiente abstrato).
+ * - `Estéticas`: os TEMAs PostLab e direções de arte complementares (ids reconhecidos
+ *   pela edge function `generate-post-batch`).
+ * Seleção múltipla: até 3 referências que a IA mistura (estética, composição,
+ * iluminação, paleta, atmosfera) — nunca copia layout.
  */
 export const STYLE_PRESETS: StylePreset[] = [
-  { id: "tema-01-saas", label: "Clean Premium", desc: "Minimalismo sofisticado, luz de janela, vidro", colors: ["#0f172a", "#7c3aed", "#e9d5ff"], icon: "💼" },
-  { id: "tema-02-moda", label: "Luxo Editorial", desc: "Editorial fashion, dourado, mármore", colors: ["#fdf4ec", "#c9a84c", "#1a1a2e"], icon: "👗" },
-  { id: "tema-03-tech", label: "Dark Neon", desc: "Cinematográfico escuro, neon, alto contraste", colors: ["#000000", "#00e5a0", "#8b5cf6"], icon: "⚡" },
-  { id: "tema-04-resultado", label: "Prova & Resultado", desc: "Claro, otimista, números em destaque", colors: ["#ffffff", "#2563eb", "#16a34a"], icon: "🏆" },
-  { id: "tema-05-emocional", label: "Emocional Warm", desc: "Íntimo, luz dourada, tom nostálgico", colors: ["#fdf6f0", "#e8a87c", "#8b6057"], icon: "💛" },
-  { id: "tema-06-saude", label: "Clínico Confiável", desc: "Branco limpo, azul, autoridade técnica", colors: ["#ffffff", "#0ea5e9", "#0c4a6e"], icon: "🩺" },
-  { id: "tema-07-imoveis", label: "Prestígio Imóveis", desc: "Arquitetura, ouro, hora dourada", colors: ["#1a1a1a", "#c9a84c", "#f5f0e8"], icon: "🏛️" },
-  { id: "tema-08-juridico", label: "Autoridade Séria", desc: "Escuro, madeira, tipografia serifada", colors: ["#0f172a", "#b8860b", "#f8fafc"], icon: "⚖️" },
-  { id: "tema-09-influencer", label: "Personal Brand", desc: "Vibrante, movimento, cor saturada", colors: ["#ff6b9d", "#c4a7e7", "#f5d020"], icon: "✨" },
-  { id: "estetica-glass", label: "Glassmorphism", desc: "Camadas translúcidas, blur, profundidade", colors: ["#111827", "#38bdf8", "#f1f5f9"], icon: "🧊" },
-  { id: "estetica-tipografia", label: "Tipografia Forte", desc: "Headline gigante, poucos elementos", colors: ["#0a0a0a", "#f5f5f5", "#ef4444"], icon: "🔠" },
-  { id: "estetica-cinematic", label: "Cinematic Grade", desc: "Teal-orange, grão de filme, drama", colors: ["#0b1a1f", "#e07b39", "#7dd3c0"], icon: "🎬" },
+  { id: "emp-01-glass-authority", label: "Glass Authority", desc: "Autoridade em vidro, luz difusa", category: "empreendedorismo", image: model01 },
+  { id: "emp-02-executive-orange", label: "Executive Orange", desc: "Executivo, âmbar quente", category: "empreendedorismo", image: model02 },
+  { id: "emp-03-blue-presence", label: "Blue Presence", desc: "Presença corporativa em azul", category: "empreendedorismo", image: model03 },
+  { id: "emp-04-golden-growth", label: "Golden Growth", desc: "Crescimento, hora dourada", category: "empreendedorismo", image: model04 },
+  { id: "emp-05-red-authority", label: "Red Authority", desc: "Contraste forte, decisão", category: "empreendedorismo", image: model05 },
+  { id: "emp-06-time-editorial", label: "Time Editorial", desc: "Capa de revista, sobriedade", category: "empreendedorismo", image: model06 },
+  { id: "emp-07-lifestyle-impact", label: "Lifestyle Impact", desc: "Rotina real, movimento", category: "empreendedorismo", image: model07 },
+  { id: "emp-08-swiss-personal-brand", label: "Swiss Personal Brand", desc: "Grid suíço, tipografia limpa", category: "empreendedorismo", image: model08 },
+  { id: "emp-09-black-gold-luxury", label: "Black Gold Luxury", desc: "Preto e ouro, prestígio", category: "empreendedorismo", image: model09 },
+  { id: "emp-10-cinematic-value", label: "Cinematic Value", desc: "Cinema, profundidade, drama", category: "empreendedorismo", image: model10 },
+
+  { id: "tema-01-saas", label: "Clean Premium", desc: "Minimalismo sofisticado, luz de janela, vidro", category: "esteticas", colors: ["#0f172a", "#7c3aed", "#e9d5ff"], icon: "💼" },
+  { id: "tema-02-moda", label: "Luxo Editorial", desc: "Editorial fashion, dourado, mármore", category: "esteticas", colors: ["#fdf4ec", "#c9a84c", "#1a1a2e"], icon: "👗" },
+  { id: "tema-03-tech", label: "Dark Neon", desc: "Cinematográfico escuro, neon, alto contraste", category: "esteticas", colors: ["#000000", "#00e5a0", "#8b5cf6"], icon: "⚡" },
+  { id: "tema-04-resultado", label: "Prova & Resultado", desc: "Claro, otimista, números em destaque", category: "esteticas", colors: ["#ffffff", "#2563eb", "#16a34a"], icon: "🏆" },
+  { id: "tema-05-emocional", label: "Emocional Warm", desc: "Íntimo, luz dourada, tom nostálgico", category: "esteticas", colors: ["#fdf6f0", "#e8a87c", "#8b6057"], icon: "💛" },
+  { id: "tema-06-saude", label: "Clínico Confiável", desc: "Branco limpo, azul, autoridade técnica", category: "esteticas", colors: ["#ffffff", "#0ea5e9", "#0c4a6e"], icon: "🩺" },
+  { id: "tema-07-imoveis", label: "Prestígio Imóveis", desc: "Arquitetura, ouro, hora dourada", category: "esteticas", colors: ["#1a1a1a", "#c9a84c", "#f5f0e8"], icon: "🏛️" },
+  { id: "tema-08-juridico", label: "Autoridade Séria", desc: "Escuro, madeira, tipografia serifada", category: "esteticas", colors: ["#0f172a", "#b8860b", "#f8fafc"], icon: "⚖️" },
+  { id: "tema-09-influencer", label: "Personal Brand", desc: "Vibrante, movimento, cor saturada", category: "esteticas", colors: ["#ff6b9d", "#c4a7e7", "#f5d020"], icon: "✨" },
+  { id: "estetica-glass", label: "Glassmorphism", desc: "Camadas translúcidas, blur, profundidade", category: "esteticas", colors: ["#111827", "#38bdf8", "#f1f5f9"], icon: "🧊" },
+  { id: "estetica-tipografia", label: "Tipografia Forte", desc: "Headline gigante, poucos elementos", category: "esteticas", colors: ["#0a0a0a", "#f5f5f5", "#ef4444"], icon: "🔠" },
+  { id: "estetica-cinematic", label: "Cinematic Grade", desc: "Teal-orange, grão de filme, drama", category: "esteticas", colors: ["#0b1a1f", "#e07b39", "#7dd3c0"], icon: "🎬" },
+];
+
+const TABS: { id: StyleCategory; label: string }[] = [
+  { id: "empreendedorismo", label: "Empreendedorismo" },
+  { id: "esteticas", label: "Estéticas" },
 ];
 
 interface Props {
@@ -37,15 +72,34 @@ interface Props {
 }
 
 export function StyleGallery({ value, onChange, max = 3 }: Props) {
+  const [tab, setTab] = useState<StyleCategory>("empreendedorismo");
+
   const toggle = (id: string) => {
     if (value.includes(id)) onChange(value.filter((v) => v !== id));
     else if (value.length < max) onChange([...value, id]);
   };
 
+  const items = STYLE_PRESETS.filter((s) => s.category === tab);
+
   return (
     <div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-        {STYLE_PRESETS.map((s) => {
+      <div className="inline-flex rounded-full spa-panel p-0.5 mb-3">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`px-3.5 py-1.5 rounded-full text-[11px] font-bold transition ${
+              tab === t.id ? "bg-primary/20 text-foreground spa-glow-ring" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+        {items.map((s) => {
           const active = value.includes(s.id);
           const disabled = !active && value.length >= max;
           return (
@@ -55,23 +109,41 @@ export function StyleGallery({ value, onChange, max = 3 }: Props) {
               onClick={() => toggle(s.id)}
               aria-pressed={active}
               disabled={disabled}
-              className={`group relative overflow-hidden rounded-2xl border text-left transition-all ${
-                active
-                  ? "border-primary shadow-glow ring-1 ring-primary/40"
-                  : "border-border hover:border-primary/50 hover:-translate-y-0.5"
+              title={s.desc}
+              className={`group relative overflow-hidden rounded-2xl text-left transition-all spa-panel ${
+                active ? "spa-glow-ring" : "hover:border-primary/40 hover:-translate-y-0.5"
               } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
             >
-              <div
-                className="h-16 w-full"
-                style={{ background: `linear-gradient(135deg, ${s.colors[0]}, ${s.colors[1]} 55%, ${s.colors[2]})` }}
-              />
-              <div className="p-2.5 bg-card">
-                <p className="text-[11px] font-bold text-foreground leading-tight flex items-center gap-1">
-                  <span>{s.icon}</span>
-                  <span className="truncate">{s.label}</span>
-                </p>
-                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 line-clamp-2">{s.desc}</p>
-              </div>
+              {s.image ? (
+                <div className="relative aspect-[4/5] w-full overflow-hidden">
+                  <img
+                    src={s.image}
+                    alt={`Modelo ${s.label} — referência de estilo de empreendedorismo`}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/25 to-transparent" />
+                  <p className="absolute bottom-2 left-2.5 right-2.5 text-[10px] font-semibold text-foreground/85 leading-tight truncate">
+                    {s.label}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div
+                    className="h-16 w-full"
+                    style={{
+                      background: `linear-gradient(135deg, ${s.colors?.[0]}, ${s.colors?.[1]} 55%, ${s.colors?.[2]})`,
+                    }}
+                  />
+                  <div className="p-2.5">
+                    <p className="text-[11px] font-bold text-foreground leading-tight flex items-center gap-1">
+                      <span>{s.icon}</span>
+                      <span className="truncate">{s.label}</span>
+                    </p>
+                    <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 line-clamp-2">{s.desc}</p>
+                  </div>
+                </>
+              )}
               {active && (
                 <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                   <Check className="w-3 h-3 text-primary-foreground" />
@@ -81,6 +153,7 @@ export function StyleGallery({ value, onChange, max = 3 }: Props) {
           );
         })}
       </div>
+
       <p className="text-[11px] text-muted-foreground mt-2.5">
         {value.length === 0
           ? "Nenhum estilo escolhido — a IA define a direção de arte pelo seu nicho."
