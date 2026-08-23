@@ -13,6 +13,7 @@ import {
   CalendarDays,
   Trash2,
   Copy,
+  Zap,
 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { useCredits } from "@/hooks/useCredits";
