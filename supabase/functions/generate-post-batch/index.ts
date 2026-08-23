@@ -108,9 +108,57 @@ function getTemaForNiche(niche: string, visualStyle: string) {
   return TEMAS["tema-01-saas"];
 }
 
+// === Assets da marca codificados em post_batches.brand_images ===
+// Convenção: "logo::<url|dataURL>", "model::<url|dataURL>", "color::#hex",
+// qualquer entrada sem prefixo é tratada como imagem de referência de estilo.
+function parseBrandAssets(brandImages: unknown) {
+  const list = Array.isArray(brandImages) ? (brandImages as string[]) : [];
+  const assets = { logo: null as string | null, model: null as string | null, colors: [] as string[], refs: [] as string[] };
+  for (const raw of list) {
+    if (typeof raw !== "string" || !raw) continue;
+    if (raw.startsWith("logo::")) assets.logo = raw.slice(6);
+    else if (raw.startsWith("model::")) assets.model = raw.slice(7);
+    else if (raw.startsWith("color::")) assets.colors.push(raw.slice(7));
+    else if (raw.startsWith("ref::")) assets.refs.push(raw.slice(5));
+    else assets.refs.push(raw);
+  }
+  return assets;
+}
+
+// === DESIGN SYSTEM obrigatório para toda arte gerada (modo rápido e Studio) ===
+const RATIO_BASE: Record<string, string> = {
+  "4:5": "1080x1350 (base canvas)",
+  "1:1": "1080x1080 (proportionally adapted from the 1080x1350 base)",
+  "9:16": "1080x1920 (proportionally adapted from the 1080x1350 base)",
+  "16:9": "1920x1080 (proportionally adapted from the 1080x1350 base)",
+};
+
+function designSystemRules(format: string, assets: ReturnType<typeof parseBrandAssets>, palette: string) {
+  const canvas = RATIO_BASE[format] ?? RATIO_BASE["4:5"];
+  const colorLine = assets.colors.length
+    ? `Brand palette (must dominate accents, typography highlights and light): ${assets.colors.join(", ")}.`
+    : `Color direction: ${palette || "choose a sophisticated palette coherent with the niche"}.`;
+  return `## DESIGN SYSTEM OBRIGATÓRIO (aplicar SEMPRE dentro de promptVisual, em inglês)
+Escreva o promptVisual já incorporando estas regras de composição — o usuário não configura pixels:
+- Canvas: ${canvas}. Reference grid based on 1080x1350.
+- Side breathing room: minimum 80–100 px. Top margin 90–120 px. Bottom margin 90–120 px.
+- Every essential element (headline, support text, icons, CTA, logo, important faces) strictly inside the safe area — nothing touching or bleeding off the edges.
+- Main headline: 70–90 px equivalent, max 2 lines. Support text/subtitle: 28–36 px, up to 2 lines. Icons/bullets: 24–30 px. CTA/badge: 24–30 px.
+- Preserve hierarchy, alignment, legibility and generous negative space. No visual clutter, no artificial frames or borders; full bleed imagery when the composition asks for it.
+- Editorial premium aesthetic: realistic, sophisticated, with depth, dimensional lighting and professional finishing.
+- ${colorLine}
+${assets.logo ? `- A brand logo will be composed into the art: reserve a clean, uncluttered corner area for it inside the safe margins. The logo must never dominate the composition (max ~10% of the canvas width).` : ""}
+${assets.model ? `- A reference photo of the brand's person/model is provided: preserve their facial identity, features and skin tone faithfully; place the face fully inside the safe area, never cropped by edges or covered by text.` : ""}
+${assets.refs.length ? `- Style references provided by the user must be used ONLY as inspiration for composition, hierarchy, atmosphere, typography, contrast, depth and finishing — never as a copy of the reference piece. The margin/safe-area system above always prevails over the reference.` : ""}
+`;
+}
+
 function buildSystemPrompt(batch: any, blockKey: string, postCount: number): string {
   const block = POSTLAB_BLOCKS[blockKey] ?? POSTLAB_BLOCKS.dor;
   const tema = getTemaForNiche(batch.niche, batch.visual_style);
+  const assets = parseBrandAssets(batch.brand_images);
+  const designRules = designSystemRules(batch.format, assets, batch.feed_pattern);
+
 
   return `Você é o POSTLAB AI — motor estratégico de conteúdo premium para Instagram brasileiro.
 Combina copywriting avançado, psicologia do consumidor e direção de arte cinematográfica.
@@ -136,6 +184,9 @@ Intenções emocionais: ${block.intencoes.join(", ")}
 ## ESTILO VISUAL — ${tema.name}
 Template base obrigatório para o campo promptVisual (adapte ao nicho e substitua [PALETA DO CLIENTE] pelo padrão "${batch.feed_pattern}"):
 ${tema.prompt}
+
+${designRules}
+
 
 ## VIRAL HOOKS — escolha um padrão DIFERENTE para cada post
 1. "Eu nunca imaginei que [situação] poderia [resultado surpreendente]..."
@@ -243,6 +294,9 @@ Deno.serve(async (req) => {
 
     const size = SIZE_MAP[batch.format] ?? "1024x1024";
     const results: any[] = [];
+    const assets = parseBrandAssets(batch.brand_images);
+    const refImages = [assets.model, assets.logo, ...assets.refs].filter(Boolean).slice(0, 4) as string[];
+    const promptSuffix = ` Composition system (mandatory): base 1080x1350 grid adapted to ${batch.format}; side breathing room 80-100px, top margin 90-120px, bottom margin 90-120px; all text, icons, CTA, logo and faces strictly inside the safe area, never touching the edges; headline 70-90px max 2 lines, subtitle 28-36px, icons 24-30px, CTA 24-30px; strong hierarchy, clean alignment, generous negative space, no clutter, no artificial borders, full bleed imagery, editorial premium realistic finishing with depth.${assets.colors.length ? ` Brand palette: ${assets.colors.join(", ")}.` : ""}${assets.logo ? " Place the provided brand logo discreetly in a corner inside the safe margins, never dominating the composition." : ""}${assets.model ? " Preserve faithfully the facial identity and features of the person in the provided reference photo." : ""}${assets.refs.length ? " Use the additional reference images only as inspiration for composition, atmosphere, typography and finishing — never copy them." : ""}`;
 
     // === GPT Image 2 + upload + persist + crédito ===
     for (let i = 0; i < posts.length; i++) {
@@ -250,18 +304,33 @@ Deno.serve(async (req) => {
       let imageUrl: string | null = null;
 
       try {
-        const imgResp = await fetch("https://api.openai.com/v1/images/generations", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "gpt-image-2",
-            prompt: p.promptVisual,
-            n: 1,
-            size,
-            quality: "medium",
-            output_format: "png",
-          }),
-        });
+        const fullPrompt = `${p.promptVisual}${promptSuffix}`;
+        let imgResp: Response;
+
+        if (refImages.length > 0) {
+          // Com logo / foto do modelo / referências → images/edits (multipart)
+          const form = new FormData();
+          form.append("model", "gpt-image-2");
+          form.append("prompt", fullPrompt);
+          form.append("size", size);
+          form.append("quality", "medium");
+          for (let r = 0; r < refImages.length; r++) {
+            const blob = await toBlob(refImages[r]);
+            if (blob) form.append("image[]", blob, `ref-${r}.png`);
+          }
+          imgResp = await fetch("https://api.openai.com/v1/images/edits", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
+            body: form,
+          });
+          if (!imgResp.ok) {
+            console.error("images/edits falhou, caindo para generations", await imgResp.text());
+            imgResp = await generateImage(fullPrompt, size);
+          }
+        } else {
+          imgResp = await generateImage(fullPrompt, size);
+        }
+
         if (imgResp.ok) {
           const imgData = await imgResp.json();
           const b64 = imgData.data?.[0]?.b64_json;
@@ -332,4 +401,40 @@ function json(obj: unknown, status = 200) {
   return new Response(JSON.stringify(obj), {
     status, headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function generateImage(prompt: string, size: string) {
+  return fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "gpt-image-2",
+      prompt,
+      n: 1,
+      size,
+      quality: "medium",
+      output_format: "png",
+    }),
+  });
+}
+
+// Converte data URL ou URL pública em Blob para enviar ao images/edits
+async function toBlob(src: string): Promise<Blob | null> {
+  try {
+    if (src.startsWith("data:")) {
+      const [meta, b64] = src.split(",");
+      const mime = meta.match(/data:([^;]+)/)?.[1] ?? "image/png";
+      const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      return new Blob([bytes], { type: mime });
+    }
+    if (src.startsWith("http")) {
+      const r = await fetch(src);
+      if (!r.ok) return null;
+      return await r.blob();
+    }
+    return null;
+  } catch (e) {
+    console.error("toBlob failed", e);
+    return null;
+  }
 }

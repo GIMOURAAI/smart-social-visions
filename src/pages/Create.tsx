@@ -124,6 +124,33 @@ export default function Create() {
     })();
   }, [navigate]);
 
+  // Handoff da Criação Rápida → Studio completo (mesma criação, fluxo avançado)
+  useEffect(() => {
+    if (searchParams.get("from") !== "quick") return;
+    const raw = sessionStorage.getItem("spa_studio_handoff");
+    if (!raw) return;
+    sessionStorage.removeItem("spa_studio_handoff");
+    try {
+      const h = JSON.parse(raw);
+      const posts: GeneratedPost[] = Array.isArray(h.posts) ? h.posts : [];
+      if (h.batchId) setBatchId(h.batchId);
+      setWizardData((prev) => ({
+        ...prev,
+        ...(h.wizard ?? {}),
+        quantity: Math.max(prev.quantity, posts.length),
+        posts,
+        allPosts: posts,
+        currentPostIndex: 0,
+        currentBlock: 0,
+        phase: "blocks",
+      }));
+      if (posts.length > 0) setStep(7);
+    } catch {
+      /* handoff inválido — segue no wizard normal */
+    }
+  }, [searchParams]);
+
+
   const update = (d: Partial<WizardData>) =>
     setWizardData((prev) => ({ ...prev, ...d }));
 

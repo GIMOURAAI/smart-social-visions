@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Create from "./pages/Create";
+import QuickCreate from "./pages/QuickCreate";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import AdminLanding from "./pages/AdminLanding";
@@ -30,6 +31,8 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create" element={<Create />} />
+          <Route path="/rapido" element={<QuickCreate />} />
+          <Route path="/quick" element={<QuickCreate />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/admin/landing" element={<AdminLanding />} />
           <Route path="/gi-checkout-7f4c9e" element={<GiPrivateLanding />} />
