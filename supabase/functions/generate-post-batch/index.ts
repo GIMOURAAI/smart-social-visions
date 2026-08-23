@@ -160,6 +160,38 @@ interface Overrides {
   subtitulo?: string | null;
   cta?: string | null;
   styleMix?: string[];
+  subjectPosition?: "auto" | "left" | "center" | "right";
+  textSpace?: "auto" | "top" | "bottom" | "left" | "right" | "none";
+}
+
+const SUBJECT_POSITION_RULES: Record<string, string> = {
+  left: "Place the main subject/product anchored on the LEFT third of the frame (rule of thirds), facing/leaning into the open space.",
+  center: "Place the main subject/product CENTERED on the vertical axis, symmetrical and frontal.",
+  right: "Place the main subject/product anchored on the RIGHT third of the frame (rule of thirds), facing/leaning into the open space.",
+};
+
+const TEXT_SPACE_RULES: Record<string, string> = {
+  top: "Reserve a clean, uncluttered TOP band of the canvas for the typography — keep it low in detail and contrast so the headline and subtitle stay perfectly legible inside the safe area.",
+  bottom: "Reserve a clean, uncluttered BOTTOM band of the canvas for the typography — keep it low in detail and contrast so the headline, subtitle and CTA stay perfectly legible inside the safe area.",
+  left: "Reserve a clean, uncluttered LEFT column of the canvas for the typography — generous negative space, low detail, so text stays legible inside the safe area.",
+  right: "Reserve a clean, uncluttered RIGHT column of the canvas for the typography — generous negative space, low detail, so text stays legible inside the safe area.",
+  none: "Do NOT reserve a dedicated typography area: build a full-bleed image-led composition where any minimal text still sits comfortably inside the safe area with natural breathing room.",
+};
+
+function compositionRules(ov: Overrides): string {
+  const lines: string[] = [];
+  const sp = ov.subjectPosition && ov.subjectPosition !== "auto" ? SUBJECT_POSITION_RULES[ov.subjectPosition] : null;
+  const ts = ov.textSpace && ov.textSpace !== "auto" ? TEXT_SPACE_RULES[ov.textSpace] : null;
+  if (sp) lines.push(`- ${sp}`);
+  if (ts) lines.push(`- ${ts}`);
+  if (!lines.length) return "";
+  return `\n## COMPOSIÇÃO DEFINIDA PELO USUÁRIO (obrigatória no promptVisual, em inglês)\n${lines.join("\n")}\nEstas escolhas de composição são obrigatórias, mas NUNCA sobrepõem o sistema de margens e safe area acima.\n`;
+}
+
+function compositionPromptSuffix(ov: Overrides): string {
+  const sp = ov.subjectPosition && ov.subjectPosition !== "auto" ? SUBJECT_POSITION_RULES[ov.subjectPosition] : null;
+  const ts = ov.textSpace && ov.textSpace !== "auto" ? TEXT_SPACE_RULES[ov.textSpace] : null;
+  return `${sp ? ` ${sp}` : ""}${ts ? ` ${ts}` : ""}`;
 }
 
 function overrideRules(ov: Overrides): string {
@@ -208,6 +240,7 @@ ${tema.prompt}
 
 ${designRules}
 ${overrideRules(ov)}
+${compositionRules(ov)}
 
 ## VIRAL HOOKS — escolha um padrão DIFERENTE para cada post
 1. "Eu nunca imaginei que [situação] poderia [resultado surpreendente]..."
@@ -326,7 +359,7 @@ Deno.serve(async (req) => {
     const results: any[] = [];
     const assets = parseBrandAssets(batch.brand_images);
     const refImages = [assets.model, assets.logo, ...assets.refs].filter(Boolean).slice(0, 4) as string[];
-    const promptSuffix = ` Composition system (mandatory): base 1080x1350 grid adapted to ${batch.format}; side breathing room 80-100px, top margin 90-120px, bottom margin 90-120px; all text, icons, CTA, logo and faces strictly inside the safe area, never touching the edges; headline 70-90px max 2 lines, subtitle 28-36px, icons 24-30px, CTA 24-30px; strong hierarchy, clean alignment, generous negative space, no clutter, no artificial borders, full bleed imagery, editorial premium realistic finishing with depth.${assets.colors.length ? ` Brand palette: ${assets.colors.join(", ")}.` : ""}${assets.logo ? " Place the provided brand logo discreetly in a corner inside the safe margins, never dominating the composition." : ""}${assets.model ? " Preserve faithfully the facial identity and features of the person in the provided reference photo." : ""}${assets.refs.length ? " Use the additional reference images only as inspiration for composition, atmosphere, typography and finishing — never copy them." : ""}`;
+    const promptSuffix = ` Composition system (mandatory): base 1080x1350 grid adapted to ${batch.format}; side breathing room 80-100px, top margin 90-120px, bottom margin 90-120px; all text, icons, CTA, logo and faces strictly inside the safe area, never touching the edges; headline 70-90px max 2 lines, subtitle 28-36px, icons 24-30px, CTA 24-30px; strong hierarchy, clean alignment, generous negative space, no clutter, no artificial borders, full bleed imagery, editorial premium realistic finishing with depth.${assets.colors.length ? ` Brand palette: ${assets.colors.join(", ")}.` : ""}${assets.logo ? " Place the provided brand logo discreetly in a corner inside the safe margins, never dominating the composition." : ""}${assets.model ? " Preserve faithfully the facial identity and features of the person in the provided reference photo." : ""}${assets.refs.length ? " Use the additional reference images only as inspiration for composition, atmosphere, typography and finishing — never copy them." : ""}${compositionPromptSuffix(ov)}`;
 
     // === GPT Image 2 + upload + persist + crédito ===
     for (let i = 0; i < posts.length; i++) {

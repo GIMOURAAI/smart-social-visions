@@ -14,11 +14,11 @@ import {
 } from "@/lib/brandKit";
 import {
   ArrowLeft, Sparkles, Zap, ImagePlus, X, RefreshCw, Wand2, ChevronDown, SlidersHorizontal,
-  User, Palette, KeyRound, Images,
+  User, Palette, KeyRound, Images, Type, MousePointerClick, Crop, LayoutTemplate, MoveHorizontal,
 } from "lucide-react";
 
 const NICHOS = [
-  "Moda", "Beleza", "Estética", "Saúde", "Nutrição", "Fitness", "Psicologia",
+  "Empreendedorismo", "Moda", "Beleza", "Estética", "Saúde", "Nutrição", "Fitness", "Psicologia",
   "Imóveis", "Jurídico", "Tech / SaaS", "Marketing", "Coach / Mentoria",
   "Gastronomia", "Pet", "Educação", "Serviços locais",
 ];
@@ -51,12 +51,56 @@ const FORMATOS: { id: Format; label: string; sub: string }[] = [
   { id: "16:9", label: "16:9", sub: "Wide" },
 ];
 
+type SubjectPosition = "auto" | "left" | "center" | "right";
+type TextSpace = "auto" | "top" | "bottom" | "left" | "right" | "none";
+
+const SUBJECT_POSITIONS: { id: SubjectPosition; label: string }[] = [
+  { id: "auto", label: "Automático" },
+  { id: "left", label: "Esquerda" },
+  { id: "center", label: "Centro" },
+  { id: "right", label: "Direita" },
+];
+
+const TEXT_SPACES: { id: TextSpace; label: string }[] = [
+  { id: "auto", label: "Automático" },
+  { id: "top", label: "Superior" },
+  { id: "bottom", label: "Inferior" },
+  { id: "left", label: "Esquerda" },
+  { id: "right", label: "Direita" },
+  { id: "none", label: "Nenhum" },
+];
+
 function chipClass(active: boolean) {
   return `px-4 py-2 rounded-full text-sm font-semibold border transition-all ${
     active
-      ? "bg-gradient-to-r from-[hsl(258_70%_45%)] to-[hsl(275_75%_60%)] text-white border-transparent shadow-glow"
-      : "bg-card text-foreground border-border hover:border-primary/50"
+      ? "bg-gradient-primary text-primary-foreground border-transparent shadow-glow"
+      : "spa-panel text-muted-foreground hover:text-foreground hover:border-primary/40"
   }`;
+}
+
+function smallChipClass(active: boolean) {
+  return `px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
+    active
+      ? "bg-primary/20 text-foreground border-primary/50 spa-glow-ring"
+      : "spa-panel text-muted-foreground hover:text-foreground"
+  }`;
+}
+
+function Block({
+  icon, title, hint, children,
+}: { icon: React.ReactNode; title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="spa-panel rounded-2xl p-4">
+      <div className="flex items-baseline justify-between gap-3 mb-2.5">
+        <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+          <span className="text-primary">{icon}</span>
+          {title}
+        </p>
+        {hint && <span className="text-[10px] text-muted-foreground">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  );
 }
 
 function ModeToggle({
@@ -65,14 +109,14 @@ function ModeToggle({
   onChange,
 }: { aiLabel?: string; value: "ai" | "manual"; onChange: (v: "ai" | "manual") => void }) {
   return (
-    <div className="inline-flex rounded-full border border-border bg-muted/60 p-0.5">
+    <div className="inline-flex rounded-full spa-panel p-0.5">
       {(["ai", "manual"] as const).map((m) => (
         <button
           key={m}
           type="button"
           onClick={() => onChange(m)}
           className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
-            value === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+            value === m ? "bg-primary/20 text-foreground" : "text-muted-foreground"
           }`}
         >
           {m === "ai" ? aiLabel : "Eu escrevo"}
@@ -95,6 +139,10 @@ export default function QuickCreate() {
   const [useKit, setUseKit] = useState(false);
   const [kit, setKit] = useState<BrandKit>({ ...EMPTY_KIT });
   const [savedKit, setSavedKit] = useState<BrandKit>({ ...EMPTY_KIT });
+
+  // Composição
+  const [subjectPosition, setSubjectPosition] = useState<SubjectPosition>("auto");
+  const [textSpace, setTextSpace] = useState<TextSpace>("auto");
 
   // Textos: IA cria ou usuário escreve
   const [titleMode, setTitleMode] = useState<"ai" | "manual">("ai");
@@ -186,6 +234,8 @@ export default function QuickCreate() {
     subtitulo: subtitleMode === "manual" && subtitle.trim() ? subtitle.trim() : null,
     cta: ctaMode === "manual" && cta.trim() ? cta.trim() : null,
     styleMix: styleMixLabels,
+    subjectPosition,
+    textSpace,
   });
 
   const mapRow = (r: any, obj: typeof OBJETIVOS[number]): GeneratedPost => ({
@@ -295,383 +345,400 @@ export default function QuickCreate() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
-      <header className="glass border-b border-white/40 sticky top-0 z-20">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-2xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Zap className="w-5 h-5 text-white" />
+    <div className="spa-dark min-h-screen bg-background text-foreground">
+      <div className="spa-ambient min-h-screen">
+        <header className="spa-surface border-0 border-b sticky top-0 z-20">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-3xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
+                <Zap className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-bold leading-none">Criação Rápida</p>
+                <p className="text-[11px] text-muted-foreground">1 post pronto em poucos cliques</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-foreground leading-none">Criação Rápida</p>
-              <p className="text-[11px] text-muted-foreground">1 post pronto em poucos cliques</p>
+            <div className="flex items-center gap-2">
+              <CreditsBadge />
+              <Button variant="ghost" size="sm" className="rounded-full" onClick={() => navigate("/dashboard")}>
+                <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <CreditsBadge />
-            <Button variant="ghost" size="sm" className="rounded-full" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
-            </Button>
-          </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        {posts.length === 0 ? (
-          <div className="glass rounded-3xl p-5 sm:p-8 shadow-card space-y-8">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground tracking-tight">O que vamos publicar hoje?</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Só o essencial — direção de arte, hierarquia, margens e respiro já vão aplicados automaticamente.
-              </p>
-            </div>
-
-            <section>
-              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">1. Seu nicho</p>
-              <div className="flex flex-wrap gap-2">
-                {NICHOS.map((n) => (
-                  <button key={n} onClick={() => setNiche(n)} className={chipClass(niche === n)}>{n}</button>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">2. Objetivo do post</p>
-              <div className="flex flex-wrap gap-2">
-                {OBJETIVOS.map((o) => (
-                  <button key={o.id} onClick={() => setObjective(o.id)} className={chipClass(objective === o.id)}>{o.label}</button>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <div className="flex items-center justify-between mb-3 gap-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Images className="w-3.5 h-3.5 text-primary" /> 3. Galeria de estilos
+        <main className="container mx-auto px-4 py-8 max-w-3xl">
+          {posts.length === 0 ? (
+            <div className="spa-surface rounded-3xl p-5 sm:p-8 shadow-card space-y-7">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">O que vamos publicar hoje?</h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Só o essencial — direção de arte, hierarquia, margens e respiro já vão aplicados automaticamente.
                 </p>
-                <span className="text-[11px] text-muted-foreground">opcional · mix de até 3</span>
               </div>
-              <StyleGallery value={styleMix} onChange={setStyleMix} max={3} />
-            </section>
 
-            <section>
-              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">4. Formato</p>
-              <div className="flex flex-wrap gap-2">
-                {FORMATOS.map((f) => (
-                  <button key={f.id} onClick={() => setFormat(f.id)} className={chipClass(format === f.id)}>
-                    {f.label} <span className="font-normal opacity-70">{f.sub}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
+              <section>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">1. Seu nicho</p>
+                <div className="flex flex-wrap gap-2">
+                  {NICHOS.map((n) => (
+                    <button key={n} onClick={() => setNiche(n)} className={chipClass(niche === n)}>{n}</button>
+                  ))}
+                </div>
+              </section>
 
-            {/* Opcionais */}
-            <section className="rounded-2xl border border-border bg-card/60 overflow-hidden">
-              <button
-                onClick={() => setShowAdvanced((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left gap-3"
-              >
-                <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <SlidersHorizontal className="w-4 h-4 text-primary" />
-                  Marca, foto, textos e CTA
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">opcional</span>
-                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition ${showAdvanced ? "rotate-180" : ""}`} />
-                </span>
-              </button>
+              <section>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">2. Objetivo do post</p>
+                <div className="flex flex-wrap gap-2">
+                  {OBJETIVOS.map((o) => (
+                    <button key={o.id} onClick={() => setObjective(o.id)} className={chipClass(objective === o.id)}>{o.label}</button>
+                  ))}
+                </div>
+              </section>
 
-              {showAdvanced && (
-                <div className="px-4 pb-5 space-y-6 border-t border-border pt-4">
-                  <label className="flex items-center gap-3 text-sm font-medium text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={useKit}
-                      onChange={(e) => toggleKit(e.target.checked)}
-                      className="w-4 h-4 accent-[hsl(258_70%_45%)]"
-                    />
-                    Usar identidade da minha marca (salva para as próximas criações)
-                  </label>
+              <section>
+                <div className="flex items-center justify-between mb-3 gap-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Images className="w-3.5 h-3.5 text-primary" /> 3. Galeria de estilos
+                  </p>
+                  <span className="text-[11px] text-muted-foreground">opcional · mix de até 3</span>
+                </div>
+                <StyleGallery value={styleMix} onChange={setStyleMix} max={3} />
+              </section>
 
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-1.5">Nome da marca</p>
-                    <Input
-                      value={kit.brandName}
-                      onChange={(e) => setKit((k) => ({ ...k, brandName: e.target.value }))}
-                      placeholder="Ex.: Studio Aura"
-                      className="rounded-xl"
-                    />
+              {/* Blocos compactos de composição */}
+              <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Block icon={<Crop className="w-3.5 h-3.5" />} title="Formato">
+                  <div className="flex flex-wrap gap-2">
+                    {FORMATOS.map((f) => (
+                      <button key={f.id} onClick={() => setFormat(f.id)} className={smallChipClass(format === f.id)}>
+                        {f.label} <span className="font-normal opacity-70">{f.sub}</span>
+                      </button>
+                    ))}
                   </div>
+                </Block>
 
-                  {/* Foto principal x Logo */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {(["model", "logo"] as const).map((t) => (
-                      <div key={t}>
-                        <p className="text-xs font-semibold text-foreground mb-0.5 flex items-center gap-1.5">
-                          {t === "model" ? <User className="w-3.5 h-3.5 text-primary" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />}
-                          {t === "model" ? "Foto principal" : "Logo"}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground mb-1.5 leading-tight">
-                          {t === "model"
-                            ? "Personagem, modelo ou produto — o rosto/produto é preservado."
-                            : "Aplicada sem redesenhar, discreta e dentro das margens."}
-                        </p>
-                        {kit[t] ? (
-                          <div className="relative rounded-xl overflow-hidden border border-border aspect-square bg-muted">
-                            <img src={kit[t] as string} alt={t === "model" ? "Foto principal" : "Logo"} className="w-full h-full object-cover" />
+                <Block icon={<MoveHorizontal className="w-3.5 h-3.5" />} title="Posição do sujeito/produto">
+                  <div className="flex flex-wrap gap-2">
+                    {SUBJECT_POSITIONS.map((p) => (
+                      <button key={p.id} onClick={() => setSubjectPosition(p.id)} className={smallChipClass(subjectPosition === p.id)}>
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </Block>
+
+                <Block
+                  icon={<LayoutTemplate className="w-3.5 h-3.5" />}
+                  title="Espaço para texto"
+                  hint="onde a arte abre respiro"
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {TEXT_SPACES.map((t) => (
+                      <button key={t.id} onClick={() => setTextSpace(t.id)} className={smallChipClass(textSpace === t.id)}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </Block>
+
+                <Block icon={<Sparkles className="w-3.5 h-3.5" />} title="Nome da marca" hint="opcional">
+                  <Input
+                    value={kit.brandName}
+                    onChange={(e) => setKit((k) => ({ ...k, brandName: e.target.value }))}
+                    placeholder="Ex.: Studio Aura"
+                    className="rounded-xl bg-transparent"
+                  />
+                </Block>
+              </section>
+
+              {/* Opcionais */}
+              <section className="spa-panel rounded-2xl overflow-hidden">
+                <button
+                  onClick={() => setShowAdvanced((v) => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left gap-3"
+                >
+                  <span className="flex items-center gap-2 text-sm font-semibold">
+                    <SlidersHorizontal className="w-4 h-4 text-primary" />
+                    Foto principal, logo, cores, textos e CTA
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground">opcional</span>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition ${showAdvanced ? "rotate-180" : ""}`} />
+                  </span>
+                </button>
+
+                {showAdvanced && (
+                  <div className="px-4 pb-5 space-y-3 border-t spa-hairline pt-4">
+                    <label className="flex items-center gap-3 text-sm font-medium">
+                      <input
+                        type="checkbox"
+                        checked={useKit}
+                        onChange={(e) => toggleKit(e.target.checked)}
+                        className="w-4 h-4 accent-[hsl(var(--primary))]"
+                      />
+                      Usar identidade da minha marca (salva para as próximas criações)
+                    </label>
+
+                    {/* Foto principal x Logo */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {(["model", "logo"] as const).map((t) => (
+                        <Block
+                          key={t}
+                          icon={t === "model" ? <User className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
+                          title={t === "model" ? "Foto principal" : "Logo"}
+                        >
+                          <p className="text-[10px] text-muted-foreground mb-2 leading-tight">
+                            {t === "model"
+                              ? "Personagem, modelo ou produto — o rosto/produto é preservado."
+                              : "Aplicada sem redesenhar, discreta e dentro das margens."}
+                          </p>
+                          {kit[t] ? (
+                            <div className="relative rounded-xl overflow-hidden border spa-hairline aspect-square bg-muted">
+                              <img src={kit[t] as string} alt={t === "model" ? "Foto principal" : "Logo"} className="w-full h-full object-cover" />
+                              <button
+                                onClick={() => setKit((k) => ({ ...k, [t]: null }))}
+                                className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 flex items-center justify-center"
+                                aria-label="Remover"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
                             <button
-                              onClick={() => setKit((k) => ({ ...k, [t]: null }))}
-                              className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 flex items-center justify-center"
-                              aria-label="Remover"
+                              onClick={() => (t === "logo" ? logoRef : modelRef).current?.click()}
+                              className="w-full aspect-square rounded-xl border-2 border-dashed spa-hairline hover:border-primary/60 flex flex-col items-center justify-center gap-1 text-muted-foreground text-xs"
                             >
-                              <X className="w-3.5 h-3.5" />
+                              <ImagePlus className="w-5 h-5" />
+                              Enviar
+                            </button>
+                          )}
+                        </Block>
+                      ))}
+                      <input ref={logoRef} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0], "logo")} />
+                      <input ref={modelRef} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0], "model")} />
+                    </div>
+
+                    {/* Referências de estilo (não são a foto principal) */}
+                    <Block icon={<Images className="w-3.5 h-3.5" />} title="Referências de estilo" hint="até 3">
+                      <p className="text-[10px] text-muted-foreground mb-2 leading-tight">
+                        Diferente da foto principal: servem só de inspiração de estética, composição, luz, paleta e atmosfera — o layout nunca é copiado.
+                      </p>
+                      <div className="flex gap-2 flex-wrap">
+                        {styleRefs.map((url, i) => (
+                          <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border spa-hairline">
+                            <img src={url} alt={`Referência ${i + 1}`} className="w-full h-full object-cover" />
+                            <button
+                              onClick={() => setStyleRefs((r) => r.filter((_, idx) => idx !== i))}
+                              className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center"
+                              aria-label="Remover referência"
+                            >
+                              <X className="w-3 h-3" />
                             </button>
                           </div>
-                        ) : (
+                        ))}
+                        {styleRefs.length < 3 && (
                           <button
-                            onClick={() => (t === "logo" ? logoRef : modelRef).current?.click()}
-                            className="w-full aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary/60 flex flex-col items-center justify-center gap-1 text-muted-foreground text-xs"
+                            onClick={() => refsRef.current?.click()}
+                            className="w-20 h-20 rounded-xl border-2 border-dashed spa-hairline hover:border-primary/60 flex items-center justify-center text-muted-foreground"
+                            aria-label="Adicionar referência"
                           >
                             <ImagePlus className="w-5 h-5" />
-                            Enviar
                           </button>
                         )}
                       </div>
-                    ))}
-                    <input ref={logoRef} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0], "logo")} />
-                    <input ref={modelRef} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0], "model")} />
-                  </div>
+                      <input ref={refsRef} type="file" accept="image/*" multiple hidden onChange={(e) => uploadRefs(e.target.files)} />
+                    </Block>
 
-                  {/* Referências de estilo (não são a foto principal) */}
-                  <div>
-                    <p className="text-xs font-semibold text-foreground mb-0.5">Referências de estilo (até 3)</p>
-                    <p className="text-[10px] text-muted-foreground mb-2 leading-tight">
-                      Diferente da foto principal: servem só de inspiração de estética, composição, luz, paleta e atmosfera — o layout nunca é copiado.
-                    </p>
-                    <div className="flex gap-2 flex-wrap">
-                      {styleRefs.map((url, i) => (
-                        <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
-                          <img src={url} alt={`Referência ${i + 1}`} className="w-full h-full object-cover" />
-                          <button
-                            onClick={() => setStyleRefs((r) => r.filter((_, idx) => idx !== i))}
-                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center"
-                            aria-label="Remover referência"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                      {styleRefs.length < 3 && (
-                        <button
-                          onClick={() => refsRef.current?.click()}
-                          className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/60 flex items-center justify-center text-muted-foreground"
-                          aria-label="Adicionar referência"
-                        >
-                          <ImagePlus className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
-                    <input ref={refsRef} type="file" accept="image/*" multiple hidden onChange={(e) => uploadRefs(e.target.files)} />
-                  </div>
-
-                  {/* Cores da marca */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2 gap-3">
-                      <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                        <Palette className="w-3.5 h-3.5 text-primary" /> Cores da marca
-                      </p>
-                      <div className="inline-flex rounded-full border border-border bg-muted/60 p-0.5">
-                        {(["auto", "manual"] as const).map((m) => (
-                          <button
-                            key={m}
-                            type="button"
-                            onClick={() => setColorMode(m)}
-                            className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
-                              colorMode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-                            }`}
-                          >
-                            {m === "auto" ? "Automático" : "Escolher"}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {colorMode === "auto" ? (
-                      <p className="text-[11px] text-muted-foreground">
-                        A IA define a paleta ideal a partir do nicho e dos estilos selecionados.
-                      </p>
-                    ) : (
-                      <>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {PALETAS.map((p) => {
-                            const active = p.colors.join() === kit.colors.join();
-                            return (
-                              <button
-                                key={p.label}
-                                onClick={() => setKit((k) => ({ ...k, colors: active ? [] : p.colors }))}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-semibold transition ${
-                                  active ? "border-primary bg-primary/10 text-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/40"
-                                }`}
-                              >
-                                <span className="flex">
-                                  {p.colors.map((c) => (
-                                    <span key={c} className="w-3.5 h-3.5 rounded-full -ml-1 first:ml-0 border border-white/60" style={{ background: c }} />
-                                  ))}
-                                </span>
-                                {p.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <div className="flex items-center gap-3 flex-wrap">
-                          {[0, 1, 2].map((i) => (
-                            <input
-                              key={i}
-                              type="color"
-                              value={kit.colors[i] ?? "#7c3aed"}
-                              onChange={(e) => {
-                                const next = [...kit.colors];
-                                while (next.length < 3) next.push("#7c3aed");
-                                next[i] = e.target.value;
-                                setKit((k) => ({ ...k, colors: next }));
-                              }}
-                              className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer"
-                              aria-label={`Cor ${i + 1}`}
-                            />
-                          ))}
-                          {kit.colors.length > 0 && (
-                            <button onClick={() => setKit((k) => ({ ...k, colors: [] }))} className="text-xs text-muted-foreground underline">
-                              limpar cores
+                    {/* Cores da marca */}
+                    <div className="spa-panel rounded-2xl p-4">
+                      <div className="flex items-center justify-between mb-2.5 gap-3">
+                        <p className="text-xs font-bold flex items-center gap-1.5">
+                          <Palette className="w-3.5 h-3.5 text-primary" /> Cores
+                        </p>
+                        <div className="inline-flex rounded-full spa-panel p-0.5">
+                          {(["auto", "manual"] as const).map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => setColorMode(m)}
+                              className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
+                                colorMode === m ? "bg-primary/20 text-foreground" : "text-muted-foreground"
+                              }`}
+                            >
+                              {m === "auto" ? "Automático" : "Escolher"}
                             </button>
-                          )}
+                          ))}
                         </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Textos */}
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-2 gap-3">
-                        <p className="text-xs font-semibold text-foreground">Título da arte</p>
-                        <ModeToggle value={titleMode} onChange={setTitleMode} />
                       </div>
-                      {titleMode === "manual" ? (
-                        <Input
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          placeholder="Máx. 6 palavras — 2 linhas na arte"
-                          className="rounded-xl"
-                        />
+
+                      {colorMode === "auto" ? (
+                        <p className="text-[11px] text-muted-foreground">
+                          A IA define a paleta ideal a partir do nicho e dos estilos selecionados.
+                        </p>
                       ) : (
-                        <p className="text-[11px] text-muted-foreground">A IA escreve o título com hierarquia e no máximo 2 linhas.</p>
+                        <>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {PALETAS.map((p) => {
+                              const active = p.colors.join() === kit.colors.join();
+                              return (
+                                <button
+                                  key={p.label}
+                                  onClick={() => setKit((k) => ({ ...k, colors: active ? [] : p.colors }))}
+                                  className={`flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-semibold transition ${
+                                    active ? "border-primary/50 bg-primary/15" : "spa-panel text-muted-foreground hover:text-foreground"
+                                  }`}
+                                >
+                                  <span className="flex">
+                                    {p.colors.map((c) => (
+                                      <span key={c} className="w-3.5 h-3.5 rounded-full -ml-1 first:ml-0 border border-foreground/20" style={{ background: c }} />
+                                    ))}
+                                  </span>
+                                  {p.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className="flex items-center gap-3 flex-wrap">
+                            {[0, 1, 2].map((i) => (
+                              <input
+                                key={i}
+                                type="color"
+                                value={kit.colors[i] ?? "#7c3aed"}
+                                onChange={(e) => {
+                                  const next = [...kit.colors];
+                                  while (next.length < 3) next.push("#7c3aed");
+                                  next[i] = e.target.value;
+                                  setKit((k) => ({ ...k, colors: next }));
+                                }}
+                                className="w-10 h-10 rounded-lg border spa-hairline bg-transparent cursor-pointer"
+                                aria-label={`Cor ${i + 1}`}
+                              />
+                            ))}
+                            {kit.colors.length > 0 && (
+                              <button onClick={() => setKit((k) => ({ ...k, colors: [] }))} className="text-xs text-muted-foreground underline">
+                                limpar cores
+                              </button>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-2 gap-3">
-                        <p className="text-xs font-semibold text-foreground">Subtítulo</p>
-                        <ModeToggle value={subtitleMode} onChange={setSubtitleMode} />
-                      </div>
-                      {subtitleMode === "manual" ? (
-                        <Input
-                          value={subtitle}
-                          onChange={(e) => setSubtitle(e.target.value)}
-                          placeholder="Complemento curto — até 2 linhas"
-                          className="rounded-xl"
-                        />
-                      ) : (
-                        <p className="text-[11px] text-muted-foreground">A IA cria o apoio complementando o título.</p>
-                      )}
+                    {/* Textos */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <Block icon={<Type className="w-3.5 h-3.5" />} title="Título">
+                        <div className="mb-2"><ModeToggle value={titleMode} onChange={setTitleMode} /></div>
+                        {titleMode === "manual" ? (
+                          <Input
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Máx. 6 palavras"
+                            className="rounded-xl bg-transparent"
+                          />
+                        ) : (
+                          <p className="text-[11px] text-muted-foreground">A IA escreve com hierarquia e no máximo 2 linhas.</p>
+                        )}
+                      </Block>
+
+                      <Block icon={<Type className="w-3.5 h-3.5" />} title="Subtítulo">
+                        <div className="mb-2"><ModeToggle value={subtitleMode} onChange={setSubtitleMode} /></div>
+                        {subtitleMode === "manual" ? (
+                          <Input
+                            value={subtitle}
+                            onChange={(e) => setSubtitle(e.target.value)}
+                            placeholder="Complemento curto"
+                            className="rounded-xl bg-transparent"
+                          />
+                        ) : (
+                          <p className="text-[11px] text-muted-foreground">A IA cria o apoio complementando o título.</p>
+                        )}
+                      </Block>
+
+                      <Block icon={<MousePointerClick className="w-3.5 h-3.5" />} title="CTA" hint="opcional">
+                        <div className="mb-2"><ModeToggle value={ctaMode} onChange={setCtaMode} /></div>
+                        {ctaMode === "manual" ? (
+                          <Input
+                            value={cta}
+                            onChange={(e) => setCta(e.target.value)}
+                            placeholder="Ex.: Agende sua avaliação"
+                            className="rounded-xl bg-transparent"
+                          />
+                        ) : (
+                          <p className="text-[11px] text-muted-foreground">A IA escolhe a chamada ideal ao objetivo.</p>
+                        )}
+                      </Block>
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-2 gap-3">
-                        <p className="text-xs font-semibold text-foreground">CTA (opcional)</p>
-                        <ModeToggle value={ctaMode} onChange={setCtaMode} />
+                    {/* Preparado para o futuro: chave própria de API */}
+                    <div className="rounded-xl border border-dashed spa-hairline px-3.5 py-3 flex items-start gap-2.5">
+                      <KeyRound className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">
+                          Usar minha API <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-primary">em breve</span>
+                        </p>
+                        <p className="text-[11px] text-muted-foreground leading-tight">
+                          A opção “Minha própria chave de API” ficará disponível em Configurações. Hoje a geração usa a infraestrutura do Smart Post AI.
+                        </p>
                       </div>
-                      {ctaMode === "manual" ? (
-                        <Input
-                          value={cta}
-                          onChange={(e) => setCta(e.target.value)}
-                          placeholder="Ex.: Agende sua avaliação"
-                          className="rounded-xl"
-                        />
-                      ) : (
-                        <p className="text-[11px] text-muted-foreground">A IA escolhe a chamada mais adequada ao objetivo.</p>
-                      )}
                     </div>
                   </div>
-
-                  {/* Preparado para o futuro: chave própria de API */}
-                  <div className="rounded-xl border border-dashed border-border bg-muted/40 px-3.5 py-3 flex items-start gap-2.5">
-                    <KeyRound className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">
-                        Usar minha API <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-primary">em breve</span>
-                      </p>
-                      <p className="text-[11px] text-muted-foreground leading-tight">
-                        A opção “Minha própria chave de API” ficará disponível em Configurações. Hoje a geração usa a infraestrutura do Smart Post AI.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </section>
-
-            <div className="pt-1 flex flex-col gap-2">
-              <Button
-                onClick={generate}
-                disabled={loading}
-                className="w-full h-12 rounded-full bg-gradient-primary border-0 shadow-glow text-base font-bold"
-              >
-                {loading ? "Criando seu post..." : (
-                  <>
-                    <Wand2 className="w-5 h-5 mr-2" />
-                    Gerar post agora
-                  </>
                 )}
-              </Button>
-              <p className="text-center text-[11px] text-muted-foreground">
-                Custa 1 crédito · saldo {credits.remaining} ·{" "}
-                <button onClick={() => navigate("/create")} className="underline">
-                  quero o Smart Post Studio completo
-                </button>
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="glass rounded-3xl p-5 sm:p-8 shadow-card">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h1 className="text-xl font-bold text-foreground tracking-tight">Seu post está pronto ✨</h1>
-                <p className="text-sm text-muted-foreground">Gere outra versão ou continue no Studio completo.</p>
+              </section>
+
+              <div className="pt-1 flex flex-col gap-2">
+                <Button
+                  onClick={generate}
+                  disabled={loading}
+                  className="w-full h-12 rounded-full bg-gradient-primary border-0 shadow-glow text-base font-bold"
+                >
+                  {loading ? "Criando seu post..." : (
+                    <>
+                      <Wand2 className="w-5 h-5 mr-2" />
+                      Gerar post agora
+                    </>
+                  )}
+                </Button>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  Custa 1 crédito · saldo {credits.remaining} ·{" "}
+                  <button onClick={() => navigate("/create")} className="underline">
+                    quero o Smart Post Studio completo
+                  </button>
+                </p>
               </div>
             </div>
+          ) : (
+            <div className="spa-surface rounded-3xl p-5 sm:p-8 shadow-card">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight">Seu post está pronto ✨</h1>
+                  <p className="text-sm text-muted-foreground">Gere outra versão ou continue no Studio completo.</p>
+                </div>
+              </div>
 
-            <StepResult
-              posts={posts}
-              onRegenerate={generate}
-              onRegenerateImage={() => toast({ title: "Em breve", description: "Regeneração individual de imagem será liberada em breve." })}
-              onEnhance={() => toast({ title: "Em breve", description: "Melhoria de qualidade será liberada em breve." })}
-            />
+              <StepResult
+                posts={posts}
+                onRegenerate={generate}
+                onRegenerateImage={() => toast({ title: "Em breve", description: "Regeneração individual de imagem será liberada em breve." })}
+                onEnhance={() => toast({ title: "Em breve", description: "Melhoria de qualidade será liberada em breve." })}
+              />
 
-            <div className="flex flex-wrap gap-2 justify-end mt-8 pt-6 border-t border-border">
-              <Button variant="outline" className="rounded-full" onClick={() => setPosts([])}>
-                Novo post rápido
-              </Button>
-              <Button variant="outline" className="rounded-full" onClick={generate} disabled={loading}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {loading ? "Gerando..." : "Gerar novamente (1 crédito)"}
-              </Button>
-              <Button onClick={openInStudio} className="rounded-full bg-gradient-primary border-0 shadow-glow">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Editar no Studio
-              </Button>
+              <div className="flex flex-wrap gap-2 justify-end mt-8 pt-6 border-t spa-hairline">
+                <Button variant="outline" className="rounded-full" onClick={() => setPosts([])}>
+                  Novo post rápido
+                </Button>
+                <Button variant="outline" className="rounded-full" onClick={generate} disabled={loading}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  {loading ? "Gerando..." : "Gerar novamente (1 crédito)"}
+                </Button>
+                <Button onClick={openInStudio} className="rounded-full bg-gradient-primary border-0 shadow-glow">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Editar no Studio
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
