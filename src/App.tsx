@@ -31,6 +31,8 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create" element={<Create />} />
+          <Route path="/rapido" element={<QuickCreate />} />
+          <Route path="/quick" element={<QuickCreate />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/admin/landing" element={<AdminLanding />} />
           <Route path="/gi-checkout-7f4c9e" element={<GiPrivateLanding />} />
