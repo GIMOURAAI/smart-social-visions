@@ -8,6 +8,7 @@ const FORMATS: {
   heightClass: string;
 }[] = [
   { value: "4:5", label: "Feed Vertical", sublabel: "4:5", widthClass: "w-8", heightClass: "h-10" },
+  { value: "3:4", label: "Retrato", sublabel: "3:4", widthClass: "w-[30px]", heightClass: "h-10" },
   { value: "1:1", label: "Quadrado", sublabel: "1:1", widthClass: "w-10", heightClass: "h-10" },
   { value: "9:16", label: "Story / Reels", sublabel: "9:16", widthClass: "w-6", heightClass: "h-10" },
   { value: "16:9", label: "YouTube", sublabel: "16:9", widthClass: "w-12", heightClass: "h-7" },
@@ -50,7 +51,7 @@ export function StepFormatQuantity({ data, onChange }: Props) {
       <div>
         <h3 className="text-sm font-semibold text-foreground mb-1">Formato do post</h3>
         <p className="text-xs text-muted-foreground mb-3">Proporção ideal para o seu canal</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {FORMATS.map((fmt) => {
             const isSelected = data.format === fmt.value;
             return (
