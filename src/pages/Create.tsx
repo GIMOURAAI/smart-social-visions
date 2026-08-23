@@ -52,7 +52,7 @@ export interface WizardData {
   // Step 4
   feedPattern: string;
   // Step 5
-  format: "4:5" | "1:1" | "9:16" | "16:9";
+  format: "4:5" | "3:4" | "1:1" | "9:16" | "16:9";
   daysQuantity: number;
   quantity: number;
   pilotQuantity: number;
