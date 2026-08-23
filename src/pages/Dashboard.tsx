@@ -125,7 +125,7 @@ export default function Dashboard() {
   const planLabel = credits.planSlug ? credits.planSlug.charAt(0).toUpperCase() + credits.planSlug.slice(1) : "Free";
 
   return (
-    <div className="spa-dark spa-ambient min-h-screen bg-background text-foreground">
+    <div className="spa-dark spa-ambient min-h-screen text-foreground">
       {/* HERO escuro roxo */}
       <section className="relative overflow-hidden bg-gradient-hero text-white rounded-b-[2.5rem] shadow-glow">
         {/* glows decorativos */}
