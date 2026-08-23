@@ -53,8 +53,8 @@
     --muted-foreground: 250 10% 66%;
     --accent: 258 40% 20%;
     --accent-foreground: 250 20% 97%;
-    --border: 0 0% 100% / 0.1;
-    --input: 0 0% 100% / 0.14;
+    --border: 245 8% 18%;
+    --input: 245 8% 20%;
     --ring: 258 88% 68%;
     --gradient-primary: linear-gradient(135deg, hsl(258 88% 66%) 0%, hsl(276 72% 52%) 100%);
     --glow-primary: 0 12px 44px -14px hsl(258 88% 66% / .55);
