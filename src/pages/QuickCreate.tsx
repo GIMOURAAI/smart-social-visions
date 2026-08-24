@@ -314,7 +314,7 @@ export default function QuickCreate() {
       if (!response.ok) {
         const message = data?.error ?? "Falha ao gerar o post";
         const ctx = { status: response.status };
-        if (ctx?.status === 402 || /INSUFFICIENT_CREDITS/i.test(error.message)) {
+        if (ctx.status === 402 || /INSUFFICIENT_CREDITS/i.test(message)) {
           toast({ title: "Sem créditos", description: "Faça upgrade do plano para continuar.", variant: "destructive" });
           navigate("/pricing");
           return;
