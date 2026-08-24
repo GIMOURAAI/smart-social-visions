@@ -6,8 +6,9 @@ const corsHeaders = {
 };
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const DATA_URL = Deno.env.get("EXTERNAL_SUPABASE_URL")!;
+const DATA_ANON_KEY = Deno.env.get("EXTERNAL_SUPABASE_ANON_KEY")!;
+const DATA_SERVICE_ROLE = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_ROLE_KEY")!;
 
 const SIZE_MAP: Record<string, "1024x1024" | "1024x1536" | "1536x1024"> = {
   "1:1": "1024x1024",
@@ -294,7 +295,11 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "No auth" }, 401);
 
-    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    if (!DATA_URL || !DATA_ANON_KEY || !DATA_SERVICE_ROLE) {
+      return json({ error: "Backend externo ainda não foi vinculado à geração" }, 500);
+    }
+
+    const userClient = createClient(DATA_URL, DATA_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user } } = await userClient.auth.getUser();
@@ -308,7 +313,7 @@ Deno.serve(async (req) => {
     const blockKey = (block || "dor").toLowerCase();
     const postCount = Math.min(3, Math.max(1, Number(count) || 1));
 
-    const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+    const admin = createClient(DATA_URL, DATA_SERVICE_ROLE, { auth: { persistSession: false } });
 
     const { data: batch, error: batchErr } = await admin
       .from("post_batches").select("*").eq("id", batchId).eq("user_id", user.id).single();
