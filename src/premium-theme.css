@@ -111,7 +111,37 @@
 }
 .spa-credit-badge.is-empty { color: rgba(214,203,255,.88); border-color: rgba(194,179,248,.26); }
 
+/* Existing rounded controls inherit the larger premium proportions without rewriting every screen. */
+.spa-dark button.rounded-full:not(.spa-credit-badge) {
+  min-height: 46px;
+  padding-left: 18px;
+  padding-right: 18px;
+  border-color: rgba(255,255,255,.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+.spa-dark button.rounded-full.bg-gradient-primary,
+.spa-dark button.w-full.rounded-full.bg-gradient-primary {
+  min-height: 64px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b0b0d;
+  border: 1px solid rgba(255,255,255,.62);
+  background: linear-gradient(110deg, rgba(255,255,255,.98), rgba(231,227,239,.97), rgba(197,185,237,.95));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 20px 60px -25px rgba(171,148,255,.66);
+}
+.spa-dark button.rounded-full.bg-primary\/20,
+.spa-dark button.rounded-full.spa-panel {
+  background: linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.045));
+}
+.spa-dark button.rounded-full.bg-primary\/20 {
+  color: #0c0c0e;
+  border-color: rgba(255,255,255,.72);
+  background: linear-gradient(110deg, rgba(255,255,255,.97), rgba(231,227,239,.95), rgba(199,187,238,.93));
+}
+
 @media (max-width: 640px) {
   .spa-premium-chip { min-height: 44px; padding: 0 16px; font-size: 13px; }
   .spa-primary-action { min-height: 62px !important; font-size: 15px !important; }
+  .spa-dark button.rounded-full:not(.spa-credit-badge) { min-height: 44px; padding-left: 16px; padding-right: 16px; }
+  .spa-dark button.w-full.rounded-full.bg-gradient-primary { min-height: 62px; }
 }
