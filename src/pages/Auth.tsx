@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -61,5 +58,97 @@ export default function Auth() {
     }
   };
 
-  return <div className="spa-dark spa-ambient min-h-screen flex items-center justify-center p-4"><Card className="w-full max-w-md p-8 spa-surface border-0 shadow-card"><div className="flex items-center justify-center mb-8"><Sparkles className="w-8 h-8 text-primary mr-2" /><h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Smart Post AI</h1></div><h2 className="text-2xl font-bold text-center mb-6 text-foreground">{isLogin ? "Entrar" : "Criar Conta"}</h2><form onSubmit={handleSubmit} className="space-y-4">{!isLogin && <div><Label htmlFor="fullName">Nome Completo</Label><Input id="fullName" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Seu nome" className="mt-1" /></div>}<div><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="seu@email.com" className="mt-1" /></div><div><Label htmlFor="password">Senha</Label><div className="relative mt-1"><Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" minLength={6} className="pr-10" /><button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button></div></div><Button type="submit" className="w-full" disabled={loading}>{loading ? "Carregando..." : isLogin ? "Entrar" : "Criar Conta"}</Button></form><div className="mt-6 text-center"><button onClick={() => setIsLogin(!isLogin)} className="text-sm text-muted-foreground hover:text-primary transition-colors">{isLogin ? "Não tem conta? Criar uma" : "Já tem conta? Fazer login"}</button></div><div className="mt-6 text-center"><button onClick={() => navigate("/")} className="text-sm text-muted-foreground hover:text-primary transition-colors">← Voltar para o site</button></div></Card></div>;
+  return (
+    <div className="spa-dark spa-ambient spa-auth-shell text-foreground">
+      <div className="spa-auth-wrap">
+        <div className="spa-auth-brand">
+          <h1>Smart Post AI</h1>
+          <p>{isLogin ? "Entre para continuar criando." : "Crie sua conta e comece agora."}</p>
+        </div>
+
+        <div className="spa-auth-card">
+          <div className="spa-auth-tabs" role="tablist" aria-label="Entrar ou criar conta">
+            <button type="button" className={`spa-auth-tab ${isLogin ? "is-active" : ""}`} onClick={() => setIsLogin(true)}>
+              Entrar
+            </button>
+            <button type="button" className={`spa-auth-tab ${!isLogin ? "is-active" : ""}`} onClick={() => setIsLogin(false)}>
+              Criar conta
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {!isLogin && (
+              <div className="spa-auth-field">
+                <label htmlFor="fullName">Nome completo</label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  placeholder="Seu nome"
+                  className="spa-auth-input"
+                />
+              </div>
+            )}
+
+            <div className="spa-auth-field">
+              <label htmlFor="email">E-mail</label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="seu@email.com"
+                className="spa-auth-input"
+              />
+            </div>
+
+            <div className="spa-auth-field">
+              <div className="flex items-center justify-between gap-4">
+                <label htmlFor="password">Senha</label>
+                {isLogin && <span className="text-xs text-muted-foreground">Mínimo 6 caracteres</span>}
+              </div>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  minLength={6}
+                  className="spa-auth-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" className="spa-auth-submit" disabled={loading}>
+              {loading ? "Carregando..." : isLogin ? "Entrar" : "Criar conta"}
+            </button>
+          </form>
+
+          <div className="spa-auth-footer">
+            {isLogin ? "Ainda não tem conta? " : "Já tem uma conta? "}
+            <button type="button" onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? "Criar conta" : "Fazer login"}
+            </button>
+          </div>
+        </div>
+
+        <div className="spa-auth-footer mt-5">
+          <button type="button" onClick={() => navigate("/")}>← Voltar para o site</button>
+        </div>
+      </div>
+    </div>
+  );
 }
