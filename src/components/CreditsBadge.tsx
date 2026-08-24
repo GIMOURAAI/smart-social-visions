@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCredits } from "@/hooks/useCredits";
-import { Coins, Loader2 } from "lucide-react";
+import { Coins } from "lucide-react";
 
 export function CreditsBadge() {
   const { remaining, total, planSlug, loading } = useCredits();
@@ -10,14 +10,12 @@ export function CreditsBadge() {
   return (
     <button
       onClick={() => navigate("/pricing")}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-        low ? "bg-red-500/15 text-red-600 hover:bg-red-500/25" : "bg-primary/10 text-primary hover:bg-primary/20"
-      }`}
+      className={`spa-credit-badge inline-flex items-center gap-2 text-xs font-semibold transition ${low ? "is-empty" : ""}`}
       title={planSlug ? `Plano ${planSlug}` : "Sem plano"}
     >
-      <Coins className="w-3.5 h-3.5" />
+      <Coins className="w-4 h-4" />
       <span>{remaining}{total ? `/${total}` : ""}</span>
-      {!planSlug && <span className="text-[10px] opacity-70">· upgrade</span>}
+      {!planSlug && <span className="text-[10px] opacity-65">· planos</span>}
     </button>
   );
 }
