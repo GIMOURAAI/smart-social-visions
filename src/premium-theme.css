@@ -1,0 +1,117 @@
+/* Premium neutral glass theme inspired by the Smart Post landing references. */
+.spa-dark {
+  --background: 220 9% 4%;
+  --foreground: 0 0% 97%;
+  --card: 220 7% 8%;
+  --card-foreground: 0 0% 97%;
+  --popover: 220 7% 8%;
+  --popover-foreground: 0 0% 97%;
+  --primary: 258 76% 78%;
+  --primary-foreground: 220 12% 7%;
+  --secondary: 220 7% 21%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 220 7% 15%;
+  --muted-foreground: 220 5% 64%;
+  --accent: 258 30% 18%;
+  --accent-foreground: 0 0% 97%;
+  --border: 0 0% 100% / .14;
+  --input: 220 7% 20%;
+  --ring: 258 76% 78%;
+  --gradient-primary: linear-gradient(115deg, rgba(255,255,255,.96) 0%, rgba(229,225,238,.94) 52%, rgba(194,181,235,.92) 100%);
+  --glow-primary: 0 16px 55px -20px rgba(184,163,255,.42);
+  --shadow-card: 0 30px 90px -28px rgba(0,0,0,.92);
+  background: #070809;
+}
+
+.spa-dark .spa-ambient {
+  background-color: #070809;
+  background-image:
+    radial-gradient(900px 520px at 12% -10%, rgba(109,92,153,.14), transparent 64%),
+    radial-gradient(900px 560px at 100% 3%, rgba(95,116,128,.10), transparent 62%),
+    radial-gradient(850px 650px at 50% 115%, rgba(92,70,70,.09), transparent 68%);
+}
+
+.spa-dark .spa-surface,
+.spa-dark .spa-panel {
+  background: linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.13);
+  backdrop-filter: blur(28px) saturate(135%);
+  -webkit-backdrop-filter: blur(28px) saturate(135%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.11), 0 24px 65px -34px rgba(0,0,0,.9);
+}
+
+.spa-dark .spa-glow-ring {
+  box-shadow: 0 0 0 1px rgba(205,193,255,.58), inset 0 1px 0 rgba(255,255,255,.2), 0 18px 48px -24px rgba(169,144,255,.6);
+}
+
+.spa-dark .bg-gradient-primary {
+  background: var(--gradient-primary);
+  color: #0b0b0d;
+}
+
+.spa-dark button.bg-gradient-primary:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+
+.spa-dark input,
+.spa-dark textarea,
+.spa-dark [role="combobox"] {
+  border-color: rgba(255,255,255,.14);
+  background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.spa-dark .text-primary { color: rgba(214,203,255,.95); }
+.spa-dark .border-primary\/50 { border-color: rgba(205,193,255,.52); }
+.spa-dark .bg-primary\/20 { background-color: rgba(175,151,255,.16); }
+.spa-dark .bg-primary\/15 { background-color: rgba(175,151,255,.12); }
+.spa-dark .bg-primary\/10 { background-color: rgba(175,151,255,.10); }
+
+/* Larger glass controls inside the app */
+.spa-premium-chip {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.045));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.09);
+  transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.spa-premium-chip:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.24); background: rgba(255,255,255,.12); }
+.spa-premium-chip.is-active {
+  color: #0c0c0e;
+  border-color: rgba(255,255,255,.7);
+  background: linear-gradient(110deg, rgba(255,255,255,.97), rgba(230,226,239,.95), rgba(199,187,238,.93));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 16px 42px -22px rgba(184,163,255,.72);
+}
+
+.spa-primary-action {
+  min-height: 64px !important;
+  border-radius: 999px !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #0b0b0d !important;
+  border: 1px solid rgba(255,255,255,.62) !important;
+  background: linear-gradient(110deg, rgba(255,255,255,.98), rgba(231,227,239,.97), rgba(197,185,237,.95)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 20px 60px -25px rgba(171,148,255,.66) !important;
+}
+
+.spa-credit-badge {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: rgba(255,255,255,.86);
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.045));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+}
+.spa-credit-badge.is-empty { color: rgba(214,203,255,.88); border-color: rgba(194,179,248,.26); }
+
+@media (max-width: 640px) {
+  .spa-premium-chip { min-height: 44px; padding: 0 16px; font-size: 13px; }
+  .spa-primary-action { min-height: 62px !important; font-size: 15px !important; }
+}
