@@ -297,17 +297,29 @@ export default function QuickCreate() {
       if (batchErr || !batch) throw new Error(batchErr?.message ?? "Falha ao criar lote");
       setBatchId(batch.id);
 
-      const { data, error } = await supabase.functions.invoke("generate-post-batch", {
-        body: { batchId: batch.id, block: obj.block, count: 1, overrides: overrides() },
-      });
-      if (error) {
-        const ctx = (error as any).context;
-        if (ctx?.status === 402 || /INSUFFICIENT_CREDITS/i.test(error.message)) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Sua sessão expirou. Entre novamente.");
+      const response = await fetch(
+        "https://bwzvydfpoilmzhsaxpfa.supabase.co/functions/v1/generate-external-post-batch",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ batchId: batch.id, block: obj.block, count: 1, overrides: overrides() }),
+        },
+      );
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        const message = data?.error ?? "Falha ao gerar o post";
+        const ctx = { status: response.status };
+        if (ctx.status === 402 || /INSUFFICIENT_CREDITS/i.test(message)) {
           toast({ title: "Sem créditos", description: "Faça upgrade do plano para continuar.", variant: "destructive" });
           navigate("/pricing");
           return;
         }
-        throw error;
+        throw new Error(message);
       }
       const rows = Array.isArray(data?.posts) ? data.posts : [];
       if (rows.length === 0) throw new Error("Nenhum post foi gerado. Tente novamente.");
