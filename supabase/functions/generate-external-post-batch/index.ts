@@ -6,9 +6,10 @@ const corsHeaders = {
 };
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
-const DATA_URL = Deno.env.get("EXTERNAL_SUPABASE_URL")!;
-const DATA_ANON_KEY = Deno.env.get("EXTERNAL_SUPABASE_ANON_KEY")!;
-const DATA_SERVICE_ROLE = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_ROLE_KEY")!;
+// Public connection values for the owner's external data project. Privileged
+// writes remain scoped by the signed-in user's JWT and the project's RLS.
+const DATA_URL = "https://ezplkljerrgjjgczzlga.supabase.co";
+const DATA_ANON_KEY = "sb_publishable_mkGKzgiNukP4c3ldF41V3g_q5zx9Ii0";
 
 const SIZE_MAP: Record<string, "1024x1024" | "1024x1536" | "1536x1024"> = {
   "1:1": "1024x1024",
@@ -295,10 +296,6 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "No auth" }, 401);
 
-    if (!DATA_URL || !DATA_ANON_KEY || !DATA_SERVICE_ROLE) {
-      return json({ error: "Backend externo ainda não foi vinculado à geração" }, 500);
-    }
-
     const userClient = createClient(DATA_URL, DATA_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -313,7 +310,7 @@ Deno.serve(async (req) => {
     const blockKey = (block || "dor").toLowerCase();
     const postCount = Math.min(3, Math.max(1, Number(count) || 1));
 
-    const admin = createClient(DATA_URL, DATA_SERVICE_ROLE, { auth: { persistSession: false } });
+    const admin = userClient;
 
     const { data: batch, error: batchErr } = await admin
       .from("post_batches").select("*").eq("id", batchId).eq("user_id", user.id).single();
