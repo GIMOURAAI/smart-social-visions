@@ -1,19 +1,22 @@
-project_id = "bwzvydfpoilmzhsaxpfa"
+project_id = "ezplkljerrgjjgczzlga"
 
-[functions.create-post-with-ai]
-verify_jwt = true
-
-[functions.enhance-image]
-verify_jwt = true
-
-[functions.generate-image]
-verify_jwt = true
-
-[functions.create-checkout]
+[functions.check-openai]
 verify_jwt = true
 
 [functions.check-subscription]
 verify_jwt = true
 
-[functions.generate-smartpost]
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
+
+[functions.generate-post-batch]
+verify_jwt = true
+
+[functions.generate-external-post-batch]
+verify_jwt = true
+
+[functions.style-refs]
 verify_jwt = true
