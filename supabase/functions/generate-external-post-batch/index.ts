@@ -5,11 +5,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
-// Public connection values for the owner's external data project. Privileged
-// writes remain scoped by the signed-in user's JWT and the project's RLS.
-const DATA_URL = "https://ezplkljerrgjjgczzlga.supabase.co";
-const DATA_ANON_KEY = "sb_publishable_mkGKzgiNukP4c3ldF41V3g_q5zx9Ii0";
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+const DATA_URL = Deno.env.get("SUPABASE_URL");
+const DATA_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
 const SIZE_MAP: Record<string, "1024x1024" | "1024x1536" | "1536x1024"> = {
   "1:1": "1024x1024",
@@ -295,6 +293,8 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "No auth" }, 401);
+    if (!DATA_URL || !DATA_ANON_KEY) return json({ error: "Configuração do backend ausente" }, 500);
+    if (!OPENAI_API_KEY) return json({ error: "Chave de IA ausente no backend" }, 500);
 
     const userClient = createClient(DATA_URL, DATA_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
